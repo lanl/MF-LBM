@@ -1,0 +1,1 @@
+gfortran -ffree-line-length-300 -O2 -fopenmp dist_phi_to_vtk.f90  -o a.out 

@@ -1,0 +1,1 @@
+gfortran -ffree-line-length-300 -O2 3d_wall_modification.f90 -o a.out 

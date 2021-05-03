@@ -1,0 +1,6 @@
+wall_file_path:
+../../MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_240_240_240.dat
+10,10   !buffer layers
+0       ! crop the original domain option: 0-not crop; 1-crop
+120.5, 120.5, 120.5  !crop center (only when crop_option=1)
+160, 160, 160     !cropped domain size, not including buffer zone (only when crop_option=1)

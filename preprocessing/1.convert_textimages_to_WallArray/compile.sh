@@ -1,0 +1,1 @@
+gfortran -ffree-line-length-300 -O2 -fopenmp text_images_reader.f90  -o a.out 

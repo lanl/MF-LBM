@@ -1,0 +1,9 @@
+wall_file_path:
+../../MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_240_in10_240_240_240_out10.dat
+0,0,0  !X,Y,Z periodic BC 
+1,1   !domain walls at Xmin and Xmax: 1-wall ; 0-no wall
+1,1   !domain walls at Ymin and Ymax: 1-wall ; 0-no wall
+0,0   !domain walls at Zmin and Zmax: 1-wall ; 0-no wall
+# 4   !smooting procedure iteration times, 
+# 6, 4   !number of ghost layers for smoothing process;number of ghost layers for overlaping phi
+

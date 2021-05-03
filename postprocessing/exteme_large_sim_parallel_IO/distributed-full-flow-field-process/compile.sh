@@ -1,0 +1,1 @@
+gfortran -ffree-line-length-300 -O2 -fopenmp dist_fullflow_process.f90  -o a.out 

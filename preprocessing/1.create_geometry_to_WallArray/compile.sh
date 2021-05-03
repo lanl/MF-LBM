@@ -1,0 +1,1 @@
+gfortran -ffree-line-length-300 -O2 sample_code_3d_geometry.f90  -o a.out 

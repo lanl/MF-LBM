@@ -1,0 +1,8 @@
+#code location#
+/scratch/users/ychen2018/2d-micromodel/mf-lbm-multiphase/2d-code-multiphase
+
+#wall data file location#
+/scratch/users/ychen2018/2d-micromodel/mf-lbm-multiphase/examples/2D_simulation/fluid_displacement/walldata/walls.dat
+
+#wall data folder location (used in batch case)#
+/scratch/users/ychen2018/2d-micromodel/mf-lbm-multiphase/examples/2D_simulation/fluid_displacement/walldata

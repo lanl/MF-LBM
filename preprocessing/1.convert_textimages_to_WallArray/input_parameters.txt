@@ -1,0 +1,9 @@
+data location:
+../../MF-LBM-extFiles/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240
+image name:  
+bentheimer-3.182_original_       
+4      ! number of digit of the text image serial
+480     ! starting slice number 
+1       ! images type
+240 240 240                   ! dimensions
+
