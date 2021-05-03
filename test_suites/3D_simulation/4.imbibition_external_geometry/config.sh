@@ -8,7 +8,7 @@ template_directory="../../../3d-multiphase/run_template/"
 exec_location="../../../3d-multiphase/1.exec/MF_LBM.cpu"
 
 # if external geometry is used (external_geometry_read_cmd = 1)
-geometry_file="../../../MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_240_in10_240_240_240_out10.dat"
+geometry_file="../../../MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat"
 # if pre-computed boundary info is used (geometry_preprocess_cmd = 2)
 geometry_boundary_info_file="placeholder"
 

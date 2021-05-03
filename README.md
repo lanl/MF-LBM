@@ -5,7 +5,7 @@
 *** Thanks again! Now go create something AMAZING! :D
 -->
 
-# MF-LBM: A Portable, Scalable and High-performance Lattice Boltzmann Code for Flow in Porous Media
+# MF-LBM: A Portable, Scalable and High-performance Lattice Boltzmann Code for DNS of Flow in Porous Media
 
 
 <img src="images/core-dns.png" alt="drawing" width="900"/>
@@ -14,10 +14,11 @@
 <br/>
 
 <!-- TABLE OF CONTENTS -->
+
 <details open="open">
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-code">About The Code</a></li>
+    <li><a href="#about-the-code">About The Code</a></li>     
         <ul>
           <li><a href="#features">Features</a></li>
         </ul>
@@ -38,10 +39,15 @@
           <li><a href="#installation">Installation</a></li>
         </ul>
     <li><a href="#usage">Usage</a></li>
+        <ul>
+          <li><a href="#pre-processing-code">Pre-processing code</a></li>    <!-- #name must be identical to the bullet name (including dash) except capital letter and space (replaced by dash) -->
+        </ul>
+        <ul>
+          <li><a href="#the-main-simulation-code">The main simulation code</a></li>
+        </ul>
     <li><a href="#important-notes">Important Notes</a></li> 
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
-    <li><a href="#references">References</a></li>
   </ol>
 </details>
 
@@ -50,7 +56,7 @@
 
 ## About The Code
 
-MF-LBM (Chen et al., 2018, 2019) is a high-performance lattice Boltzmann (LB) code for direct numerical simulation (DNS) of flow in porous media, primarily developed by Dr. Yu Chen (LANL), under the supervision of Prof. Albert Valocchi (UIUC), Dr. Qinjun Kang (LANL) and Dr. Hari Viswananthan (LANL). 'MF' refers to microfluidics or 'Magic Find'. The code was first developed at University of Illinois at Urbana-Champaign based on a mainstream LB color-gradient multiphase model and further improved at Los Alamos National Laboratory by implementing the Continuum-Surface-Force and geometrical wetting models to reduce spurious currents so that the inertial effects in scCO<sub>2</sub> and brine displacement in porous media can be accounted for (Chen et al., 2019). 
+MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct numerical simulation (DNS) of flow in porous media, primarily developed by Dr. Yu Chen (LANL), under the supervision of Prof. Albert Valocchi (UIUC), Dr. Qinjun Kang (LANL) and Dr. Hari Viswananthan (LANL). 'MF' refers to microfluidics or 'Magic Find'. The code was first developed at University of Illinois at Urbana-Champaign based on a mainstream LB color-gradient multiphase model and further improved at Los Alamos National Laboratory by implementing the Continuum-Surface-Force and geometrical wetting models to reduce spurious currents so that the inertial effects in scCO<sub>2</sub> and brine displacement in porous media can be accounted for [2]. 
 
 ### Features
 * exploring multiple levels of parallelism
@@ -58,19 +64,25 @@ MF-LBM (Chen et al., 2018, 2019) is a high-performance lattice Boltzmann (LB) co
 * directive-based parallel programing model supporting CPU, GPU, MIC and ARM
 * advanced LB multiphase model (CSF model + geometrical wetting model) ensuring relatively small spurious currents
 * overlapped communication and computation
-* pre-processing and post-processing code included
+* sample geometry files, pre-processing and post-processing code included
   
 ### Components
-* Pre-processing code: 
-  1) converting text images from the scans to a single 3D wall array stored in binary formate. 
-  2) modifying the 3D wall array, i.e., adding inlet/outlet buffer layers 
-  3) obtaining orientations of the solid surface stored in binary formate.
-* Main simulation code:
-  1) multiphase flow simulation code
-  2) single phase flow simulation code (comming soon)
-* Post-processing code:
-  1) converting distributed data files to single vtk file
-  2) reading in distributed data files for further analysis
+* [`Sample geometry files`](MF-LBM-extFiles/geometry_files) (in submodule):
+  * [`simple_geometry_tube_sphere`](MF-LBM-extFiles/geometry_files/tube_sphere_example/tube_sphere.dat): a tube with a spherical obstacle in the center  
+  * [`rock_sample_text_images`](MF-LBM-extFiles/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240): text images from cropped Bentheimer sandstone scans [3]
+  * [`rock_sample_wall_array_converted`](MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_240_240_240.dat): binary file of the wall array converted from text images
+  * [`rock_sample_wall_array_processed`](MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat): binary file of the wall array converted from text images with added buffer layers 
+* [`Pre-processing code`](preprocessing): 
+  * [`convert_textimages_to_WallArray`](preprocessing/1.convert_textimages_to_WallArray): converting text images from rock scans to a single 3D wall array stored in binary format
+  * [`create_geometry_to_WallArray`](preprocessing/1.create_geometry_to_WallArray): creating simple geometries
+  * [`geometry_modification`](preprocessing/2.geometry_modification): modifying the 3D wall array, i.e., adding inlet/outlet buffer layers or cropping 
+  * [`wall_boundary_preprocess`](preprocessing/3.wall_boundary_preprocess): computing normal directions of the solid surfaces
+* [`Main simulation code`](multiphase_3D):
+  * [`multiphase_3D`](multiphase_3D): 3D multiphase flow simulation code
+  * (coming soon) 3D single phase flow simulation code 
+* [`Post-processing code`](postprocessing):
+  * [`distributed_phi_to_vtk_conversion`](postprocessing/exteme_large_sim_parallel_IO/distributed_phi_to_vtk_conversion): for extremely large simulation only, converting distributed phase field data to vtk file for visualization
+  * [`distributed_full_flow_field_process`](postprocessing/exteme_large_sim_parallel_IO/distributed_full_flow_field_process): for extremely large simulation only, converting distributed full flow field data for further analysis
 ### Technical details of the main simulation code
 Modern manycore processors/coprocessors, such as GPUs and Intel Xeon Phi processors, are developing rapidly and greatly boost computing power. These processors not only provide much higher FLOPS (floating-point operations per second) but also much higher memory bandwidth compared with traditional CPU. One of the most attractive features of the lattice Boltzmann method (LBM) is that it is explicit in time, has nearest neighbor communication, and the computational effort is in the collision step, which is localized at a grid node. For these reasons, the LBM is well suited for manycore processors which require a higher degree of explicit parallelism. The data movement in the LBM is much more intensive than for traditional CFD considering that the D3Q19 lattice model has 19 lattice velocities. Given the current state of computational hardware, in particular the relative speed and capacity of processors and memory, the LBM is a memory-bandwidth-bound numerical method. The high memory bandwidth provided by GPUs or Intel Xeon Phi processors greatly benefits the LBM.
 
@@ -89,7 +101,7 @@ Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects 
 
 ### Prerequisites
 * A Fortran compiler 
-* A MPI implementation
+* A MPI implementation (most of the run scripts in this repo are based on OpenMPI)
 * CUDA toolkit (for NVIDIA GPU platform)
 * PGI Fortran compiler (for NVIDIA GPU platform)
 * Intel Fortran compiler (for Intel Xeon Phi)
@@ -99,140 +111,204 @@ Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects 
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/your_username_/Project-Name.git
+   git clone https://github.com/lanl/MF-LBM.git
    ```
-2. Make
+2. Initiate submodules for external non-code files (geometry files used in the test suites)
+   ```sh
+   cd path-to-MF-LBM/MF-LBM-extFiles
+   git submodule init
+   git submodule update
+   ``` 
+3. Make
+   ```sh
+   cd path-to-MF-LBM/multiphase_3D
+   ```
    1. CPU version
         ```sh
-        cd mf-lbm/3d-multiphase
-        # Make necessary changes to makefile.
-        # Choose cpu as the architecture option.
-        # Choose compiler.
-        # OpenMP is recommended for CPU or ARM version.
-        # See instruction in makefile for more information.  
+        # Make necessary changes to makefile:
+        # Choose CPU as the architecture option.
+        # Choose proper compiler.
+        # Enabling OpenMP is recommended.
+        # See instructions in makefile for more information.  
         your-preferred-editor makefile
         make
+        # MF_LBM.cpu will be generated
         ```
     1. GPU version
         ```sh
-        cd mf-lbm/3d-multiphase
-        # Make necessary changes to makefile.
-        # Choose gpu as the architecture option.
-        # Choose compiler.
-        # OpenMP must be disabled for GPU version
+        # Make necessary changes to makefile:
+        # Choose GPU as the architecture option.
+        # Choose PGI compiler.
+        # OpenMP must be disabled.
         # See instruction in makefile for more information.  
         your-preferred-editor makefile
-        # Make sure to enable OpenACC in preprocessor  
-        your-preferred-editor mf-lbm/3d-multiphase/0.src/preprocessor.h  
- 
+        # Make sure to enable OpenACC in preprocessor.  
+        your-preferred-editor 0.src/preprocessor.h  
         make
+        # MF_LBM.gpu will be generated
         ```
     2. MIC (Intel Xeon Phi) version
         ```sh
-        cd mf-lbm/3d-multiphase
-        # Make necessary changes to makefile.
-        # Choose mic as the architecture option.
-        # Choose compiler.
-        # OpenMP and AVX512 must be enabled for MIC version
-        # See instruction in makefile for more information.  
-        your-preferred-editor makefile
+        # Make necessary changes to makefile:
+        # Choose MIC as the architecture option.
+        # Choose proper compiler.
+        # OpenMP and AVX512 must be enabled for MIC version.
+        # See instructions in makefile for more information.    
         your-preferred-editor makefile     
         make
+        # MF_LBM.mic will be generated
         ```
-3. Configure run scripts (for CPU platform)
+4. Configure run scripts (for CPU platform)
       ```sh
       cd working_directory
-      cp path-to-repo/3d-multiphase/run_template/template-config_sim.sh ./config_sim.sh
-      # Make necessary changes to config_sim.sh (i.e., input parameters, paths and run command). 
-      # See instruction in config_sim.sh for more information.
-      your-preferred-editor config_sim.sh
-      ./config_sim.sh
-      # The run-program script, irun.sh, will be generated. 
+      cp path-to-MF-LBM/multiphase_3D/run_template/template-config.sh ./config.sh
+      # Make necessary changes to config.sh (i.e., input parameters, paths and run command). 
+      # See instruction in template-config.sh for more information.
+      your-preferred-editor config.sh
+      ./config.sh
+      # A script, irun.sh, will be generated. 
       
-      # If OpenMP is enabled (recommended for CPU, MIC, and ARM platform); then run following
+      # If OpenMP is enabled (recommended for CPU, MIC, and ARM platform), then run the following command:
       # export OMP_NUM_THREADS=n
-      # here n is recommended to be the core count of the NUMA of the CPU.
+      # , where n is recommended to be the core count of the UMA domain of the CPU.
 
-      # MPI process number is recommended to be the total available number of NUMA.
+      # At least one MPI rank per UMA domain is recommended.
 
-      # In the GPU version, OpenMP is disabled while OpenAcc is enabled.
+      # For GPU platform, MPI process number should be the total number of GPUs: one MPI rank per GPU.
       ```
-4. Run the program
+5. Run the program
    ```sh
+   # See instruction in template-config.sh and irun.sh for more information.
    ./irun.sh new
    ```
 <br/>
 
+
 <!-- USAGE EXAMPLES -->
 ## Usage
-### The main simulation code:
+### Pre-processing code
 
-* A drop attached to a flat wall
+* [`convert text images to wall array`](preprocessing/1.convert_textimages_to_WallArray)
+   ```sh
+   cd path-to-MF-LBM/preprocessing/1.convert_textimages_to_WallArray
+   ./compile.sh
+   ./a.out
+   ```
+  This example converts [rock_sample_text_images](MF-LBM-extFiles/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240) to single wall array stored in binary format. No cropping and modification of the rock geometry are made. Loading binary wall array is much faster than large number of text images. This shall be the first step to read in text images before further modification.
+
+* [`create geometry`](preprocessing/1.create_geometry_to_WallArray)
+  ```sh
+  cd path-to-MF-LBM/preprocessing/1.create_geometry_to_WallArray
+  ./compile.sh
+  ./a.out
+  ```
+  This example creates a tube with a spherical obstacle in the center and stored the corresponding wall array in binary format. One can modify the code to create different geometries.
+   
+* [`geometry modification`](preprocessing/2.geometry_modification)
+  ```sh
+  cd path-to-MF-LBM/preprocessing/2.geometry_modification
+  ./compile.sh
+  ./a.out
+  ```
+  This example reads in a wall array file [rock_sample_wall_array_converted](MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_240_240_240.dat) which is converted from [rock_sample_text_images](MF-LBM-extFiles/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240), and add buffer layers at the inlet and outlet so that proper boundary conditions can be applied. This code can also be used to crop large samples.
+
+* [`wall boundary pre-processing`](preprocessing/3.wall_boundary_preprocess)
+  ```sh
+  cd path-to-MF-LBM/preprocessing/3.wall_boundary_preprocess
+  ./compile.sh
+  ./a.out
+  ```
+  This example reads in the processed wall array file [rock_sample_wall_array_processed](MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat), computes the normal directions of all solid boundary nodes and stores the boundary information in binary format that can be used in the main flow simulation code. Read  [compile.sh](preprocessing/3.wall_boundary_preprocess/compile.sh) for compiler information (extremely important) for this example. The same boundary info calculation can be completed in the main flow simulation code ([Geometry_preprocessing.F90](multiphase_3D/0.src/Boundary_multiphase_outlet.F90)). However, it is recommended to perform the boundary info calculation before the main simulation and load the boundary info from external file to the main simulation, when the rock sample is relatively large.
+
+### The main simulation code
+Check out [template-simulation_control.txt](multiphase_3D/run_template/template-config.sh) for more information regarding simulation control. The units used in the simulation control file are all lattice unit. One can control capillary number, contact angle, absolute values of surface tension and viscosities to link the simulation with physical system. In particular, the absolute values of surface tension and viscosities will affect Reynolds number even when the capillary number is fixed. The Ohnesorge number is recommended to control the parameters when inertial effects are not negligible [2].
+
+* [`Contact angle measurement`](test_suites/3D_simulation/1.drop_attached_wall)
    ```sh
    cd working_directory
-   cp path-to-repo/3d-multiphase/test_suites/3D_simulation/1.drop_attached_wall/config.sh ./
-   # necessary modifications might needed according to your computing environment
-   your-preferred-editor config_sim.sh
-   ./config_sim.sh    
+   cp path-to-MF-LBM/test_suites/3D_simulation/1.drop_attached_wall/config.sh ./
+   # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
+   your-preferred-editor config.sh
+   ./config.sh    
    ./irun.sh new
    ```
-* Nonwetting fluid displacing wetting fluid in a square duct
+   This example is used to measure contact angle, where a nonwetting drop (fluid1 drop) is attached to a flat wall (y=1 plane)
+
+* [`Drainage in a square duct`](test_suites/3D_simulation/2.drainage)
    ```sh
    cd working_directory
-   cp path-to-repo/3d-multiphase/test_suites/3D_simulation/2.drainage/config.sh ./
-   # necessary modifications might needed according to your computing environment
+   cp path-to-MF-LBM/test_suites/3D_simulation/2.drainage/config.sh ./
+   # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
+   your-preferred-editor config.sh
+   ./config.sh    
+   ./irun.sh new
+   ```
+   This example simulates nonwetting fluid1 displacing wetting fluid2 in a square duct until one pore-volume fluid1 is injected.
+
+* [`Drainage in a tube with a spherical obstacle`](test_suites/3D_simulation/3.drainage_hardcode_geometry)
+   ```sh
+   # The geometry is created inside the main flow simulation code for convenience (Misc.F90/modify_geometry subroutine). Not the recommended way to run the program. 
+   cd working_directory
+   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
+   # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
+   your-preferred-editor config.sh
+   ./config.sh    
+   ./irun.sh new
+   ```
+   This example simulates nonwetting fluid1 displacing wetting fluid2 in a tube with a spherical obstacle in the center. The tube and spherical obstacle are created inside the simulation code. Simulation stops when the nonwetting fluid reaches outlet.
+
+* [`Imbibition in a real rock sample using external rock geometry file`](test_suites/3D_simulation/4.imbibition_external_geometry)
+   ```sh
+   # The geometry file is created from pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat)
+   cd working_directory
+   cp path-to-MF-LBM/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
+   # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
+   your-preferred-editor config.sh
+   ./config.sh    
+   ./irun.sh new
+   ```
+   This example simulates wetting fluid2 displacing nonwetting fluid1 in a real rock sample using external rock geometry file. Simulation stops one pore-volume fluid2 is injcted.
+
+* [`Steady state relative permeability measurement`](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed)
+   ```sh
+  # The geometry file is created from pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat). The boundary info file need to be created use the wall_boundary_preprocess code (preprocessing/3.wall_boundary_preprocess)
+   cd path-to-MF-LBM/preprocessing/3.wall_boundary_preprocess
+   ./compile.sh
+   ./a.out
+
+   cd working_directory
+   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
+   # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
+  # specify the geometry file and solid-boundary-info file paths on config.sh
    your-preferred-editor config.sh
    ./config_sim.sh    
    ./irun.sh new
    ```
-* Nonwetting fluid displacing wetting fluid in a square duct with hard-coded geometry
-   ```sh
-   cd working_directory
-   cp path-to-repo/3d-multiphase/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
-   # necessary modifications might needed according to your computing environment
-   your-preferred-editor config_sim.sh
-   ./config_sim.sh    
-   ./irun.sh new
-   ```
-* Wetting fluid displacing nonwetting fluid in a square duct with external geometry file
-   ```sh
-   cd working_directory
-   cp path-to-repo/3d-multiphase/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
-   # necessary modifications might needed according to your computing environment
-   # specify the geometry file path on config.sh
-   your-preferred-editor config.sh
-   ./config_sim.sh    
-   ./irun.sh new
-   ```
-* Body force driven fractional flow in a square duct with external geometry file and pre-processed solid-boudnary-info file
-   ```sh
-   cd working_directory
-   cp path-to-repo/3d-multiphase/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
-   # necessary modifications might needed according to your computing environment
-    # specify the geometry file and solid-boundary-info file paths on config.sh
-   your-preferred-editor config.sh
-   ./config_sim.sh    
-   ./irun.sh new
-   ```
+   This example simulates body force driven fractional flow for steady state relative permeability measurement, using external rock geometry file and corresponding pre-computed boundary info file. 
 
-### Pre-processing code:
-
-### Post-processing code:
 
 <br/>
 
 ## Important Notes
-* Geometry preprocessing
 * Contact angle
+  
+  The contact angle in the control file must be less or equal to 90 degrees due to the particular numerical scheme used, meaning that fluid1 and fluid2 will always be the nonwetting phase and wetting phase, respectively. [Drainage](test_suites/3D_simulation/2.drainage) and [imbibition](test_suites/3D_simulation/4.imbibition_external_geometry) can be completed by injecting fluid1 and fluid2 respectively.
+
 * Run command
+  
+  Several sample run commands are listed in [template-config.sh](multiphase_3D/run_template/template-config.sh). This code employs MPI-OpenMP hybrid programing model for the non-GPU version, where memory affinity on NUMA architectures is very important to achieve expected performance. One should avoid using OpenMP on NUMA domains by using one or more MPI ranks per UMA domain and setting appropriate socket/NUMA affinity in OpenMPI (or other MPI implementations). Number of threads in OpenMP should not exceed the core count or thread count (if multithreading is enabled) of corresponding UMA. 
+
 * Domain decomposition
-* Number of threads in OpenMP
-* 
-* GCC10 compiler issue: 
+
+  Domain decomposition along X direction is no longer supported in the main simulation code for the moment, due to the consideration of non-vectorized data packing and halo area computation. Domain decompositions along Y and Z direction are usually sufficient as single MPI rank corresponds to tens of CPU cores or a full GPU.
+
+
+* GCC10 compiler issue
+  
   Building the code with GCC10 may show error messages like 
   >Type mismatch between actual argument at (1) and actual argument at (2)
 
-  This is a known issue with GCC10. Use GCC10 new option *-fallow-argument-mismatch* to turn these errors to warnings.
+  This is a known issue with GCC10. Use GCC10 new option *-fallow-argument-mismatch* to turn these errors to warnings for the moment.
 
 <br/>
 
@@ -255,14 +331,14 @@ Dr. Qinjun Kang - qkang@lanl.gov
 
 <br/>
 
-## References
-
-1. Chen, Yu, Albert J. Valocchi, Qinjun Kang, and Hari S. Viswanathan. "Inertial effects during the process of supercritical CO2 displacing brine in a sandstone: Lattice Boltzmann simulations based on the continuum‐surface‐force and geometrical wetting models." Water Resources Research 55, no. 12 (2019): 11144-11165.
-2. Chen, Yu, Yaofa Li, Albert J. Valocchi, and Kenneth T. Christensen. "Lattice Boltzmann simulations of liquid CO2 displacing water in a 2D heterogeneous micromodel at reservoir pressure conditions." Journal of contaminant hydrology 212 (2018): 14-27.
 
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
 
 [LICENSE]: https://github.com/ychen-hpc/mf-lbm-dev/blob/master/LICENSE
+[1]: https://www.sciencedirect.com/science/article/abs/pii/S0169772217300645
+[2]: https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019WR025746
+[3]: https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2016GL070304
+
 
