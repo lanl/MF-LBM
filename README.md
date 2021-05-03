@@ -45,6 +45,9 @@
         <ul>
           <li><a href="#the-main-simulation-code">The main simulation code</a></li>
         </ul>
+        <ul>
+          <li><a href="#output-files">Output files</a></li>
+        </ul>
     <li><a href="#important-notes">Important Notes</a></li> 
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -286,6 +289,11 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ```
    This example simulates body force driven fractional flow for steady state relative permeability measurement, using external rock geometry file and corresponding pre-computed boundary info file. 
 
+### Output files
+Three output directories will be generated:
+* out1.output: bulk properties (i.e., saturation, flow rate) against time. See [Monitor.F90](multiphase_3D/0.src/Monitor.F90) for more information.
+* out1.checkpoint: checkpoint data used to restart simulation. See [IO_multiphase.F90](multiphase_3D/0.src/IO_multiphase.F90) for more information.
+* out1.field_data: legacy vtk files for flow analysis. See [IO_multiphase.F90](multiphase_3D/0.src/IO_multiphase.F90) for more information. For extremely large simulation (extreme_large_sim_cmd=1 in [template-simulation_control.txt](multiphase_3D/run_template/template-simulation_control.txt)), distributed flow field data will be stored for performance consideration. [Post-processing code](postprocessing/exteme_large_sim_parallel_IO) is provided to process those distributed data.
 
 <br/>
 
