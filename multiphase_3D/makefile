@@ -17,9 +17,9 @@ openmp = enabled
 # AVX512 = enabled
 
 # -- compiler --
-#tool = gcc
+tool = gcc
 #tool = pgi
-tool = intel
+#tool = intel
 #tool = cray  (not implemented)
 
 # -- optimization options --

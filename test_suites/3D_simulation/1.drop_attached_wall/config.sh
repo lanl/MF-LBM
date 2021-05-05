@@ -4,8 +4,8 @@
 #
 #--------------------------------------- PATH --------------------------------------------- 
 # absolute or relative paths of corresponding files or directories 
-template_directory="../../../3d-multiphase/run_template/"
-exec_location="../../../3d-multiphase/1.exec/MF_LBM.cpu"
+template_directory="../../../multiphase_3D/run_template/"
+exec_location="../../../multiphase_3D/1.exec/MF_LBM.cpu"
 
 # if external geometry is used (external_geometry_read_cmd = 1)
 geometry_file="placeholder"
@@ -15,7 +15,7 @@ geometry_boundary_info_file="placeholder"
 #------------------------ choose Linux or OSX system --------------------------------------
 # sed command is slightly different between Linux and OSX. 
 # Uncomment OSX below if you are using a MAC
-#OS="OSX"
+# OS="OSX"
 
 # --- Linux
 sed_option="-i"
