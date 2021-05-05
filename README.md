@@ -197,7 +197,7 @@ Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects 
    ./compile.sh
    ./a.out
    ```
-  This example converts [rock_sample_text_images](MF-LBM-extFiles/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240) to single wall array stored in binary format. No cropping and modification of the rock geometry are made. Loading binary wall array is much faster than large number of text images. This shall be the first step to read in text images before further modification.
+  This example converts [rock_sample_text_images](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240) to single wall array stored in binary format. No cropping and modification of the rock geometry are made. Loading binary wall array is much faster than large number of text images. This shall be the first step to read in text images before further modification.
 
 * [`create geometry`](preprocessing/1.create_geometry_to_WallArray)
   ```sh
