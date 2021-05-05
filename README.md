@@ -70,11 +70,11 @@ MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct nume
 * sample geometry files, pre-processing and post-processing code included
   
 ### Components
-* [`Sample geometry files`](https://github.com/lanl/MF-LBM-extFiles) (in submodule):
-  * [`simple_geometry_tube_sphere`](https://github.com/lanl/MF-LBM-extFiles/geometry_files/tube_sphere_example/tube_sphere.dat): a tube with a spherical obstacle in the center  
-  * [`rock_sample_text_images`](https://github.com/lanl/MF-LBM-extFiles/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240): text images from cropped Bentheimer sandstone scans [3]
-  * [`rock_sample_wall_array_converted`](https://github.com/lanl/MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_240_240_240.dat): binary file of the wall array converted from text images
-  * [`rock_sample_wall_array_processed`](https://github.com/lanl/MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat): binary file of the wall array converted from text images with added buffer layers 
+* [`Sample geometry files`](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files) (in submodule):
+  * [`simple_geometry_tube_sphere`](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/tube_sphere_example): a tube with a spherical obstacle in the center  
+  * [`rock_sample_text_images`](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240): text images from cropped Bentheimer sandstone scans [3]
+  * [`rock_sample_wall_array_converted`](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_wallarray): binary file of the wall array converted from text images
+  * [`rock_sample_wall_array_processed`](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_wallarray): binary file of the wall array converted from text images with added buffer layers 
 * [`Pre-processing code`](preprocessing): 
   * [`convert_textimages_to_WallArray`](preprocessing/1.convert_textimages_to_WallArray): converting text images from rock scans to a single 3D wall array stored in binary format
   * [`create_geometry_to_WallArray`](preprocessing/1.create_geometry_to_WallArray): creating simple geometries
@@ -197,7 +197,7 @@ Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects 
    ./compile.sh
    ./a.out
    ```
-  This example converts [rock_sample_text_images](MF-LBM-extFiles/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240) to single wall array stored in binary format. No cropping and modification of the rock geometry are made. Loading binary wall array is much faster than large number of text images. This shall be the first step to read in text images before further modification.
+  This example converts [rock_sample_text_images](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240) to single wall array stored in binary format. No cropping and modification of the rock geometry are made. Loading binary wall array is much faster than large number of text images. This shall be the first step to read in text images before further modification.
 
 * [`create geometry`](preprocessing/1.create_geometry_to_WallArray)
   ```sh
@@ -213,7 +213,7 @@ Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects 
   ./compile.sh
   ./a.out
   ```
-  This example reads in a wall array file [rock_sample_wall_array_converted](MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_240_240_240.dat) which is converted from [rock_sample_text_images](MF-LBM-extFiles/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240), and add buffer layers at the inlet and outlet so that proper boundary conditions can be applied. This code can also be used to crop large samples.
+  This example reads in a wall array file [rock_sample_wall_array_converted](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_wallarray) which is converted from [rock_sample_text_images](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240), and add buffer layers at the inlet and outlet so that proper boundary conditions can be applied. This code can also be used to crop large samples.
 
 * [`wall boundary pre-processing`](preprocessing/3.wall_boundary_preprocess)
   ```sh
@@ -221,7 +221,7 @@ Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects 
   ./compile.sh
   ./a.out
   ```
-  This example reads in the processed wall array file [rock_sample_wall_array_processed](MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat), computes the normal directions of all solid boundary nodes and stores the boundary information in binary format that can be used in the main flow simulation code. Read  [compile.sh](preprocessing/3.wall_boundary_preprocess/compile.sh) for compiler information (extremely important) for this example. The same boundary info calculation can be completed in the main flow simulation code ([Geometry_preprocessing.F90](multiphase_3D/0.src/Boundary_multiphase_outlet.F90)). However, it is recommended to perform the boundary info calculation before the main simulation and load the boundary info from external file to the main simulation, when the rock sample is relatively large.
+  This example reads in the processed wall array file [rock_sample_wall_array_processed](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_wallarray), computes the normal directions of all solid boundary nodes and stores the boundary information in binary format that can be used in the main flow simulation code. Read  [compile.sh](preprocessing/3.wall_boundary_preprocess/compile.sh) for compiler information (extremely important) for this example. The same boundary info calculation can be completed in the main flow simulation code ([Geometry_preprocessing.F90](multiphase_3D/0.src/Boundary_multiphase_outlet.F90)). However, it is recommended to perform the boundary info calculation before the main simulation and load the boundary info from external file to the main simulation, when the rock sample is relatively large.
 
 ### The main simulation code
 Check out [template-simulation_control.txt](multiphase_3D/run_template/template-config.sh) for more information regarding simulation control. The units used in the simulation control file are all lattice unit. One can control capillary number, contact angle, absolute values of surface tension and viscosities to link the simulation with physical system. In particular, the absolute values of surface tension and viscosities will affect Reynolds number even when the capillary number is fixed. The Ohnesorge number is recommended to control the parameters when inertial effects are not negligible [2].
