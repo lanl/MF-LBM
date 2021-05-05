@@ -48,6 +48,7 @@ end subroutine mpi_irecv_initialization
 !=====================================================================================================================================
 subroutine mpi_send_req
     use mpi_variable
+    use Misc_module
     IMPLICIT NONE
     include 'mpif.h'
     INTEGER :: MPI_ERR

@@ -525,7 +525,7 @@ subroutine cal_saturation
     
     !$omp parallel do private(i,j,wall_indicator)reduction(+:v1,v2)
     !$acc kernels present(phi,rho,walls)
-    !$acc loop reduction(+:vol1,vol2) collapse(3)
+    !$acc loop reduction(+:v1,v2) collapse(3)
     do k=1,nz      
         do j=1,ny
             do i=1,nx

@@ -17,14 +17,15 @@ openmp = enabled
 # AVX512 = enabled
 
 # -- compiler --
-tool = gcc
+#tool = gcc
 #tool = pgi
-#tool = intel
+tool = intel
 #tool = cray  (not implemented)
 
 # -- optimization options --
 #optimization = debug
-optimization = release
+#optimization = release
+optimization = speedy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ options to choose ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
 ############# DIR #################################
@@ -68,8 +69,10 @@ ifeq ($(strip $(tool)), gcc)
 
 	ifeq ($(strip $(optimization)), debug)
 		OPT_FLAGS = -g
-	else	
+	else ifeq ($(strip $(optimization)), release)
 		OPT_FLAGS = -O2
+	else	
+		OPT_FLAGS = -O3
     endif
 	
 	ifeq ($(strip $(openmp)), enabled)
@@ -104,8 +107,10 @@ ifeq ($(strip $(tool)), intel)
 
 	ifeq ($(strip $(optimization)), debug)
 		OPT_FLAGS = -debug
-	else 
+	else ifeq ($(strip $(optimization)), release)
 		OPT_FLAGS = -O2
+	else	
+		OPT_FLAGS = -O3
     endif
 
 	ifeq ($(strip $(openmp)), enabled)
