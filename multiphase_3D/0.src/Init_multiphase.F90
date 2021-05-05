@@ -309,9 +309,10 @@ subroutine initialization_new_multi
                         phi(i,j,k) = 1d0
                     endif
                 elseif(initial_fluid_distribution_option==6)then   !randomly distributed: steady state relative perm measurement
+                    phi(i,j,k) = 1d0
                     call RANDOM_NUMBER(random)
-                    if(random>1d0-Sa_target)then
-                        phi(i,j,k) =1d0
+                    if(random>Sa_target)then
+                        phi(i,j,k) = -1d0
                     endif
                 else   
                     if(id==0)print*,'Input parameter initial_fluid_distribution_option error! Stop program!!!'

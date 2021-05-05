@@ -545,7 +545,7 @@ subroutine benchmark
         write(*,"(1X,'Benchmarking ended successfully after ', I6, ' iterations')")ntime
     endif
 
-    !call VTK_legacy_writer_3D(ntime, 2)
+    call VTK_legacy_writer_3D(ntime, 2)
     
     return
 end subroutine benchmark
