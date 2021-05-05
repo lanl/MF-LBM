@@ -70,11 +70,11 @@ MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct nume
 * sample geometry files, pre-processing and post-processing code included
   
 ### Components
-* [`Sample geometry files`](MF-LBM-extFiles/geometry_files) (in submodule):
-  * [`simple_geometry_tube_sphere`](MF-LBM-extFiles/geometry_files/tube_sphere_example/tube_sphere.dat): a tube with a spherical obstacle in the center  
-  * [`rock_sample_text_images`](MF-LBM-extFiles/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240): text images from cropped Bentheimer sandstone scans [3]
-  * [`rock_sample_wall_array_converted`](MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_240_240_240.dat): binary file of the wall array converted from text images
-  * [`rock_sample_wall_array_processed`](MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat): binary file of the wall array converted from text images with added buffer layers 
+* [`Sample geometry files`](https://github.com/lanl/MF-LBM-extFiles) (in submodule):
+  * [`simple_geometry_tube_sphere`](https://github.com/lanl/MF-LBM-extFiles/geometry_files/tube_sphere_example/tube_sphere.dat): a tube with a spherical obstacle in the center  
+  * [`rock_sample_text_images`](https://github.com/lanl/MF-LBM-extFiles/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240): text images from cropped Bentheimer sandstone scans [3]
+  * [`rock_sample_wall_array_converted`](https://github.com/lanl/MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_240_240_240.dat): binary file of the wall array converted from text images
+  * [`rock_sample_wall_array_processed`](https://github.com/lanl/MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat): binary file of the wall array converted from text images with added buffer layers 
 * [`Pre-processing code`](preprocessing): 
   * [`convert_textimages_to_WallArray`](preprocessing/1.convert_textimages_to_WallArray): converting text images from rock scans to a single 3D wall array stored in binary format
   * [`create_geometry_to_WallArray`](preprocessing/1.create_geometry_to_WallArray): creating simple geometries
