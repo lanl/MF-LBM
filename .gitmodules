@@ -1,3 +1,3 @@
 [submodule "MF-LBM-extFiles"]
 	path = MF-LBM-extFiles
-	url = https://github.com/lanl/MF-LBM-extFiles.git
+	url = ../MF-LBM-extFiles.git
