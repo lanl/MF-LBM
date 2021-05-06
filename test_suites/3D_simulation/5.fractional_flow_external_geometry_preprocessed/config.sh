@@ -10,7 +10,7 @@ exec_location="../../../multiphase_3D/1.exec/MF_LBM.cpu"
 # if external geometry is used (external_geometry_read_cmd = 1)
 geometry_file="../../../MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat"
 # if pre-computed boundary info is used (geometry_preprocess_cmd = 2)
-geometry_boundary_info_file="../../../pre-processing/3.wall_boundary_preprocess/output/indirect_addressing_walls_boundary.dat"
+geometry_boundary_info_file="../../../preprocessing/3.wall_boundary_preprocess/output/indirect_addressing_walls_boundary.dat"
 
 #------------------------ choose Linux or OSX system --------------------------------------
 # sed command is slightly different between Linux and OSX. 
@@ -71,7 +71,7 @@ sed $sed_option "s|lattice_dimensions .*|lattice_dimensions $nx,$ny,$nz|g" ./sim
 periodic_x=0
 periodic_y=0
 periodic_z=1
-# sed $sed_option "s|periodic_indicator .*|periodic_indicator $periodic_x,$periodic_y,$periodic_z|g" ./simulation_control.txt
+sed $sed_option "s|periodic_indicator .*|periodic_indicator $periodic_x,$periodic_y,$periodic_z|g" ./simulation_control.txt
 # mpi_npx=1  # x-axis domain decomposition currently disabled, keep using mpi_npx=1 
 # mpi_npy=1
 # mpi_npz=2
@@ -92,13 +92,13 @@ periodic_z=1
 # sed $sed_option "s|target_inject_pore_volume .*|target_inject_pore_volume $target_inject_pore_volume|g" ./simulation_control.txt
 # initial_interface_position=10.0
 # sed $sed_option "s|initial_interface_position .*|initial_interface_position $initial_interface_position|g" ./simulation_control.txt
-capillary_number=200d-6
-sed $sed_option "s|capillary_number .*|capillary_number $capillary_number|g" ./simulation_control.txt
+# capillary_number=100d-6
+# sed $sed_option "s|capillary_number .*|capillary_number $capillary_number|g" ./simulation_control.txt
 # saturation_injection=1.0
 # sed $sed_option "s|saturation_injection .*|saturation_injection $saturation_injection|g" ./simulation_control.txt
-# body_force_0=0d-6
-# sed $sed_option "s|body_force_0 .*|body_force_0 $body_force_0|g" ./simulation_control.txt
-target_fluid1_saturation=0.3
+body_force_0=200d-6
+sed $sed_option "s|body_force_0 .*|body_force_0 $body_force_0|g" ./simulation_control.txt
+target_fluid1_saturation=0.4
 sed $sed_option "s|target_fluid1_saturation .*|target_fluid1_saturation $target_fluid1_saturation|g" ./simulation_control.txt
 
 # timers
