@@ -13,10 +13,12 @@ subroutine initialization_basic_multi
     LOGICAL :: ALIVE
 
     call read_parameter_multi
+    
     call set_MPI
 
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     !create folders
+    if(id==0)print*,''
     if(id==0)print*,'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
     if(id==0)print*,'Creating directories if not exist'
     if(id==0)call system('mkdir out2.checkpoint')

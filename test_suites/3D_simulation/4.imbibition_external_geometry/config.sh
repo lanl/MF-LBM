@@ -92,7 +92,7 @@ sed $sed_option "s|lattice_dimensions .*|lattice_dimensions $nx,$ny,$nz|g" ./sim
 # sed $sed_option "s|target_inject_pore_volume .*|target_inject_pore_volume $target_inject_pore_volume|g" ./simulation_control.txt
 # initial_interface_position=10.0
 # sed $sed_option "s|initial_interface_position .*|initial_interface_position $initial_interface_position|g" ./simulation_control.txt
-capillary_number=200d-6
+capillary_number=50d-6
 sed $sed_option "s|capillary_number .*|capillary_number $capillary_number|g" ./simulation_control.txt
 saturation_injection=0.0
 sed $sed_option "s|saturation_injection .*|saturation_injection $saturation_injection|g" ./simulation_control.txt

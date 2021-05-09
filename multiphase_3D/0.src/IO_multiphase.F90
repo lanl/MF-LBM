@@ -16,6 +16,7 @@ subroutine read_parameter_multi
     character(len=100) :: buffer, label
     integer :: pos, i
     integer :: ios = 0
+    integer :: error_signal  
 
     if(id0==0)print*,'Checking simulation status ...'
     INQUIRE(FILE='./job_status.txt',EXIST=ALIVE)
@@ -208,7 +209,7 @@ subroutine read_parameter_multi
                         write(*,"(1X,'Injecting_fluid_saturation = ', F8.6)") sa_inject
                     case ('initial_interface_position') ! initial interface position alng z axis(multiphase)
                         read(buffer, *, iostat=ios)interface_z0
-                        write(*,"(1X,'Initial_interface_position = ', F4.1)") interface_z0              
+                        write(*,"(1X,'Initial_interface_position = ', F5.1)") interface_z0              
                     case ('body_force_0') ! initial value of body force Z or pressure gradient
                         read(buffer, *, iostat=ios)force_Z0
                         write(*,"(1X,'Body_force_Z0 = ', ES13.6)") force_Z0
@@ -276,6 +277,9 @@ subroutine read_parameter_multi
         end do              
         close(90)
 
+        ntime_monitor_profile =  ntime_monitor_profile_ratio * ntime_monitor 
+        if(id0==0)write(*,"(1X,'monitor_profile_timer = ', I8)") ntime_monitor_profile 
+
         print*, '************** End reading in parameters from control file *******************'
         print*,''
  
@@ -315,7 +319,7 @@ subroutine read_parameter_multi
         N(32) = ntime_max_benchmark
         N(33) = ntime_clock_sum
         N(34) = ntime_monitor
-        N(35) = ntime_monitor_profile_ratio
+        N(35) = ntime_monitor_profile
         N(36) = ntime_relaxation
         N(37) = ntime_display_steps
 
@@ -403,10 +407,7 @@ subroutine read_parameter_multi
     ntime_max_benchmark = N(32)
     ntime_clock_sum = N(33)
     ntime_monitor = N(34) 
-    ntime_monitor_profile_ratio = N(35)
-
-    ntime_monitor_profile =  ntime_monitor_profile_ratio * ntime_monitor 
-    write(*,"(1X,'monitor_profile_timer = ', I8)") ntime_monitor_profile 
+    ntime_monitor_profile = N(35)
 
     ntime_relaxation = N(36)
     ntime_display_steps = N(37) 
@@ -451,13 +452,92 @@ subroutine read_parameter_multi
 
     sa_target = A(20)
 
+    !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ check correctness of input parameters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if(id0==0)then     
+        print*, '************ Start checking correctness of input parameters ******************'
+    endif
+    error_signal = 0 
+
+    if(theta>90d0)then
+        if(id0==0)print*,'Error: contact angle is larger than 90 degrees! Exiting program!'
+        error_signal = 1 
+    endif
     theta = 180d0 - theta  !measured through defending phase
     theta = theta*pi/180.0d0   !contact angle
 
+    !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ! MPI parameters
+    if(iper==1.or.domain_wall_status_x_max==0.or.domain_wall_status_x_min==0)then
+        if(id0==0)print*,'Error: X direction periodic BC enabled or non-slip BC not applied at x = xmin or x = xmax! Exiting program!'
+        error_signal = 1 
+    endif
+    if(jper==0.and.(domain_wall_status_y_max==0.or.domain_wall_status_y_min==0))then
+        if(id0==0)print*,'Error: non-slip BC not applied at y = ymin or y = ymax while y direction periodic BC not enabled! Exiting program!'
+        error_signal = 1 
+    endif
+    if(kper==0.and.(domain_wall_status_z_max==0.or.domain_wall_status_z_min==0))then
+        if(id0==0)print*,'Error: non-slip BC not applied at z = zmin or z = zmax while z direction periodic BC not enabled! Exiting program!'
+        error_signal = 1 
+    endif
+    if(jper==1.and.(domain_wall_status_y_max==1.or.domain_wall_status_y_min==1))then
+        if(id0==0)print*,'Error: non-slip BC applied at y = ymin or y = ymax while y direction periodic BC enabled! Exiting program!'
+        error_signal = 1 
+    endif
+    if(kper==1.and.(domain_wall_status_z_max==1.or.domain_wall_status_z_min==1))then
+        if(id0==0)print*,'Error: non-slip BC applied at z = zmin or z = zmax while z direction periodic BC enabled! Exiting program!'
+        error_signal = 1 
+    endif
+
     if(npx*npy*npz .ne. np)then
         if(id0==0)print*,'MPI error: npx*npy*npz is not equal to np! Exiting program!'
+        error_signal = 1 
+    endif
+
+    ! this code has temporary disabled all X direction MPI communication
+    if(npx/=1)then
+        if(id0==0)print*,'MPI error: MPI_process_num_X is not equal to 1! Exiting program!'
+        error_signal = 1 
+    endif
+
+    ! this code has temporary disabled all X direction MPI communication
+    mpi_x = .false.   
+    ! npy > 1 or y direction periodic BC
+    if(npy>1 .or. jper==1)then
+        mpi_y = .true.
+        if(iy_async==0)then
+            if(id0==0)print*,'MPI error: iy_async is zero when MPI communication along y direction is enabled! Exiting program!'
+            error_signal = 1 
+        else
+            if(id0==0)print*, 'MPI communication along y direction is enabled.' 
+        endif
+    endif
+    ! npz > 1 or z direction periodic BC
+    if(npz>1 .or. kper==1)then
+        mpi_z = .true.
+        if(iz_async==0)then
+            if(id0==0)print*,'MPI error: iz_async is zero when MPI communication along z direction is enabled! Exiting program!'
+            error_signal = 1 
+        else
+            if(id0==0)print*, 'MPI communication along z direction is enabled.' 
+        endif
+    endif
+
+    !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    ! Boundary conditions
+    if(outlet_BC==1.and.inlet_BC==2)then
+        if(id0==0)print*,'Inlet/outlet boundary condition error: Inlet pressure + outlet convective BC is not supported! Exiting program!'
+        error_signal = 1 
+    endif
+
+    if(error_signal==1)then
         call MPI_Barrier(MPI_COMM_WORLD,ierr)
         call mpi_abort(MPI_COMM_WORLD,ierr)
+    else
+        if(id0==0)then     
+            print*, 'Everything looks good!'
+            print*, '************** End checking correctness of input parameters ******************'
+            print*,''
+        endif
     endif
 
     return

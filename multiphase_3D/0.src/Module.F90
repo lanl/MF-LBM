@@ -11,10 +11,7 @@ module Misc_module
 
     ! job status: new_simulation; continue_simulation; simulation_done; simulation_failed
     character(len=100) :: job_status
-    character(len=200) :: geo_file_path, geo_boundary_file_path
-
-    ! error signal to exit the program
-    integer :: error_signal   
+    character(len=200) :: geo_file_path, geo_boundary_file_path 
 
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ input commands ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
     !1 - simulation ends ; 0 - initial value (exceed max time step) ; 2 - simulation not finished, but save data and exit program; 3 - simulation failed
@@ -252,6 +249,7 @@ module mpi_variable
     INTEGER, DIMENSION(:) :: MPI_REQ_phi_EX(8), MPI_REQ_phi_EY(8), MPI_REQ_phi_EZ(8)  !macro varaibles such as phi, edge
 
     INTEGER,ALLOCATABLE,DIMENSION(:,:) :: MPI_STAT, MPI_ESTAT
+    logical :: mpi_x,mpi_y,mpi_z   ! MPI communication flags along different directions: 0 - no MPI communication; 1 - with MPI communication 
     integer :: id0,id,idx,idy,idz,np,npx,npy,npz,MPI_COMM_VGRID   !id0: processor id in comm_world, id: processor id in vgrid    
     integer, parameter :: overlap = 1, overlap_walls = 2, overlap_phi=4  !overlaps for MPI communications=
     
