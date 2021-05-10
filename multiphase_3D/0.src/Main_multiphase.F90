@@ -347,51 +347,52 @@ subroutine main_iteration_kernel
     include 'mpif.h'
 
     ! MPI enabled
-#if defined(z_mpi)||defined(y_mpi)||defined(x_mpi)
-    call mpi_irecv_initialization 
-#endif 
+    if(mpi_x.or.mpi_y.or.mpi_z)then
+        call mpi_irecv_initialization 
+    endif
 
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ kernel ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if(mod(ntime,2)==0)then
         !************************** even step *****************************************
         !~~~~~~~~~~~~~~~ overlapped communication and computation ~~~~~~~~~~~~~~~~~
 
-#ifdef z_mpi  
-        call kernel_even_color(1,nx, 1,ny, 1,            iz_async, LBM_async_z)
-        call kernel_even_color(1,nx, 1,ny, nz-iz_async+1,nz      , LBM_async_z)
-#endif
-#ifdef y_mpi  
-        call kernel_even_color(1,nx, 1,             iy_async, iz_async+1,nz-iz_async, LBM_async_y)
-        call kernel_even_color(1,nx, ny-iy_async+1, ny,       iz_async+1,nz-iz_async, LBM_async_y)
-#endif  
-! #ifdef x_mpi  
-!         call kernel_even_color(1,            ix_async, iy_async+1,ny-iy_async, iz_async+1,nz-iz_async, LBM_async_x)
-!         call kernel_even_color(nx-ix_async+1,nx,       iy_async+1,ny-iy_async, iz_async+1,nz-iz_async, LBM_async_x)
-! #endif    
+        if(mpi_z)then
+            call kernel_even_color(1,nx, 1,ny, 1,            iz_async, LBM_async_z)
+            call kernel_even_color(1,nx, 1,ny, nz-iz_async+1,nz      , LBM_async_z)
+        endif
+
+        if(mpi_y)then 
+            call kernel_even_color(1,nx, 1,             iy_async, iz_async+1,nz-iz_async, LBM_async_y)
+            call kernel_even_color(1,nx, ny-iy_async+1, ny,       iz_async+1,nz-iz_async, LBM_async_y)
+        endif  
+        ! if(mpi_x)then 
+        !     call kernel_even_color(1,            ix_async, iy_async+1,ny-iy_async, iz_async+1,nz-iz_async, LBM_async_x)
+        !     call kernel_even_color(nx-ix_async+1,nx,       iy_async+1,ny-iy_async, iz_async+1,nz-iz_async, LBM_async_x)
+        ! endif    
 
 
-! MPI enabled
-#if defined(z_mpi)||defined(y_mpi)||defined(x_mpi)   
-        call mpi_pdf_pull_async_pack
-        call mpi_phi_async_pack
-        !$acc wait(LBM_async_z,LBM_async_y,LBM_async_x)
+        ! MPI enabled
+        if(mpi_x.or.mpi_y.or.mpi_z)then  
+            call mpi_pdf_pull_async_pack
+            call mpi_phi_async_pack
+            !$acc wait(LBM_async_z,LBM_async_y,LBM_async_x)
 #ifdef _openacc
-        call kernel_even_color(ix_async+1,nx-ix_async,iy_async+1,ny-iy_async,iz_async+1,nz-iz_async, LBM_async)
-        call mpi_send_req
+            call kernel_even_color(ix_async+1,nx-ix_async,iy_async+1,ny-iy_async,iz_async+1,nz-iz_async, LBM_async)
+            call mpi_send_req
 #else
-        call mpi_send_req
-        call kernel_even_color(ix_async+1,nx-ix_async,iy_async+1,ny-iy_async,iz_async+1,nz-iz_async, LBM_async)
+            call mpi_send_req
+            call kernel_even_color(ix_async+1,nx-ix_async,iy_async+1,ny-iy_async,iz_async+1,nz-iz_async, LBM_async)
 #endif
-        call mpi_pdf_pull_sync_update
-        call mpi_phi_sync_update
-        !$acc wait
+            call mpi_pdf_pull_sync_update
+            call mpi_phi_sync_update
+            !$acc wait
 
-! MPI disabled
-#else
+        ! MPI disabled
+        else
 
-        call kernel_even_color(1,nx,1,ny,1,nz, LBM_async)
-        !$acc wait
-#endif
+            call kernel_even_color(1,nx,1,ny,1,nz, LBM_async)
+            !$acc wait
+        endif
 
         !~~~~~~~~~~~~~~~ overlapped communication and computation ~~~~~~~~~~~~~~~~~
 
@@ -420,42 +421,42 @@ subroutine main_iteration_kernel
         !************************** odd step *****************************************
 
         !~~~~~~~~~~~~~~~ overlapped communication and computation ~~~~~~~~~~~~~~~~~
-#ifdef z_mpi  
-        call kernel_odd_color(1,nx, 1,ny, 1,            iz_async, LBM_async_z)
-        call kernel_odd_color(1,nx, 1,ny, nz-iz_async+1,nz      , LBM_async_z)
-#endif
-#ifdef y_mpi  
-        call kernel_odd_color(1,nx, 1,             iy_async, iz_async+1,nz-iz_async, LBM_async_y)
-        call kernel_odd_color(1,nx, ny-iy_async+1, ny,       iz_async+1,nz-iz_async, LBM_async_y)
-#endif  
-! #ifdef x_mpi  
-!         call kernel_odd_color(1,            ix_async, iy_async+1,ny-iy_async, iz_async+1,nz-iz_async, LBM_async_x)
-!         call kernel_odd_color(nx-ix_async+1,nx,       iy_async+1,ny-iy_async, iz_async+1,nz-iz_async, LBM_async_x)
-! #endif 
+        if(mpi_z)then
+            call kernel_odd_color(1,nx, 1,ny, 1,            iz_async, LBM_async_z)
+            call kernel_odd_color(1,nx, 1,ny, nz-iz_async+1,nz      , LBM_async_z)
+        endif
+        if(mpi_y)then
+            call kernel_odd_color(1,nx, 1,             iy_async, iz_async+1,nz-iz_async, LBM_async_y)
+            call kernel_odd_color(1,nx, ny-iy_async+1, ny,       iz_async+1,nz-iz_async, LBM_async_y)
+        endif  
+        !if(mpi_x)then 
+        !   call kernel_odd_color(1,            ix_async, iy_async+1,ny-iy_async, iz_async+1,nz-iz_async, LBM_async_x)
+        !   call kernel_odd_color(nx-ix_async+1,nx,       iy_async+1,ny-iy_async, iz_async+1,nz-iz_async, LBM_async_x)
+        !endif 
 
-! MPI enabled
-#if defined(z_mpi)||defined(y_mpi)||defined(x_mpi)   
-        call mpi_pdf_push_async_pack
-        call mpi_phi_async_pack
-        !$acc wait(LBM_async_z,LBM_async_y,LBM_async_x)
+    ! MPI enabled
+        if(mpi_x.or.mpi_y.or.mpi_z)then  
+            call mpi_pdf_push_async_pack
+            call mpi_phi_async_pack
+            !$acc wait(LBM_async_z,LBM_async_y,LBM_async_x)
 #ifdef _openacc
-        call kernel_odd_color(ix_async+1,nx-ix_async,iy_async+1,ny-iy_async,iz_async+1,nz-iz_async, LBM_async)
-        call mpi_send_req
+            call kernel_odd_color(ix_async+1,nx-ix_async,iy_async+1,ny-iy_async,iz_async+1,nz-iz_async, LBM_async)
+            call mpi_send_req
 #else
-        call mpi_send_req
-        call kernel_odd_color(ix_async+1,nx-ix_async,iy_async+1,ny-iy_async,iz_async+1,nz-iz_async, LBM_async)
+            call mpi_send_req
+            call kernel_odd_color(ix_async+1,nx-ix_async,iy_async+1,ny-iy_async,iz_async+1,nz-iz_async, LBM_async)
 #endif
 
-        call mpi_pdf_push_sync_update
-        call mpi_phi_sync_update       
-        !$acc wait
+            call mpi_pdf_push_sync_update
+            call mpi_phi_sync_update       
+            !$acc wait
 
-! MPI disabled
-#else
+        ! MPI disabled
+        else
 
-        call kernel_odd_color(1,nx,1,ny,1,nz, LBM_async)
-        !$acc wait
-#endif
+            call kernel_odd_color(1,nx,1,ny,1,nz, LBM_async)
+            !$acc wait
+        endif
         !~~~~~~~~~~~~~~~ overlapped communication and computation ~~~~~~~~~~~~~~~~~
 
         !%%%%%%%%%%%%%%%% boundary conditions %%%%%%%%%%%%%%%%%%%

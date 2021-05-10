@@ -286,7 +286,9 @@ subroutine read_walls
     include 'mpif.h'
     integer :: i,j,k,L,M,N
     character (len=300) :: dummy
+    integer :: error_signal  
 
+    error_signal = 0
     if(id==0)then
         OPEN(UNIT=11,FILE='./path_info.txt',action='READ')
         read(11,'(A)')dummy
