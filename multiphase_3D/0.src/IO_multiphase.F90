@@ -452,6 +452,9 @@ subroutine read_parameter_multi
 
     sa_target = A(20)
 
+
+
+
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ check correctness of input parameters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     if(id0==0)then     
         print*, '************ Start checking correctness of input parameters ******************'
@@ -473,10 +476,6 @@ subroutine read_parameter_multi
     endif
     if(jper==0.and.(domain_wall_status_y_max==0.or.domain_wall_status_y_min==0))then
         if(id0==0)print*,'Error: non-slip BC not applied at y = ymin or y = ymax while y direction periodic BC not enabled! Exiting program!'
-        error_signal = 1 
-    endif
-    if(kper==0.and.(domain_wall_status_z_max==0.or.domain_wall_status_z_min==0))then
-        if(id0==0)print*,'Error: non-slip BC not applied at z = zmin or z = zmax while z direction periodic BC not enabled! Exiting program!'
         error_signal = 1 
     endif
     if(jper==1.and.(domain_wall_status_y_max==1.or.domain_wall_status_y_min==1))then
@@ -501,6 +500,9 @@ subroutine read_parameter_multi
 
     ! this code has temporary disabled all X direction MPI communication
     mpi_x = .false.   
+    if(ix_async/=0)then
+        ix_async=0
+    endif 
     ! npy > 1 or y direction periodic BC
     if(npy>1 .or. jper==1)then
         mpi_y = .true.
@@ -510,6 +512,11 @@ subroutine read_parameter_multi
         else
             if(id0==0)print*, 'MPI communication along y direction is enabled.' 
         endif
+    else
+        mpi_y = .false.  
+        if(iy_async/=0)then
+            iy_async=0
+        endif 
     endif
     ! npz > 1 or z direction periodic BC
     if(npz>1 .or. kper==1)then
@@ -520,6 +527,11 @@ subroutine read_parameter_multi
         else
             if(id0==0)print*, 'MPI communication along z direction is enabled.' 
         endif
+    else
+        mpi_z = .false.  
+        if(iz_async/=0)then
+            iz_async=0
+        endif 
     endif
 
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -528,6 +540,9 @@ subroutine read_parameter_multi
         if(id0==0)print*,'Inlet/outlet boundary condition error: Inlet pressure + outlet convective BC is not supported! Exiting program!'
         error_signal = 1 
     endif
+
+
+
 
     if(error_signal==1)then
         call MPI_Barrier(MPI_COMM_WORLD,ierr)
@@ -539,6 +554,7 @@ subroutine read_parameter_multi
             print*,''
         endif
     endif
+    !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ check correctness of input parameters ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     return
 end subroutine read_parameter_multi
