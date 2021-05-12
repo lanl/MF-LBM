@@ -106,8 +106,9 @@ The computational performance benchmarking of MF-LBM was done on LANL Darwin tes
 
 Scaling up performance benchmarking is to show the scalability of the code. 
 
-<img src="images/v100_scaling
-.png" alt="drawing" width="900"/>
+<img src="images/v100_scaling.png" alt="drawing" width="900"/>
+
+<br/>
 
 ### Citing MF-LBM
 Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects during the process of supercritical CO2 displacing brine in a sandstone: Lattice Boltzmann simulations based on the continuum‐surface‐force and geometrical wetting models. Water Resources Research, 55, 11144– 11165. https://doi.org/10.1029/2019WR025746
