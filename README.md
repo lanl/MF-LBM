@@ -31,6 +31,7 @@
         <ul>
           <li><a href="#citing-mf-lbm">Citing MF-LBM</a></li>
         </ul>
+    <li><a href="#performance-benchmarking">Performance Benchmarking</a></li>
     <li><a href="#build-instructions">Build Instructions</a></li>
         <ul>
           <li><a href="#prerequisites">Prerequisites</a></li>
@@ -93,6 +94,20 @@ The code is written on Fortran 90 and employs MPI-OpenACC/OpenMP hybrid programi
 * The AA pattern streaming method is employed to significantly reduce memory access and memory consumption.
 * The structure of arrays (SoA) data layout is used to achieve coalesced memory access and maximize vectorization.
 * Communication and computation is overlapped to achieve good parallel efficiency, particularly for heterogenous computing platforms.
+
+<br/>
+
+## Performance Benchmarking
+The computational performance benchmarking of MF-LBM was done on LANL Darwin testbed machine. 
+
+[Single node/card performance benchmarking](test_suites/3D_simulation/6.performance_benchmarking/) is to show the portability of the code.  
+
+<img src="images/single_node_perf.png" alt="drawing" width="900"/>
+
+Scaling up performance benchmarking is to show the scalability of the code. 
+
+<img src="images/v100_scaling
+.png" alt="drawing" width="900"/>
 
 ### Citing MF-LBM
 Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects during the process of supercritical CO2 displacing brine in a sandstone: Lattice Boltzmann simulations based on the continuum‐surface‐force and geometrical wetting models. Water Resources Research, 55, 11144– 11165. https://doi.org/10.1029/2019WR025746
@@ -288,6 +303,23 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./irun.sh new
    ```
    This example simulates body force driven fractional flow for steady state relative permeability measurement, using external rock geometry file and corresponding pre-computed boundary info file. 
+
+* [`Performance benchmarking`](test_suites/3D_simulation/6.performance_benchmarking)
+   ```sh
+  # The geometry file is created from pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat). The boundary info file need to be created use the wall_boundary_preprocess code (preprocessing/3.wall_boundary_preprocess)
+   cd path-to-MF-LBM/preprocessing/3.wall_boundary_preprocess
+   ./compile.sh
+   ./a.out
+
+   cd working_directory
+   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
+   # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
+  # specify the geometry file and solid-boundary-info file paths on config.sh
+   your-preferred-editor config.sh
+   ./config_sim.sh    
+   ./irun.sh new
+   ```
+   This example is identical to the previous [example](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed) except the benchmarking command is enabled in the [configuration file](test_suites/3D_simulation/6.performance_benchmarking/config.sh). The simulation will run 100 time steps and give the computational performance in MLUPS (million lattices update per second). Due to the size of the sample, this example is recommended for benchmarking performance on a single computing node or GPU card. 
 
 ### Output files
 Three output directories will be generated:
