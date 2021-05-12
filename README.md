@@ -95,7 +95,12 @@ The code is written on Fortran 90 and employs MPI-OpenACC/OpenMP hybrid programi
 * The structure of arrays (SoA) data layout is used to achieve coalesced memory access and maximize vectorization.
 * Communication and computation is overlapped to achieve good parallel efficiency, particularly for heterogenous computing platforms.
 
+### Citing MF-LBM
+Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects during the process of supercritical CO2 displacing brine in a sandstone: Lattice Boltzmann simulations based on the continuum‐surface‐force and geometrical wetting models. Water Resources Research, 55, 11144– 11165. https://doi.org/10.1029/2019WR025746
+
 <br/>
+
+
 
 ## Performance Benchmarking
 The computational performance benchmarking of MF-LBM was done on LANL Darwin testbed machine. 
@@ -109,9 +114,6 @@ Scaling up performance benchmarking is to show the scalability of the code.
 <img src="images/v100_scaling.png" alt="drawing" width="900"/>
 
 <br/>
-
-### Citing MF-LBM
-Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects during the process of supercritical CO2 displacing brine in a sandstone: Lattice Boltzmann simulations based on the continuum‐surface‐force and geometrical wetting models. Water Resources Research, 55, 11144– 11165. https://doi.org/10.1029/2019WR025746
 
 <br/>
 
