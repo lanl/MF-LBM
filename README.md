@@ -282,7 +282,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ```sh
    # The geometry file is created from pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat)
    cd working_directory
-   cp path-to-MF-LBM/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
+   cp path-to-MF-LBM/test_suites/3D_simulation/4.imbibition_external_geometry/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
    your-preferred-editor config.sh
    ./config.sh    
@@ -298,7 +298,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./a.out
 
    cd working_directory
-   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
+   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
   # specify the geometry file and solid-boundary-info file paths on config.sh
    your-preferred-editor config.sh
@@ -315,7 +315,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./a.out
 
    cd working_directory
-   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
+   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/6.performance_benchmarking/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
   # specify the geometry file and solid-boundary-info file paths on config.sh
    your-preferred-editor config.sh
