@@ -103,7 +103,7 @@ Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects 
 
 
 ## Performance Benchmarking
-The computational performance benchmarking of MF-LBM was done on LANL Darwin testbed machine. 
+The computational performance benchmarking of MF-LBM was done on the LANL Darwin testbed machine. 
 
 [Single node/card performance benchmarking](test_suites/3D_simulation/6.performance_benchmarking/) is to show the portability of the code.  
 
@@ -115,7 +115,6 @@ Scaling up performance benchmarking is to show the scalability of the code.
 
 <br/>
 
-<br/>
 
 <!-- Build Instructions -->
 ## Build Instructions
@@ -146,22 +145,22 @@ Scaling up performance benchmarking is to show the scalability of the code.
    ```
    1. CPU version
         ```sh
-        # Make necessary changes to makefile:
+        # Make necessary changes to the makefile:
         # Choose CPU as the architecture option.
-        # Choose proper compiler.
+        # Choose a proper compiler.
         # Enabling OpenMP is recommended.
-        # See instructions in makefile for more information.  
+        # See instructions in the makefile for more information.  
         your-preferred-editor makefile
         make
         # MF_LBM.cpu will be generated
         ```
     1. GPU version
         ```sh
-        # Make necessary changes to makefile:
+        # Make necessary changes to the makefile:
         # Choose GPU as the architecture option.
-        # Choose PGI compiler.
+        # Choose the PGI compiler (recommended for NVIDIA GPU).
         # OpenMP must be disabled.
-        # See instruction in makefile for more information.  
+        # See instruction in the makefile for more information.  
         your-preferred-editor makefile
         # Make sure to enable OpenACC in preprocessor.  
         your-preferred-editor 0.src/preprocessor.h  
@@ -170,11 +169,11 @@ Scaling up performance benchmarking is to show the scalability of the code.
         ```
     2. MIC (Intel Xeon Phi) version
         ```sh
-        # Make necessary changes to makefile:
+        # Make necessary changes to the makefile:
         # Choose MIC as the architecture option.
-        # Choose proper compiler.
-        # OpenMP and AVX512 must be enabled for MIC version.
-        # See instructions in makefile for more information.    
+        # Choose a proper compiler (Intel compiler is recommended).
+        # OpenMP and AVX512 must be enabled for the MIC version.
+        # See instructions in the makefile for more information.    
         your-preferred-editor makefile     
         make
         # MF_LBM.mic will be generated
@@ -191,11 +190,11 @@ Scaling up performance benchmarking is to show the scalability of the code.
       
       # If OpenMP is enabled (recommended for CPU, MIC, and ARM platform), then run the following command:
       # export OMP_NUM_THREADS=n
-      # , where n is recommended to be the core count of the UMA domain of the CPU.
+      # , where n is recommended to be the core or thread count of the UMA domain of the CPU.
 
       # At least one MPI rank per UMA domain is recommended.
 
-      # For GPU platform, MPI process number should be the total number of GPUs: one MPI rank per GPU.
+      # For GPU platform, number of MPI processes should equal to the total number of GPUs: one MPI rank per GPU.
       ```
 5. Run the program
    ```sh
@@ -215,7 +214,7 @@ Scaling up performance benchmarking is to show the scalability of the code.
    ./compile.sh
    ./a.out
    ```
-  This example converts [rock_sample_text_images](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240) to single wall array stored in binary format. No cropping and modification of the rock geometry are made. Loading binary wall array is much faster than large number of text images. This shall be the first step to read in text images before further modification.
+  This example converts [rock_sample_text_images](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_textimage/bentheimer_oregon_state_240) to a single wall array stored in binary format. No cropping and modification of the rock geometry are made. Loading a binary wall array is much faster than loading large number of text images. This shall be the first step to read in text images before further modification.
 
 * [`create geometry`](preprocessing/1.create_geometry_to_WallArray)
   ```sh
@@ -239,10 +238,10 @@ Scaling up performance benchmarking is to show the scalability of the code.
   ./compile.sh
   ./a.out
   ```
-  This example reads in the processed wall array file [rock_sample_wall_array_processed](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_wallarray), computes the normal directions of all solid boundary nodes and stores the boundary information in binary format that can be used in the main flow simulation code. Read  [compile.sh](preprocessing/3.wall_boundary_preprocess/compile.sh) for compiler information (extremely important) for this example. The same boundary info calculation can be completed in the main flow simulation code ([Geometry_preprocessing.F90](multiphase_3D/0.src/Boundary_multiphase_outlet.F90)). However, it is recommended to perform the boundary info calculation before the main simulation and load the boundary info from external file to the main simulation, when the rock sample is relatively large.
+  This example reads in the processed wall array file [rock_sample_wall_array_processed](https://github.com/lanl/MF-LBM-extFiles/tree/main/geometry_files/sample_rock_geometry_wallarray), computes the normal directions of the solid surface on all solid boundary nodes and stores the boundary information in binary format which can be later loaded into the main flow simulation program. Read  [compile.sh](preprocessing/3.wall_boundary_preprocess/compile.sh) for the compiler information (extremely important) for this example. The same boundary info calculation can be completed in the main flow simulation code ([Geometry_preprocessing.F90](multiphase_3D/0.src/Boundary_multiphase_outlet.F90)). However, when the rock sample is relatively large, it is recommended to perform the boundary info calculation before the main simulation and load the boundary info from the external file into the main simulation. 
 
 ### The main simulation code
-Check out [template-simulation_control.txt](multiphase_3D/run_template/template-config.sh) for more information regarding simulation control. The units used in the simulation control file are all lattice unit. One can control capillary number, contact angle, absolute values of surface tension and viscosities to link the simulation with physical system. In particular, the absolute values of surface tension and viscosities will affect Reynolds number even when the capillary number is fixed. The Ohnesorge number is recommended to control the parameters when inertial effects are not negligible [2].
+Check out [template-simulation_control.txt](multiphase_3D/run_template/template-config.sh) for more information regarding simulation control. The units used in the simulation control file are all lattice units. One can control capillary number, contact angle, absolute values of surface tension and viscosities to link the simulation with a physical system. In particular, the absolute values of surface tension and viscosities will affect Reynolds number even when the capillary number is fixed. The Ohnesorge number is recommended to control the parameters when inertial effects are not negligible [2].
 
 * [`Contact angle measurement`](test_suites/3D_simulation/1.drop_attached_wall)
    ```sh
@@ -280,7 +279,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
 
 * [`Imbibition in a real rock sample using external rock geometry file`](test_suites/3D_simulation/4.imbibition_external_geometry)
    ```sh
-   # The geometry file is created from pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat)
+   # The geometry file is created from the pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat)
    cd working_directory
    cp path-to-MF-LBM/test_suites/3D_simulation/4.imbibition_external_geometry/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
@@ -288,11 +287,11 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates wetting fluid2 displacing nonwetting fluid1 in a real rock sample using external rock geometry file. Simulation stops one pore-volume fluid2 is injcted.
+   This example simulates wetting fluid2 displacing nonwetting fluid1 in a real rock sample using external rock geometry file. Simulation stops when one pore-volume fluid2 is injected.
 
 * [`Steady state relative permeability measurement`](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed)
    ```sh
-  # The geometry file is created from pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat). The boundary info file need to be created use the wall_boundary_preprocess code (preprocessing/3.wall_boundary_preprocess)
+  # The geometry file is created from the pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat). The boundary info file need to be created use the wall_boundary_preprocess code (preprocessing/3.wall_boundary_preprocess)
    cd path-to-MF-LBM/preprocessing/3.wall_boundary_preprocess
    ./compile.sh
    ./a.out
@@ -300,7 +299,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    cd working_directory
    cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
-  # specify the geometry file and solid-boundary-info file paths on config.sh
+   # specify the paths of the geometry file and solid-boundary-info file on config.sh
    your-preferred-editor config.sh
    ./config_sim.sh    
    ./irun.sh new
@@ -317,36 +316,41 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    cd working_directory
    cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/6.performance_benchmarking/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
-  # specify the geometry file and solid-boundary-info file paths on config.sh
+   # specify the paths of the geometry file and solid-boundary-info file on config.sh
    your-preferred-editor config.sh
    ./config_sim.sh    
    ./irun.sh new
    ```
-   This example is identical to the previous [example](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed) except the benchmarking command is enabled in the [configuration file](test_suites/3D_simulation/6.performance_benchmarking/config.sh). The simulation will run 100 time steps and give the computational performance in MLUPS (million lattices update per second). Due to the size of the sample, this example is recommended for benchmarking performance on a single computing node or GPU card. 
+   This example is identical to the previous [example](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed) except that the benchmarking command is enabled in [configuration file](test_suites/3D_simulation/6.performance_benchmarking/config.sh). The simulation will run 100 time steps and give the computational performance in MLUPS (million lattices update per second). Due to the size of the sample, this example is recommended for benchmarking performance on a single computing node or GPU card. 
 
 ### Output files
-Three output directories will be generated:
+Three output directories will be created:
 * out1.output: bulk properties (i.e., saturation, flow rate) against time. See [Monitor.F90](multiphase_3D/0.src/Monitor.F90) for more information.
 * out2.checkpoint: checkpoint data used to restart simulation. See [IO_multiphase.F90](multiphase_3D/0.src/IO_multiphase.F90) for more information.
-* out3.field_data: legacy vtk files for flow analysis. See [IO_multiphase.F90](multiphase_3D/0.src/IO_multiphase.F90) for more information. For extremely large simulation (extreme_large_sim_cmd=1 in [template-simulation_control.txt](multiphase_3D/run_template/template-simulation_control.txt)), distributed flow field data will be stored for performance consideration. [Post-processing code](postprocessing/exteme_large_sim_parallel_IO) is provided to process those distributed data.
+* out3.field_data: legacy vtk files for flow analysis. See [IO_multiphase.F90](multiphase_3D/0.src/IO_multiphase.F90) for more information. For extremely large simulation (extreme_large_sim_cmd=1 in [template-simulation_control.txt](multiphase_3D/run_template/template-simulation_control.txt)), distributed flow field data will be stored for performance consideration. [Post-processing code](postprocessing/exteme_large_sim_parallel_IO) is provided to process those distributed data. 
 
 <br/>
 
 ## Important Notes
-* Contact angle
+* Best practice of running MF-LBM on different platforms:
+  1. AVX512 is recommended to be enabled for Intel CPUs that support AVX512. AVX512 must be enabled for Intel Xeon Phi processors.
+  2. Multithreading generally improves performance for this code. However, for small probelms, if there are already many CPU cores (i.e., an AMD 64-core CPU), multithreading many not bring any benefits. 
+  3. GPUs require a high degree of parallelism, where a small domain problem may not utilize the full potential of a GPU. Recommended domain size per GPU: from $200^3$ until GPU memory full. 
+
+* Contact angle:
   
   The contact angle in the control file must be less or equal to 90 degrees due to the particular numerical scheme used, meaning that fluid1 and fluid2 will always be the nonwetting phase and wetting phase, respectively. [Drainage](test_suites/3D_simulation/2.drainage) and [imbibition](test_suites/3D_simulation/4.imbibition_external_geometry) can be completed by injecting fluid1 and fluid2 respectively.
 
-* Run command
+* Run command:
   
-  Several sample run commands are listed in [template-config.sh](multiphase_3D/run_template/template-config.sh). This code employs MPI-OpenMP hybrid programing model for the non-GPU version, where memory affinity on NUMA architectures is very important to achieve expected performance. One should avoid using OpenMP on NUMA domains by using one or more MPI ranks per UMA domain and setting appropriate socket/NUMA affinity in OpenMPI (or other MPI implementations). Number of threads in OpenMP should not exceed the core count or thread count (if multithreading is enabled) of corresponding UMA. 
+  Several sample run commands are listed in [template-config.sh](multiphase_3D/run_template/template-config.sh). This code employs MPI-OpenMP hybrid programing model for the non-GPU versions, where memory affinity on NUMA architectures is very important to achieve expected performance. One should use one or more MPI ranks per UMA domain to avoid OpenMP parallelization across NUMA domains, and set appropriate socket/NUMA affinity in OpenMPI (or other MPI implementations). Number of threads in OpenMP should not exceed the core count or thread count (if multithreading is enabled) of corresponding UMA. 
 
-* Domain decomposition
+* Domain decomposition:
 
   Domain decomposition along X direction is no longer supported in the main simulation code for the moment, due to the consideration of non-vectorized data packing and halo area computation. Domain decompositions along Y and Z direction are usually sufficient as single MPI rank corresponds to tens of CPU cores or a full GPU.
 
 
-* GCC10 compiler issue
+* GCC10 compiler issue:
   
   Building the code with GCC10 may show error messages like 
   >Type mismatch between actual argument at (1) and actual argument at (2)
@@ -369,6 +373,8 @@ This program was produced under U.S. Government contract 89233218CNA000001 for L
 ## Contact
 
 Dr. Yu Chen - yu_chen_007@outlook.com
+
+[MF-LBM-live](https://github.com/ychen-hpc/MF-LBM-live) which is forked from this repo will be used to develop new features by Dr. Yu Chen.
 
 Dr. Qinjun Kang - qkang@lanl.gov
 
