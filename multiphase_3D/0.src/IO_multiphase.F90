@@ -685,58 +685,10 @@ subroutine save_macro(nt)
     use Fluid_singlephase
     use mpi_variable
     IMPLICIT NONE
-    integer :: num,nt
-    integer :: i,j,k
+    integer :: i,j,k, nt
     character (len=30) :: flnm  !file name
-    integer*1 ::   wall_indicator
-    real(kind=8) :: ft0,ft1,ft2,ft3,ft4,ft5,ft6,ft7,ft8,ft9,ft10,ft11,ft12,ft13,ft14,ft15,ft16,ft17,ft18,fx,fy,fz,tmp
-
-    !$OMP parallel DO private(i,j,ft0,ft1,ft2,ft3,ft4,ft5,ft6,ft7,ft8,ft9,ft10,ft11,ft12,ft13,ft14,ft15,ft16,ft17,ft18,wall_indicator,tmp,fx,fy,fz)
-    !$acc kernels present(phi,f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,g0,g1,g2,g3,g4,g5,g6,g7,g8,g9,g10,g11,g12,g13,g14,g15,g16,g17,g18,cn_x,cn_y,cn_z,c_norm,u,v,w,rho,walls)
-    !$acc loop collapse(3) device_type(NVIDIA)
-    do k=1,nz
-        do j=1,ny
-            do i=1,nx
-                wall_indicator = walls(i,j,k)
-                ft0 = f0(i,j,k) + g0(i,j,k)
-                ft1  = f1(i,j,k) + g1(i,j,k)
-                ft2  = f2(i,j,k) + g2(i,j,k)
-                ft3  = f3(i,j,k) + g3(i,j,k)
-                ft4  = f4(i,j,k) + g4(i,j,k)
-                ft5  = f5(i,j,k) + g5(i,j,k)
-                ft6  = f6(i,j,k) + g6(i,j,k)
-                ft7  = f7(i,j,k) + g7(i,j,k)
-                ft8  = f8(i,j,k) + g8(i,j,k)
-                ft9  = f9(i,j,k) + g9(i,j,k)
-                ft10  = f10(i,j,k) + g10(i,j,k)
-                ft11  = f11(i,j,k) + g11(i,j,k)
-                ft12  = f12(i,j,k) + g12(i,j,k)
-                ft13  = f13(i,j,k) + g13(i,j,k)
-                ft14  = f14(i,j,k) + g14(i,j,k)
-                ft15  = f15(i,j,k) + g15(i,j,k)
-                ft16  = f16(i,j,k) + g16(i,j,k)
-                ft17  = f17(i,j,k) + g17(i,j,k)
-                ft18  = f18(i,j,k) + g18(i,j,k)
-
-                rho(i,j,k)=(ft0+ft1+ft2+ft3+ft4+ft5+ft6+ft7+ft8+ft9+ft10+ft11+ft12+ft13+ft14+ft15+ft16+ft17+ft18)* (1-wall_indicator)
-
-                tmp = 0.5d0*gamma*curv(i,j,k)*c_norm(i,j,k)
-                fx = tmp*cn_x(i,j,k)
-                fy = tmp*cn_y(i,j,k)
-                fz = tmp*cn_z(i,j,k)
-
-                !here "- 0.5fx" is due to that PDFs are after even step, which is post collision before streaming
-                !to use the post collision PDFs to calculate the velocities, one must substruct the forcing terms applied during collision step
-                !thus the fomular is u = f...f + 0.5fx - fx = f...f - 0.5fx
-                u(i,j,k)=  (ft1 - ft2 + ft7 - ft8 + ft9 - ft10 + ft11 - ft12 + ft13 - ft14 - 0.5d0*fx)* (1-wall_indicator)
-                v(i,j,k)=  (ft3 - ft4 + ft7 + ft8 - ft9 - ft10 + ft15 - ft16 + ft17 - ft18 - 0.5d0*fy)* (1-wall_indicator)
-                w(i,j,k)=  (ft5 - ft6 + ft11+ ft12- ft13- ft14 + ft15 + ft16 - ft17 - ft18 - 0.5d0*fz)* (1-wall_indicator)
-
-                phi(i,j,k)=0d0*wall_indicator + phi(i,j,k)*(1-wall_indicator)
-            enddo
-        enddo
-    enddo
-    !$acc end kernels
+    
+    call compute_macro_vars
 
     !$acc update host(u,v,w,phi,rho)
 

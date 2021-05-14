@@ -123,12 +123,18 @@ program main_multiphase
 
     if(trim(job_status)=='new_simulation')then
         saturation_old = saturation
-        if(extreme_large_sim_cmd==0)then  ! initial distribution
-            call VTK_legacy_writer_3D(ntime, 2)
-        else
-            ! parallel I/O, distributed files, require post processing
-            ! should be replaced by parallel version of VTK in the future
-            call save_phi(ntime)   
+        if(benchmark_cmd==0)then
+            if(extreme_large_sim_cmd==0)then  ! initial distribution
+                ! vtk_type 1: full flow field info for detailed analysis 
+                ! vtk_type 2: phase field info, with single precision to save space
+                ! vtk_type 3: force vectors from the CSF model
+                call VTK_legacy_writer_3D(ntime, 2)
+                call VTK_walls_bin
+            else
+                ! parallel I/O, distributed files, require post processing
+                ! should be replaced by parallel version of VTK in the future
+                call save_phi(ntime)   
+            endif
         endif
     elseif(trim(job_status)=='continue_simulation')then
         saturation_old = -1d0    ! a negative value, in order to avoid convergence check at the first step after reading old data
@@ -137,13 +143,6 @@ program main_multiphase
     if(id==0)then
         write(*,"(1X,'Initial saturation: ', F6.4)") saturation_full_domain
     endif
-
-
-    ! vtk_type 1: full flow field info for detailed analysis 
-    ! vtk_type 2: phase field info, with single precision to save space
-    ! vtk_type 3: force vectors from the CSF model
-    ! call VTK_legacy_writer_3D(ntime, 2)  
-    call VTK_walls_bin
 
     if(id==0)print*,''
     !################################################################################################################################
@@ -546,7 +545,7 @@ subroutine benchmark
         write(*,"(1X,'Benchmarking ended successfully after ', I6, ' iterations')")ntime
     endif
 
-    call VTK_legacy_writer_3D(ntime, 2)
+    !call VTK_legacy_writer_3D(ntime, 2)
     
     return
 end subroutine benchmark
