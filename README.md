@@ -361,7 +361,7 @@ Three output directories will be created:
 
 <!-- LICENSE -->
 ## License
-Distributed under the BSD-3 License. See [LICENSE] for more information.
+Distributed under the BSD-3 License. See [LICENSE](LICENSE) for more information.
 
 © 2021. Triad National Security, LLC. All rights reserved.
 

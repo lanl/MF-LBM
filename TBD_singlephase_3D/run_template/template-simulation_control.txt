@@ -1,0 +1,239 @@
+#*********************************************************************************#
+#*          CONTROL FILE FOR MULTIPHASE FLOW SIMULATION IN MF-LBM                *#
+#*********************************************************************************#
+
+#=========================== simulation_status ====================================
+# value stored on job_status.txt                                      
+# new_simulation                - new simulation                                  
+# continue_simulation           - continue previous simulation               
+# simulation_done               - previous simulation is finished. stop              
+# simulation_failed             - previous simulation failed. stop    
+# simulation_reached_max_step   - previous simulation reached maximum step. stop    
+# else                          - wrong status. stop                                       
+
+#=========================== simulation setup =====================================
+#  Initial fluid distribution option: 
+#  1 - fluid1 (nonwetting phase) at inlet: drainage 
+#  2 - fluid2 (wetting phase) at inlet: imbibition 
+#  3 - a fluid1 (nonwetting phase) drop attached to y=1: contact angle measurement
+#  4 - a fluid2 (wetting phase) drop attached to y=1: contact angle measurement
+#  5 - a fluid1 drop located in the center of the domain: surface tension measurement
+#  6 - fluid1 and fluid2 raondomely distributed in the pore space with desired fluid1
+#      saturation: steady state relative perm measurement
+#  0 or else - error!                  
+initial_fluid_distribution_option 1
+
+# Benchmark_cmd: 
+# 0 - regular simulation
+# 1 - benchmarking simulation (obtain computational performance in MLUPS)
+benchmark_cmd 0
+
+# Necesssary modifications for extreme large simulations:
+# nxglobal*nyglobal*nzglobal may be too large.
+# parallel I/O for visualization files are needed.
+# recommended for grid points > 1 billion. 
+# 0 - no; 1 - yes 
+extreme_large_sim_cmd 0 
+
+# Breakthrough check option:
+# currently only works for drainage simulation by detecting nonwetting phase 
+# fluid1 near outlet. 
+# 0 - do not check; 1 - check
+breakthrough_check 0
+
+# Steady state option: 
+# 0 - non-steady state simulation (complete based on target injected PV or ntime_max)
+# 1 - steady state simulation (complete based on capillary pressure)
+# 2 - steady state simulation (complete based on phase field)
+# 3 - steady state simulation (complete based on saturation) 
+steady_state_option 0
+
+# Convergence_criteria:
+# used in steady state simulation. 
+# default is 1d-6, use 1d-4 or 1d-3 instead for steady-state-option 3 to reduce simulation
+# time and deal with fluctuation
+convergence_criteria 1d-6
+
+# Modify_geometry_cmd: 
+# 0 do not modify geometry; 1 modify geometry in the code (hard coding, Misc.F90) 
+modify_geometry_cmd 0
+
+# Use external geometry cmd:  
+# 0 - no; 1 - yes 
+external_geometry_read_cmd  0
+
+# Geometry preprocess cmd: 
+# 0 - process the geometry boundary infor during the simulation (not recommended for 
+# large simulations);
+# 1 - load external pre-processed geometry boundary info data
+geometry_preprocess_cmd 0
+
+# Option to save secondary backup checkpoint data (increase storage space): 
+# 0 - no; 1 - yes 
+# stored in a seperate location in case the default checkpoint data corrupted
+double_bak_checkpoint_pdf_cmd 1  
+
+# Place a porous plate along the flow direction: 
+# 0 - no; 1 - block fluid1; 2 - block fluid2
+# example 1: injecting fluid2 (wetting) during imbibition cycle and block fluid1 from 
+# exiting the inlet.
+# example 2: injecting fluid1 (nonwetting) during drainage cycle and block fluid1 from 
+# exiting the outlet.
+# This option should only be used when you fully understand how it works.
+porous_plate_cmd 0 
+
+# Location of the porous plate along flow direction (Z):
+# placing the porous plate a couple of lattices before or after rock sample is recommended.
+# example 1 (near outlet): Z_porous_plate = inlet_buffer_layers + nxsample + 2
+# example 2 (near inlet): Z_porous_plate = inlet_buffer_layers + 1 - 2
+# only effective when porous_plate_cmd = 1
+# This option should only be used when you fully understand how it works.
+Z_porous_plate 0
+
+# Change inlet fluid phase for Z < initial_interface_position:
+# 0 - do nothing
+# 1 - 100% fluid1
+# 2 - 100% fluid2
+# Use case: 
+# After the completion of the drainage simulation, one can use current fluid distribution
+# as the starting point to perform imbibition simulation. To reduce the simulation time, one
+# can eliminate unecessary fluid displacement in buffer zone and numerical artifacts from 
+# open boundary conditions by change the inlet fluid to pure fluid2 (wetting phase). 
+# This option should only be used when you fully understand how it works.
+change_inlet_fluid_phase_cmd 0 
+
+#=================================  geometry ======================================
+# Lattice dimensions nxGlobal, nyGlobal, nzGlobal, must be integral multiple of 
+# npx, npy and npz, respectively 
+lattice_dimensions 40,40,60
+
+# inlet/outlet zone excluded in the bulk properties calculation 
+# 1<=k<=n_exclude_inlet and nzglobal-n_exclude_outlet+1<=k<=nzglobal
+# does not affect simulation
+excluded_layers 10,10
+
+# domain_wall_status at xmin and xmax, status: 1 - wall; 0 - no wall
+domain_wall_status_x 1,1
+
+# domain_wall_status at ymin and ymax, status: 1 - wall; 0 - no wall
+domain_wall_status_y 1,1
+
+# default flow direction, domain_wall_status at ymin and ymax, status: 1 - wall; 0 - no wall
+domain_wall_status_z 0,0
+
+# periodic BC indicator, 1 periodic, 0 non-periodic
+# currently, x direction can not apply periodic BC
+periodic_indicator 0,0,0
+
+#===================================== MPI information ========================================
+# mpi process numbers along each axis: npx, npy, npz
+# x direction domain decomposition disabled: npx = 1
+MPI_process_num 1,1,2
+
+# Number of halo nodes used in overlaping computation and communication. 
+# x direction domain decomposition disabled and must be 0
+# This option should only be modified when you fully understand how it works.
+MPI_async_layers_num  0,4,4
+
+#=============================== fluid property ===================================
+# fluid viscosity
+fluid1_viscosity 0.004
+fluid2_viscosity 0.4
+
+# surface tension
+surface_tension 0.03
+
+# Contact angle (measured through fluid 2):
+# It should always be less than 90 degree due to the particular numerical scheme used in this
+# code to form desired contact angle. Therefore, fluid 1 is always the nonwetting phase, while 
+# fluid 2 is always the wetting phase.
+# Imbibition simulation can be performed by injecting fluid 2 instead of fluid 1
+theta 30
+
+# beta in RK recolor scheme - control the sharpness of the interface (from 0.9 to 0,95 is recommended)
+RK_beta 0.95
+
+#============================= injection conditions ===============================
+# inlet_BC selection (overridden by z (flow) direction periodic BC): 1-velocity; 2-pressure 
+inlet_BC 1
+# outlet_BC selection (overridden by z (flow) direction periodic BC): 1-convective; 2-pressure 
+outlet_BC 1
+
+# Injecting fluid saturation:
+# 1: pure fluid1 injection (drainage)
+# 0: pure fluid2 injection (imbibition) 
+# 0<sa<1: mixed injection 
+saturation_injection 1.0 
+
+# Option to stop simulation based on reaching target fluid injection:
+# It is enabled by modify ntime_max based on injection rate.
+# The value is in PV (pore-volume). 
+# It is not very precise considering LBM compressibility error.
+# A negative value will disable target_inject_pore_volume – simulation continues until existing ntime_max
+target_inject_pore_volume 1.0
+
+# Initial interface position along z direction or initial drop radius for drop test 
+initial_interface_position 8.0
+
+# Capillary number, based on viscosity of fluid1
+capillary_number 100d-6
+
+# initial value of body force or pressure gradient along z direction
+body_force_0 0d-6
+
+# Target fluid1 saturation: 
+# used in steady state relative permeability measurement
+# randomly distribute fluid1 and fluid2 with target fluid1 saturation
+target_fluid1_saturation 0.4
+
+#================================== timers ========================================
+# timer: max iterations, will be modified if target_inject_pore_volume > 0
+max_time_step 100000000
+
+# timer: max iterations for benchmarking 
+max_time_step_benchmark 100
+
+# timer: when to output detailed visualization data - overridden by d_vol_detail if d_vol_detail>0  
+ntime_visual 10000000
+
+# timer: when to output animation (phase info only) data - overridden by d_vol_animation if d_vol_animation>0 
+ntime_animation 2000
+
+# timer: when to output bulk property data - overridden by d_vol_monitor if d_vol_monitor>0 
+monitor_timer 1000
+
+# timer: when to output profile data along flow direction (Z)
+# monitor_profile_timer = monitor_profile_timer_ratio * monitor_timer 
+monitor_profile_timer_ratio 5
+
+# timer: gaps used to record computation time
+# it is also used to check the checkpoint data saving status
+computation_time_timer 1000
+
+# timer: when to display time steps
+display_steps_timer 1000
+
+# timer: interval to save checkpoint data based on wall clock time, in hours
+checkpoint_save_timer 2.0
+
+# timer: interval to save secondary checkpoint data based on wall clock time, in hours
+# only effective when double_bak_checkpoint_pdf_cmd = 1
+checkpoint_2rd_save_timer 5.5
+
+# timer: simulation duration in hours
+# save checkpoint data and exit program after simulation_duration_timer
+simulation_duration_timer 15.7
+
+
+# timer: when to output animation data - based on injected pore volume 
+# only effective for constant velocity BC, disabled if it is a negative value
+d_vol_animation 0.05
+
+# timer: when to output full field data - based on injected pore volume 
+# only effective for constant velocity BC, disabled if it is a negative value
+d_vol_detail -1.0
+
+# timer: when to output bulk property data - based on injected pore volume 
+# only effective for constant velocity BC, disabled if it is a negative value
+d_vol_monitor 0.01
+

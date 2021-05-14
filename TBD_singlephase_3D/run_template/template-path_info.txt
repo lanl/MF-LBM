@@ -1,0 +1,6 @@
+# executable location 
+exec_path_holder
+# geometry file
+geometry_file_path_holder
+# preprocessed boundary nodes info file of the corressponding above geometry file (if external_geometry_read_cmd = 1)
+geometry_boundary_file_path_holder
