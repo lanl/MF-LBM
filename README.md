@@ -50,6 +50,7 @@
           <li><a href="#output-files">Output files</a></li>
         </ul>
     <li><a href="#important-notes">Important Notes</a></li> 
+    <li><a href="#acknowledgements">Acknowledgements</a></li> 
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
   </ol>
@@ -321,7 +322,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config_sim.sh    
    ./irun.sh new
    ```
-   This example is identical to the previous [example](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed) except that the benchmarking command is enabled in [configuration file](test_suites/3D_simulation/6.performance_benchmarking/config.sh). The simulation will run 100 time steps and give the computational performance in MLUPS (million lattices update per second). Due to the size of the sample, this example is recommended for benchmarking performance on a single computing node or GPU card. 
+   This example is identical to the previous [example](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed) except that the benchmarking command is enabled in [configuration file](test_suites/3D_simulation/6.performance_benchmarking/config.sh). The simulation will run 100 time steps and give the computational performance in MLUPS (million lattices update per second). Due to the size of the sample, this example is suitable for benchmarking performance on a single computing node or GPU card. 
 
 ### Output files
 Three output directories will be created:
@@ -335,7 +336,7 @@ Three output directories will be created:
 * Best practice of running MF-LBM on different platforms:
   1. AVX512 is recommended to be enabled for Intel CPUs that support AVX512. AVX512 must be enabled for Intel Xeon Phi processors.
   2. Multithreading generally improves performance for this code. However, for small probelms, if there are already many CPU cores (i.e., an AMD 64-core CPU), multithreading many not bring any benefits. 
-  3. GPUs require a high degree of parallelism, where a small domain problem may not utilize the full potential of a GPU. Recommended domain size per GPU: from $200^3$ until GPU memory full. 
+  3. GPUs require a high degree of parallelism, where a small domain problem may not utilize the full potential of a GPU. Recommended domain size per GPU: from 200<sup>3</sup> until GPU memory full. 
 
 * Contact angle:
   
@@ -360,8 +361,16 @@ Three output directories will be created:
 <br/>
 
 <!-- LICENSE -->
+## Acknowledgements
+This work was supported by LANL's LDRD program and was supported as part of the Center for Geologic Storage of CO<sub>2</sub>, an Energy Frontier Research Center funded by
+the U.S. Department of Energy, Office of Science, Basic Energy Sciences, under Award DE-SC0C12504.
+
+
+<br/>
+
+<!-- LICENSE -->
 ## License
-Distributed under the BSD-3 License. See [LICENSE] for more information.
+Distributed under the BSD-3 License. See [LICENSE](LICENSE) for more information.
 
 © 2021. Triad National Security, LLC. All rights reserved.
 
@@ -384,8 +393,6 @@ Dr. Qinjun Kang - qkang@lanl.gov
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
-
-[LICENSE]: https://github.com/ychen-hpc/mf-lbm-dev/blob/master/LICENSE
 [1]: https://www.sciencedirect.com/science/article/abs/pii/S0169772217300645
 [2]: https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019WR025746
 [3]: https://agupubs.onlinelibrary.wiley.com/doi/full/10.1002/2016GL070304

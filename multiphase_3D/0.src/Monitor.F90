@@ -12,7 +12,7 @@ subroutine monitor
     include 'mpif.h'
     real(kind=8),allocatable,dimension(:) :: fl1_0,fl2_0,pre_0,mass1_0,mass2_0,vol1_0,vol2_0
     character (len=20) :: flnm,flnm1   !file name
-    integer :: i,j,k ,L,M,N,rank,status(MPI_STATUS_SIZE),out1,out2,out3, icount, itemp
+    integer :: i,j,k ,L,M,N,rank,status(MPI_STATUS_SIZE),o1,o2,o3, icount, itemp
     integer (kind=1) :: wall_indicator
     real(kind=8) :: umax,temp,mass,temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8,usq1,usq2
     real(kind=8) :: prek,fl1_avg,fl2_avg,fl_avg,tmp,fx,fy,fz,fl1_avg_whole,fl2_avg_whole,fl_avg_whole
@@ -132,16 +132,16 @@ subroutine monitor
         do rank = 1, np-1
             call mpi_recv(tk,tk_isize,MPI_DOUBLE_PRECISION,rank,600+rank,MPI_COMM_VGRID,status,ierr)
             CALL MPI_CART_COORDS(MPI_COMM_VGRID, rank, mpi_dim, mpi_coords, ierr)
-            out3=mpi_coords(3)
+            o3=mpi_coords(3)
             !$omp parallel do
             do k=1,nz
-                fl1_0(out3*nz+k)= fl1_0(out3*nz+k) + tk(k)
-                fl2_0(out3*nz+k)= fl2_0(out3*nz+k) + tk(nz+k)
-                vol1_0(out3*nz+k)= vol1_0(out3*nz+k) + tk(2*nz+k)
-                vol2_0(out3*nz+k)= vol2_0(out3*nz+k) + tk(3*nz+k)
-                mass1_0(out3*nz+k)= mass1_0(out3*nz+k) + tk(4*nz+k)
-                mass2_0(out3*nz+k)= mass2_0(out3*nz+k) + tk(5*nz+k)
-                pre_0(out3*nz+k)= pre_0(out3*nz+k) + tk(6*nz+k)
+                fl1_0(o3*nz+k)= fl1_0(o3*nz+k) + tk(k)
+                fl2_0(o3*nz+k)= fl2_0(o3*nz+k) + tk(nz+k)
+                vol1_0(o3*nz+k)= vol1_0(o3*nz+k) + tk(2*nz+k)
+                vol2_0(o3*nz+k)= vol2_0(o3*nz+k) + tk(3*nz+k)
+                mass1_0(o3*nz+k)= mass1_0(o3*nz+k) + tk(4*nz+k)
+                mass2_0(o3*nz+k)= mass2_0(o3*nz+k) + tk(5*nz+k)
+                pre_0(o3*nz+k)= pre_0(o3*nz+k) + tk(6*nz+k)
             enddo
             if(umax<tk(7*nz+1))then
                 umax=tk(7*nz+1)
