@@ -219,6 +219,7 @@ subroutine initialization_open_velocity_inlet_BC
         do i=1,nx
             x = idx*nx + i
             y = idy*ny + j
+            w_in(i,j) = 0d0
             if(x>1.and.x<nxGlobal.and.y>1.and.y<nyGlobal)then
                 w_in(i,j) = w_in_channel(dble(x-1)-0.5d0,dble(y-1)-0.5d0,n_vin,uin_avg,temp3)     !inlet velocity profile from analytical solution
                 !w(i,j,:)=w_in(i,j)      
