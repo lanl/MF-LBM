@@ -9,7 +9,7 @@ subroutine inlet_bounce_back_velocity_BC_before_odd    !before streaming type BC
     use mpi_variable
     IMPLICIT NONE
     integer :: i,j,k
-    real(kind=8) :: tmp1,tmp2
+    real(kind=8) :: tmp1
     integer(kind=1) :: wall_indicator
 
     if(idz==0)then

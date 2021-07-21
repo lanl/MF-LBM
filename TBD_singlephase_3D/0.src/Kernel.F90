@@ -34,7 +34,6 @@ subroutine kernel_odd(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
             do i=ixmin,ixmax
                 !branch treatment, do not perform collision on wall nodes
                 wall_indicator = walls(i,j,k)
-        
                 !+++++++++- AA pattern pull step++++++++++++
                 ft0=  f0(i  ,j  ,k  )
                 ft1=  f1(i-1,j  ,k  )
@@ -153,25 +152,25 @@ subroutine kernel_odd(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
                 sum8 = m_3pxx + m_3pixx
                 sum9 = m_pww + m_piww
 
-                ft0 =  m_rho -  30d0*m_e + 12d0*m_e2
-                ft1 =  sum1 +  m_jx - 4d0*m_qx + sum2
-                ft2 =  sum1 -  m_jx + 4d0*m_qx + sum2
-                ft3 =  sum1 +  m_jy - 4d0*m_qy - 0.5d0*sum2 + sum3
-                ft4 =  sum1 -  m_jy + 4d0*m_qy - 0.5d0*sum2 + sum3
-                ft5 =  sum1 +  m_jz - 4d0*m_qz - 0.5d0*sum2 - sum3
-                ft6 =  sum1 -  m_jz + 4d0*m_qz - 0.5d0*sum2 - sum3
-                ft7 =  sum4 +  sum5 + sum6 + sum8 + sum9  + m_pxy + m_tx - m_ty
-                ft8 =  sum4 -  sum5 + sum6 + sum8 + sum9  - m_pxy - m_tx - m_ty
-                ft9 =  sum4 +  sum5 - sum6 + sum8 + sum9  - m_pxy + m_tx + m_ty
-                ft10 =  sum4 -  sum5 - sum6 + sum8 + sum9  + m_pxy - m_tx + m_ty
-                ft11 =  sum4 +  sum5 + sum7 + sum8 - sum9  + m_pzx - m_tx + m_tz
-                ft12 =  sum4 -  sum5 + sum7 + sum8 - sum9  - m_pzx + m_tx + m_tz
-                ft13 =  sum4 +  sum5 - sum7 + sum8 - sum9  - m_pzx - m_tx - m_tz
-                ft14 =  sum4 -  sum5 - sum7 + sum8 - sum9  + m_pzx + m_tx - m_tz
-                ft15 =  sum4 +  sum6 + sum7 - sum8*2d0     + m_pyz + m_ty - m_tz
-                ft16 =  sum4 -  sum6 + sum7 - sum8*2d0     - m_pyz - m_ty - m_tz
-                ft17 =  sum4 +  sum6 - sum7 - sum8*2d0     - m_pyz + m_ty + m_tz
-                ft18 =  sum4 -  sum6 - sum7 - sum8*2d0     + m_pyz - m_ty + m_tz
+                ft0 =   m_rho -  30d0*m_e + 12d0*m_e2
+                ft1 = (  sum1 +  m_jx - 4d0*m_qx + sum2 ) * (1d0-wall_indicator) + f1(i,j,k) * wall_indicator
+                ft2 = (  sum1 -  m_jx + 4d0*m_qx + sum2 ) * (1d0-wall_indicator) + f2(i,j,k) * wall_indicator
+                ft3 = (  sum1 +  m_jy - 4d0*m_qy - 0.5d0*sum2 + sum3 ) * (1d0-wall_indicator) + f3(i,j,k) * wall_indicator
+                ft4 = (  sum1 -  m_jy + 4d0*m_qy - 0.5d0*sum2 + sum3 ) * (1d0-wall_indicator) + f4(i,j,k) * wall_indicator
+                ft5 = (  sum1 +  m_jz - 4d0*m_qz - 0.5d0*sum2 - sum3 ) * (1d0-wall_indicator) + f5(i,j,k) * wall_indicator
+                ft6 = (  sum1 -  m_jz + 4d0*m_qz - 0.5d0*sum2 - sum3 ) * (1d0-wall_indicator) + f6(i,j,k) * wall_indicator
+                ft7 = (  sum4 +  sum5 + sum6 + sum8 + sum9  + m_pxy + m_tx - m_ty ) * (1d0-wall_indicator) + f7(i,j,k) * wall_indicator
+                ft8 = (  sum4 -  sum5 + sum6 + sum8 + sum9  - m_pxy - m_tx - m_ty ) * (1d0-wall_indicator) + f8(i,j,k) * wall_indicator
+                ft9 = (  sum4 +  sum5 - sum6 + sum8 + sum9  - m_pxy + m_tx + m_ty ) * (1d0-wall_indicator) + f9(i,j,k) * wall_indicator
+                ft10 = (  sum4 -  sum5 - sum6 + sum8 + sum9  + m_pxy - m_tx + m_ty ) * (1d0-wall_indicator) + f10(i,j,k) * wall_indicator
+                ft11 = (  sum4 +  sum5 + sum7 + sum8 - sum9  + m_pzx - m_tx + m_tz ) * (1d0-wall_indicator) + f11(i,j,k) * wall_indicator
+                ft12 = (  sum4 -  sum5 + sum7 + sum8 - sum9  - m_pzx + m_tx + m_tz ) * (1d0-wall_indicator) + f12(i,j,k) * wall_indicator
+                ft13 = (  sum4 +  sum5 - sum7 + sum8 - sum9  - m_pzx - m_tx - m_tz ) * (1d0-wall_indicator) + f13(i,j,k) * wall_indicator
+                ft14 = (  sum4 -  sum5 - sum7 + sum8 - sum9  + m_pzx + m_tx - m_tz ) * (1d0-wall_indicator) + f14(i,j,k) * wall_indicator
+                ft15 = (  sum4 +  sum6 + sum7 - sum8*2d0     + m_pyz + m_ty - m_tz ) * (1d0-wall_indicator) + f15(i,j,k) * wall_indicator
+                ft16 = (  sum4 -  sum6 + sum7 - sum8*2d0     - m_pyz - m_ty - m_tz ) * (1d0-wall_indicator) + f16(i,j,k) * wall_indicator
+                ft17 = (  sum4 +  sum6 - sum7 - sum8*2d0     - m_pyz + m_ty + m_tz ) * (1d0-wall_indicator) + f17(i,j,k) * wall_indicator
+                ft18 = (  sum4 -  sum6 - sum7 - sum8*2d0     + m_pyz - m_ty + m_tz ) * (1d0-wall_indicator) + f18(i,j,k) * wall_indicator
                 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MRT kernel, repeated part~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
@@ -358,25 +357,25 @@ subroutine kernel_even(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
                 sum8 = m_3pxx + m_3pixx
                 sum9 = m_pww + m_piww
 
-                ft0 =  m_rho -  30d0*m_e + 12d0*m_e2
-                ft1 =  sum1 +  m_jx - 4d0*m_qx + sum2
-                ft2 =  sum1 -  m_jx + 4d0*m_qx + sum2
-                ft3 =  sum1 +  m_jy - 4d0*m_qy - 0.5d0*sum2 + sum3
-                ft4 =  sum1 -  m_jy + 4d0*m_qy - 0.5d0*sum2 + sum3
-                ft5 =  sum1 +  m_jz - 4d0*m_qz - 0.5d0*sum2 - sum3
-                ft6 =  sum1 -  m_jz + 4d0*m_qz - 0.5d0*sum2 - sum3
-                ft7 =  sum4 +  sum5 + sum6 + sum8 + sum9  + m_pxy + m_tx - m_ty
-                ft8 =  sum4 -  sum5 + sum6 + sum8 + sum9  - m_pxy - m_tx - m_ty
-                ft9 =  sum4 +  sum5 - sum6 + sum8 + sum9  - m_pxy + m_tx + m_ty
-                ft10 =  sum4 -  sum5 - sum6 + sum8 + sum9  + m_pxy - m_tx + m_ty
-                ft11 =  sum4 +  sum5 + sum7 + sum8 - sum9  + m_pzx - m_tx + m_tz
-                ft12 =  sum4 -  sum5 + sum7 + sum8 - sum9  - m_pzx + m_tx + m_tz
-                ft13 =  sum4 +  sum5 - sum7 + sum8 - sum9  - m_pzx - m_tx - m_tz
-                ft14 =  sum4 -  sum5 - sum7 + sum8 - sum9  + m_pzx + m_tx - m_tz
-                ft15 =  sum4 +  sum6 + sum7 - sum8*2d0     + m_pyz + m_ty - m_tz
-                ft16 =  sum4 -  sum6 + sum7 - sum8*2d0     - m_pyz - m_ty - m_tz
-                ft17 =  sum4 +  sum6 - sum7 - sum8*2d0     - m_pyz + m_ty + m_tz
-                ft18 =  sum4 -  sum6 - sum7 - sum8*2d0     + m_pyz - m_ty + m_tz
+                ft0  =   m_rho -  30d0*m_e + 12d0*m_e2
+                ft1  = (  sum1 +  m_jx - 4d0*m_qx + sum2 ) * (1d0-wall_indicator)  + f2(i+1,j  ,k  ) *wall_indicator
+                ft2  = (  sum1 -  m_jx + 4d0*m_qx + sum2 ) * (1d0-wall_indicator) +  f1(i-1,j  ,k  ) *wall_indicator
+                ft3  = (  sum1 +  m_jy - 4d0*m_qy - 0.5d0*sum2 + sum3 ) * (1d0-wall_indicator) +  f4(i  ,j+1,k  )*wall_indicator
+                ft4  = (  sum1 -  m_jy + 4d0*m_qy - 0.5d0*sum2 + sum3 ) * (1d0-wall_indicator) +  f3(i  ,j-1,k  )*wall_indicator
+                ft5  = (  sum1 +  m_jz - 4d0*m_qz - 0.5d0*sum2 - sum3 ) * (1d0-wall_indicator) +  f6(i  ,j  ,k+1)*wall_indicator
+                ft6  = (  sum1 -  m_jz + 4d0*m_qz - 0.5d0*sum2 - sum3 ) * (1d0-wall_indicator) +  f5(i  ,j  ,k-1)*wall_indicator
+                ft7  = (  sum4 +  sum5 + sum6 + sum8 + sum9  + m_pxy + m_tx - m_ty ) * (1d0-wall_indicator) + f10(i+1,j+1,k  )*wall_indicator
+                ft8  = (  sum4 -  sum5 + sum6 + sum8 + sum9  - m_pxy - m_tx - m_ty ) * (1d0-wall_indicator) + f9(i-1,j+1,k  )*wall_indicator
+                ft9  = (  sum4 +  sum5 - sum6 + sum8 + sum9  - m_pxy + m_tx + m_ty ) * (1d0-wall_indicator) + f8(i+1,j-1,k  )*wall_indicator
+                ft10 = (  sum4 -  sum5 - sum6 + sum8 + sum9  + m_pxy - m_tx + m_ty ) * (1d0-wall_indicator) + f7(i-1,j-1,k  )*wall_indicator
+                ft11 = (  sum4 +  sum5 + sum7 + sum8 - sum9  + m_pzx - m_tx + m_tz ) * (1d0-wall_indicator) + f14(i+1,j  ,k+1)*wall_indicator
+                ft12 = (  sum4 -  sum5 + sum7 + sum8 - sum9  - m_pzx + m_tx + m_tz ) * (1d0-wall_indicator) + f13(i-1,j  ,k+1)*wall_indicator
+                ft13 = (  sum4 +  sum5 - sum7 + sum8 - sum9  - m_pzx - m_tx - m_tz ) * (1d0-wall_indicator) + f12(i+1,j  ,k-1)*wall_indicator
+                ft14 = (  sum4 -  sum5 - sum7 + sum8 - sum9  + m_pzx + m_tx - m_tz ) * (1d0-wall_indicator) + f11(i-1,j  ,k-1)*wall_indicator
+                ft15 = (  sum4 +  sum6 + sum7 - sum8*2d0     + m_pyz + m_ty - m_tz ) * (1d0-wall_indicator) + f18(i  ,j+1,k+1)*wall_indicator
+                ft16 = (  sum4 -  sum6 + sum7 - sum8*2d0     - m_pyz - m_ty - m_tz ) * (1d0-wall_indicator) + f17(i  ,j-1,k+1)*wall_indicator
+                ft17 = (  sum4 +  sum6 - sum7 - sum8*2d0     - m_pyz + m_ty + m_tz ) * (1d0-wall_indicator) + f16(i  ,j+1,k-1)*wall_indicator
+                ft18 = (  sum4 -  sum6 - sum7 - sum8*2d0     + m_pyz - m_ty + m_tz ) * (1d0-wall_indicator) + f15(i  ,j-1,k-1)*wall_indicator
                 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MRT kernel, repeated part~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
                 !+++++++++- AA pattern++++++++++++

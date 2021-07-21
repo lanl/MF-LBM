@@ -265,9 +265,9 @@ subroutine modify_geometry
                 if(( i - xc )**2+( j - yc )**2+( k - zc )**2 < r1**2)then
                     walls_global(i,j,k)=1
                 endif
-                if(( i - xc )**2+( j - yc )**2 > r2**2 .and. k>buffer .and. k< nzglobal-buffer+1)then
-                    walls_global(i,j,k)=1
-                endif
+                ! if(( i - xc )**2+( j - yc )**2 > r2**2 .and. k>buffer .and. k< nzglobal-buffer+1)then
+                !     walls_global(i,j,k)=1
+                ! endif
             enddo
         enddo
     enddo

@@ -1,6 +1,6 @@
 #include "./preprocessor.h"
 !=======================================================================================================================================================
-!---------------------- monitor_multiphase  unsteady flow  ----------------------
+!---------------------- monitor_singlephase  unsteady flow  ----------------------
 !=======================================================================================================================================================
 subroutine monitor
     use Misc_module
@@ -13,10 +13,8 @@ subroutine monitor
     character (len=20) :: flnm,flnm1   !file name
     integer :: i,j,k ,L,M,N,rank,status(MPI_STATUS_SIZE),o1,o2,o3, icount, itemp
     integer (kind=1) :: wall_indicator
-    real(kind=8) :: umax,temp,mass,temp1,temp2,temp3,temp4,temp5,temp6,temp7,temp8,usq1,usq2
-    real(kind=8) :: prek,fl1_avg,fl2_avg,fl_avg,tmp,fx,fy,fz,fl1_avg_whole,fl2_avg_whole,fl_avg_whole
-    real(kind=8) :: slope1, slope2,slope3, av1, av2 ,av3 ! least square
-    real(kind=8), dimension(3) :: w_local
+    real(kind=8) :: umax,temp,mass,temp1,temp2,temp3
+    real(kind=8) :: prek,fl_avg,tmp,fl_avg_whole, rel_err
 
     !********************************* preperation ***********************************
 
@@ -109,7 +107,6 @@ subroutine monitor
 
         umax_global = dsqrt(umax)
 
-
         !********************************************* flowrate calculation **********************************************
         fl_avg_whole = 0d0
         
@@ -119,8 +116,8 @@ subroutine monitor
         enddo      
         fl_avg_whole = fl_avg_whole/dble(nzGlobal)
         flowrate = fl_avg_whole
-        !********************************************* save data ************************************************************
 
+        !********************************************* save data ************************************************************
         open(unit=13, file='out1.output/flowrate_time.dat' ,status='unknown',position='append')
         write(13,"(I10,2(1x,E14.6))")ntime,fl_avg_whole,umax
         close(13)      
@@ -146,6 +143,19 @@ subroutine monitor
 
         deallocate(fl_0,pre_0)
 
+        if(steady_state_option==1)then !steady state simulation based on flowrate
+          monitor_previous_value = monitor_current_value  ! store previous step
+          monitor_current_value  = flowrate   
+          rel_err = dabs(monitor_current_value-monitor_previous_value)/(dabs(monitor_current_value)+eps)
+          open(unit=15, file='out1.output/steady_monitor_flowrate_error.dat' ,status='unknown',position='append')
+          write(15,"(I10,(1x,e14.7))")ntime,rel_err
+          close(15)
+          if(rel_err<convergence_criteria.and.ntime>ntime_monitor)then
+            print*, 'Simulation converged based on flowrate convergence! Relative error =', rel_err
+            simulation_end_indicator = 1   !successfully end simulation
+          endif
+        endif
+
         ! check simulation status
         if(ieee_is_nan(flowrate))then
             print*, 'Simulation failed due to NAN of "flowrate"!'
@@ -156,9 +166,12 @@ subroutine monitor
         endif 
         
     endif
+
     call MPI_Bcast(simulation_end_indicator,1,MPI_INTEGER,0,MPI_COMM_VGRID,ierr)
 
     return
 end subroutine monitor
+
+
 
 

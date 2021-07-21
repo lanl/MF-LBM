@@ -67,7 +67,6 @@ program main
 #ifdef _openacc
     !identify GPU device
     devnum = setDevice(np,id0)
-    !print*,'MPI process id:', id0, 'GPU device number:', devnum
     call MPI_Barrier(MPI_COMM_WORLD,ierr )
 #endif
 
@@ -98,7 +97,7 @@ program main
     if(id0==0)print*, ''
 
     !$acc data copy(f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,g0,g1,g2,g3,g4,g5,g6,g7,g8,g9,g10,g11,g12,g13,g14,g15,g16,g17,g18,u,v,w,rho) &
-    !$acc copyin(walls,w_in) copy(cn_x,cn_y,cn_z,c_norm,curv) create(fl1,fl2,sa1,pre,mass1,mass2,vol1,vol2,tk) &
+    !$acc copyin(walls,w_in) create(fl,pre,tk) &
     !$acc copyin(solid_boundary_nodes,fluid_boundary_nodes) &
     !$acc copy(f_convec_bc) &
     !$acc create(send_pdf_xP,send_pdf_xM,send_pdf_yP,send_pdf_yM,send_pdf_zP,send_pdf_zM, recv_pdf_xM,recv_pdf_xP,recv_pdf_yM,recv_pdf_yP,recv_pdf_zM,recv_pdf_zP, &
@@ -107,6 +106,17 @@ program main
 
     t_all_sum=0.0d0
     ntime=ntime0
+
+    if(trim(job_status)=='new_simulation')then
+        if(benchmark_cmd==0)then
+            if(extreme_large_sim_cmd==0)then  ! initial distribution
+                call VTK_walls_bin
+                call VTK_legacy_writer_3D(ntime)
+            else
+                call save_macro(ntime)    ! parallel I/O, distributed files, require post processing
+            endif
+        endif
+    endif
 
     if(id==0)print*,''
     !################################################################################################################################
@@ -146,15 +156,12 @@ program main
             endif
             ! ----------- monitors -----------
             if(MOD(ntime,ntime_monitor)==0)then
-
                 call monitor
-
             endif
             ! ----------- simulation progress - time steps -----------
             if(mod(ntime,ntime_display_steps)==0)then
                     if(id==0)print*,'ntime = ',ntime
-            endif
-    
+            endif    
             ! ----------- full flow field (VTK) files for further analysis -----------
             if(MOD(ntime,ntime_visual)==0)then
                 if(extreme_large_sim_cmd==0)then
@@ -339,18 +346,18 @@ subroutine main_iteration_kernel
         !~~~~~~~~~~~~~~~ overlapped communication and computation ~~~~~~~~~~~~~~~~~
 
         !%%%%%%%%%%%%%%%% boundary conditions %%%%%%%%%%%%%%%%%%%
-        ! if(kper==0.and.domain_wall_status_z_min==0.and.domain_wall_status_z_max==0)then    !non-periodic BC along flow direction (z)
-        !     if(inlet_BC==1)then
-        !         call inlet_bounce_back_velocity_BC_before_odd   !velocity inlet bc
-        !     elseif(inlet_BC==2)then
-        !         call inlet_Zou_He_pressure_BC_before_odd   !pressure inlet bc
-        !     endif
-        !     if(outlet_BC==1)then
-        !         call outlet_convective_BC_before_odd   !convective outlet bc
-        !     elseif(outlet_BC==2)then
-        !         call outlet_Zou_He_pressure_BC_before_odd   !pressure outlet bc
-        !     endif
-        ! endif
+        if(kper==0.and.domain_wall_status_z_min==0.and.domain_wall_status_z_max==0)then    !non-periodic BC along flow direction (z)
+            if(inlet_BC==1)then
+                call inlet_bounce_back_velocity_BC_before_odd   !velocity inlet bc
+            elseif(inlet_BC==2)then
+                call inlet_Zou_He_pressure_BC_before_odd   !pressure inlet bc
+            endif
+            if(outlet_BC==1)then
+                call outlet_convective_BC_before_odd   !convective outlet bc
+            elseif(outlet_BC==2)then
+                call outlet_Zou_He_pressure_BC_before_odd   !pressure outlet bc
+            endif
+        endif
         !%%%%%%%%%%%%%%%% boundary conditions %%%%%%%%%%%%%%%%%%%
 
         !************************** even step *****************************************
@@ -397,18 +404,18 @@ subroutine main_iteration_kernel
         !~~~~~~~~~~~~~~~ overlapped communication and computation ~~~~~~~~~~~~~~~~~
 
         !%%%%%%%%%%%%%%%% boundary conditions %%%%%%%%%%%%%%%%%%%
-        ! if(kper==0.and.domain_wall_status_z_min==0.and.domain_wall_status_z_max==0)then    !non-periodic BC along flow direction (z)
-        !     if(inlet_BC==1)then
-        !         call inlet_bounce_back_velocity_BC_after_odd   !velocity inlet bc
-        !     elseif(inlet_BC==2)then
-        !         call inlet_Zou_He_pressure_BC_after_odd   !pressure inlet bc
-        !     endif
-        !     if(outlet_BC==1)then
-        !         call outlet_convective_BC_after_odd   !convective outlet bc
-        !     elseif(outlet_BC==2)then
-        !         call outlet_Zou_He_pressure_BC_after_odd   !pressure outlet bc
-        !     endif
-        ! endif
+        if(kper==0.and.domain_wall_status_z_min==0.and.domain_wall_status_z_max==0)then    !non-periodic BC along flow direction (z)
+            if(inlet_BC==1)then
+                call inlet_bounce_back_velocity_BC_after_odd   !velocity inlet bc
+            elseif(inlet_BC==2)then
+                call inlet_Zou_He_pressure_BC_after_odd   !pressure inlet bc
+            endif
+            if(outlet_BC==1)then
+                call outlet_convective_BC_after_odd   !convective outlet bc
+            elseif(outlet_BC==2)then
+                call outlet_Zou_He_pressure_BC_after_odd   !pressure outlet bc
+            endif
+        endif
         !%%%%%%%%%%%%%%%% boundary conditions %%%%%%%%%%%%%%%%%%%
         
         !************************** odd step *****************************************

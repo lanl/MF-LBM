@@ -20,7 +20,6 @@ subroutine mpi_irecv_initialization
         CALL MPI_IRECV( recv_pdf_yM, isize_pdf_y, MPI_DOUBLE_PRECISION, idyM, tag4, MPI_COMM_VGRID, MPI_REQ_y(2), MPI_ERR )
     endif 
 
-
     !edges x
     if(mpi_y.and.mpi_z)then  
         CALL MPI_IRECV( recv_pdf_yPzP, isize_pdf_ex, MPI_DOUBLE_PRECISION,idyPzP, TAG7, MPI_COMM_VGRID, MPI_REQ_EX(1), MPI_ERR )
@@ -68,7 +67,6 @@ subroutine mpi_send_req
 
     return
 end subroutine mpi_send_req
-
 
 !=====================================================================================================================================
 !------- pdf data packing (pull type) --------

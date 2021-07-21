@@ -60,6 +60,7 @@ module Misc_module
 
     integer :: nx,ny,nz   !local MPI domain size
     real(kind=8) ::  A_xy, A_xy_effective, volume_sample   !Axy: cross section area
+    real(kind=8) :: char_length   ! characteristic length
 
     ! inlet_BC selection (overridden by x direction periodic BC): 1-velocity; 2-pressure 
     ! outlet_BC selection (overridden by x direction periodic BC): 1-convective; 2-pressure 
@@ -98,8 +99,9 @@ module Misc_module
     real(kind=8), parameter :: mrt_coef3=1d0/252d0
     real(kind=8), parameter :: mrt_coef4=1d0/72d0
     !D3Q19 MODEL
-    real(kind=8), dimension(:), parameter :: w_equ(0:18)=(/1d0/3d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,&
-        & 1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0/)
+    real(kind=8), dimension(:), parameter :: w_equ(0:18)=(/1d0/3d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,&
+        1.0d0/18.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,&
+        1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0/)
     real(kind=8), parameter :: w_equ_0=1.0d0/3.0d0
     real(kind=8), parameter :: w_equ_1=1.0d0/18.0d0
     real(kind=8), parameter :: w_equ_2=1.0d0/36.0d0
@@ -151,14 +153,18 @@ MODULE Fluid_singlephase
     real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18      !fluid PDF1
     real(kind=8) ::  rt,rti,la_nu,la_nui !viscosity for singlephase fluid
     real(kind=8) ::  force_x,force_y,force_z, D_force_z, force_z0   !body force, default flow direction: z
-    real(kind=8) ::  uin_max,uin_avg, uin_avg_0,flowrate, p_gradient,rho_out ,rho_in,rho_in_avg,rho_avg_inlet,rho_avg_outlet,rho_drop
+    real(kind=8) ::  uin_max,uin_avg,uin_avg_0,flowrate
+    real(kind=8) ::  p_gradient,rho_out ,rho_in,rho_in_avg,rho_avg_inlet,rho_avg_outlet, rho_drop
     real(kind=8) ::  relaxation,uin_avg_convec,p_max, rho_in_max, umax_global, target_inject_pore_volume
 
     !MRT relaxation parameters
     real(kind=8) ::   s_e,s_e2,s_q,s_nu,s_pi,s_t
 
-        !fluid distribution of previous step for convective outlet BC
+    !fluid distribution of previous step for convective outlet BC
     real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: f_convec_bc
+
+    ! flow condition
+    real(kind=8) :: Re  
 
     !temporary arrays
     real(kind=8),ALLOCATABLE,DIMENSION(:) :: fl,pre   !flowrate, pressure

@@ -1,3 +1,4 @@
+#!/bin/bash
 #*********************************************************************************#
 #                      Simulation Configuration Script
 #*********************************************************************************#
@@ -5,7 +6,7 @@
 #--------------------------------------- PATH --------------------------------------------- 
 # absolute or relative paths of corresponding files or directories 
 template_directory="../run_template/"
-exec_location="../1.exec/MF_LBM.cpu"
+exec_location="../1.exec/MF_LBM_singlephase.cpu"
 
 # if external geometry is used (external_geometry_read_cmd = 1)
 geometry_file="placeholder"
@@ -43,12 +44,8 @@ cp $template_directory/clean.sh ./
 
 cp $template_directory/template-simulation_control.txt simulation_control.txt
 
-# initial_fluid_distribution_option=1
-# sed $sed_option "s|initial_fluid_distribution_option .*|initial_fluid_distribution_option $initial_fluid_distribution_option|g" ./simulation_control.txt
 # benchmark_cmd=0
 # sed $sed_option "s|benchmark_cmd .*|benchmark_cmd $benchmark_cmd|g" ./simulation_control.txt
-# breakthrough_check=0
-# sed $sed_option "s|breakthrough_check .*|breakthrough_check $breakthrough_check|g" ./simulation_control.txt
 # steady_state_option=0
 # sed $sed_option "s|steady_state_option .*|steady_state_option $steady_state_option|g" ./simulation_control.txt
 # convergence_criteria=1d-6
@@ -90,20 +87,12 @@ cp $template_directory/template-simulation_control.txt simulation_control.txt
 # flow condition
 # target_inject_pore_volume=1.0
 # sed $sed_option "s|target_inject_pore_volume .*|target_inject_pore_volume $target_inject_pore_volume|g" ./simulation_control.txt
-# initial_interface_position=10.0
-# sed $sed_option "s|initial_interface_position .*|initial_interface_position $initial_interface_position|g" ./simulation_control.txt
-# capillary_number=100d-6
-# sed $sed_option "s|capillary_number .*|capillary_number $capillary_number|g" ./simulation_control.txt
-# saturation_injection=1.0
-# sed $sed_option "s|saturation_injection .*|saturation_injection $saturation_injection|g" ./simulation_control.txt
 # body_force_0=0d-6
 # sed $sed_option "s|body_force_0 .*|body_force_0 $body_force_0|g" ./simulation_control.txt
 
 # timers
 # ntime_visual=10000000
 # sed $sed_option "s|ntime_visual .*|ntime_visual $ntime_visual|g" ./simulation_control.txt
-# ntime_animation=2000
-# sed $sed_option "s|ntime_animation .*|ntime_animation $ntime_animation|g" ./simulation_control.txt
 # monitor_timer=1000
 # sed $sed_option "s|monitor_timer .*|monitor_timer $monitor_timer|g" ./simulation_control.txt
 # display_steps_timer=1000

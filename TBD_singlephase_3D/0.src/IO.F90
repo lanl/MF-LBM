@@ -113,11 +113,6 @@ subroutine read_parameter
                         write(*,"(1X,'External_geometry_read_cmd: ', I2)") external_geometry_read_cmd
                         print*, '---------------------------'
 
-                    case ('geometry_preprocess_cmd')
-                        read(buffer, *, iostat=ios) geometry_preprocess_cmd
-                        write(*,"(1X,'Geometry_preprocess_cmd: ', I2)") geometry_preprocess_cmd
-                        print*, '---------------------------'
-
                     case ('lattice_dimensions') ! total nodes for the whole domain
                         read(buffer, *, iostat=ios) nxGlobal,nyGlobal,nzGlobal
                         write(*,"(1X,'nxGlobal = ', I5)") nxGlobal
@@ -127,7 +122,10 @@ subroutine read_parameter
                         read(buffer, *, iostat=ios) n_exclude_inlet,n_exclude_outlet
                         write(*,"(1X,'Inlet_excluded_layers = ', I3)") n_exclude_inlet
                         write(*,"(1X,'Outlet_excluded_layers = ', I3)") n_exclude_outlet
-                                            
+                    case ('char_length') ! characteristic length of the flow domain (used in the definition of Re number)
+                        read(buffer, *, iostat=ios) char_length
+                        write(*,"(1X,'char_length = ', F10.3)") char_length
+                        
                     case ('domain_wall_status_x') !domain_wall_status
                         read(buffer, *, iostat=ios)domain_wall_status_x_min,domain_wall_status_x_max
                         write(*,"(1X,'Apply nonslip boundary condition at x = 1       : ', I2)") domain_wall_status_x_min
@@ -174,7 +172,11 @@ subroutine read_parameter
                     case ('body_force_increment') ! body force increment
                         read(buffer, *, iostat=ios)D_force_Z
                         write(*,"(1X,'Body_force_Z0 = ', ES13.6)") D_force_Z
-   
+
+                    case ('Reynolds_number') 
+                        read(buffer, *, iostat=ios) Re
+                        write(*,"(1X,'Reynolds_number = ', F10.3)") Re
+                    
                     case ('target_inject_pore_volume') 
                         read(buffer, *, iostat=ios)target_inject_pore_volume
                         write(*,"(1X,'Target_inject_pore_volume = ', F5.2)") target_inject_pore_volume
@@ -188,9 +190,7 @@ subroutine read_parameter
                     case ('ntime_visual') ! timer: when to output detailed visualization data
                         read(buffer, *, iostat=ios)ntime_visual
                         write(*,"(1X,'Full_VTK_timer = ', I8)") ntime_visual
-                    case ('ntime_animation') ! timer: when to output animation data
-                        read(buffer, *, iostat=ios)ntime_animation
-                        write(*,"(1X,'Animation_VTK_timer = ', I8)") ntime_animation  
+
                     case ('monitor_timer') ! timer: when to output monitor data, profile along flow direction
                         read(buffer, *, iostat=ios)ntime_monitor
                         write(*,"(1X,'Monitor_timer = ', I8)") ntime_monitor 
@@ -215,10 +215,7 @@ subroutine read_parameter
                         read(buffer, *, iostat=ios)simulation_duration_timer
                         write(*,"(1X,'Simulation_duration (wall clock time, hours) = ', F6.2)") simulation_duration_timer 
                         print*, '---------------------------'
-
-                    case ('d_vol_animation') ! when to output animation data - based on injected volume
-                        read(buffer, *, iostat=ios)d_vol_animation
-                        write(*,"(1X,'Animation_VTK_by_injected_vol = ', F6.2)") d_vol_animation 
+ 
                     case ('d_vol_detail') ! when to output detailed visulization data - based on injected volume
                         read(buffer, *, iostat=ios)d_vol_detail
                         write(*,"(1X,'Full_VTK_by_injected_vol = ', F6.2)") d_vol_detail 
@@ -287,12 +284,14 @@ subroutine read_parameter
 
         N(47) = extreme_large_sim_cmd
 
+        A(1) = char_length
         A(2) = force_z0
         A(3) = D_force_Z
-        A(10)= la_nu
+        A(4) = Re
 
+        A(10)= la_nu
         A(12) = d_vol_monitor
-        A(13) = d_vol_animation
+
         A(14) = d_vol_detail
 
         A(15) = checkpoint_save_timer
@@ -335,7 +334,7 @@ subroutine read_parameter
     geometry_preprocess_cmd = N(25)
 
     ntime0 = N(26)
-    ntime_animation = N(27)
+
     ntime_macro = N(28)
     ntime_visual = N(29)     
     ntime_pdf = N(30)
@@ -358,12 +357,14 @@ subroutine read_parameter
     double_bak_checkpoint_pdf_cmd = N(44)
     extreme_large_sim_cmd = N(47)
  
+    char_length = A(1)
     force_z0 = A(2)
     D_force_Z = A(3)
+    Re = A(4)
     la_nu = A(10)
 
     d_vol_monitor =  A(12)
-    d_vol_animation = A(13)
+
     d_vol_detail = A(14)
 
     checkpoint_save_timer = A(15)
@@ -453,7 +454,6 @@ subroutine read_parameter
         if(id0==0)print*,'Inlet/outlet boundary condition error: Inlet pressure + outlet convective BC is not supported! Exiting program!'
         error_signal = 1 
     endif
-
 
     if(error_signal==1)then
         call MPI_Barrier(MPI_COMM_WORLD,ierr)

@@ -25,8 +25,6 @@ subroutine initialization_basic
     if(id==0)call system('mkdir out1.output')
     if(id==0)call system('mkdir out1.output/profile')
     if(id==0)call system('mkdir out3.field_data')
-    if(id==0)call system('mkdir out3.field_data/')
-    if(id==0)call system('mkdir out3.field_data/') 
     if(id==0)print*,'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
     if(id==0)print*,''
 
@@ -76,8 +74,6 @@ subroutine initialization_basic
     if(id==0)print*,''
 
 
-
-
     if(id==0)print*,'************************ Processing fluid and flow info **********************'
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     !allocate fluid memory
@@ -116,7 +112,6 @@ subroutine initialization_basic
     s_q =  omega
     s_t = omega
 #endif 
-
 
     ! body force, pressure gradient
     ! if pressure or velocity BC is used to drive the flow, force_z should be set to 0
@@ -186,10 +181,10 @@ subroutine initialization_open_velocity_inlet_BC
     integer :: n,i,j,k,n_vin
     real(kind=8), external :: w_in_channel
 
-
-    uin_avg_0 = 0.001d0
+    uin_avg_0 = Re * la_nu / char_length
     flowrate = uin_avg_0 * A_xy
-    if(id==0)write(*,"(' Inlet average velocity = ', E13.6)") uin_avg_0
+    uin_avg = uin_avg_0
+    if(id==0)write(*,"(' Inlet average velocity = ', F13.6)") uin_avg_0
     if(id==0)write(*,"(' Inlet flowrate = ', E13.6)") flowrate
 
     !set inlet velocity profile, rectangular duct
@@ -205,6 +200,7 @@ subroutine initialization_open_velocity_inlet_BC
         do i=1,nx
             x = idx*nx + i
             y = idy*ny + j
+            w_in(i,j) = 0d0
             if(x>1.and.x<nxGlobal.and.y>1.and.y<nyGlobal)then
                 w_in(i,j) = w_in_channel(dble(x-1)-0.5d0,dble(y-1)-0.5d0,n_vin,uin_avg,temp3)     !inlet velocity profile from analytical solution
                 !w(i,j,:)=w_in(i,j)      
@@ -531,7 +527,7 @@ subroutine MemAllocate(flag)
             deallocate(f_convec_bc)
         endif
         
-        deallocate( send_pdf_xP,send_pdf_xM,send_pdf_yP,send_pdf_yM,send_pdf_zP,send_pdf_zM,recv_pdf_xM,recv_pdf_xP,recv_pdf_yM,recv_pdf_yP,recv_pdf_zM,recv_pdf_zP)
+        deallocate(send_pdf_xP,send_pdf_xM,send_pdf_yP,send_pdf_yM,send_pdf_zP,send_pdf_zM,recv_pdf_xM,recv_pdf_xP,recv_pdf_yM,recv_pdf_yP,recv_pdf_zM,recv_pdf_zP)
 
         deallocate(send_pdf_yPzP,send_pdf_yMzP,send_pdf_yPzM,send_pdf_yMzM,send_pdf_xPzP,send_pdf_xMzP,send_pdf_xPzM,send_pdf_xMzM,send_pdf_xPyP,send_pdf_xMyP,send_pdf_xPyM,send_pdf_xMyM)
         deallocate(recv_pdf_yPzP,recv_pdf_yMzP,recv_pdf_yPzM,recv_pdf_yMzM,recv_pdf_xPzP,recv_pdf_xMzP,recv_pdf_xPzM,recv_pdf_xMzM,recv_pdf_xPyP,recv_pdf_xMyP,recv_pdf_xPyM,recv_pdf_xMyM)
