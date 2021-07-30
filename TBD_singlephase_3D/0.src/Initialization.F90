@@ -39,9 +39,9 @@ subroutine initialization_basic
     !~~~~~~~~~~~~~~~~~~ dimensions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ! la_x,y,z only used in fluid displacement simulation
     ! channel walls are considered below for effective sample volume and cross sectional area
-    la_z =  nz_sample - 1       
-    la_y =  ny_sample - 1
-    la_x =  nx_sample - 1
+    la_z =  nz_sample - 1 - 1       
+    la_y =  ny_sample - 1 - 1
+    la_x =  nx_sample - 1 - 1
     A_xy = la_x*la_y  !cross section area
     volume_sample = A_xy*nz_sample     !rock volume
     !~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -178,8 +178,7 @@ subroutine initialization_open_velocity_inlet_BC
     use mpi_variable
     IMPLICIT NONE
     real(kind=8) :: temp,temp3,x,y
-    integer :: n,i,j,k,n_vin
-    real(kind=8), external :: w_in_channel
+    integer :: i,j, n_vin
 
     uin_avg_0 = Re * la_nu / char_length
     flowrate = uin_avg_0 * A_xy
@@ -187,27 +186,22 @@ subroutine initialization_open_velocity_inlet_BC
     if(id==0)write(*,"(' Inlet average velocity = ', F13.6)") uin_avg_0
     if(id==0)write(*,"(' Inlet flowrate = ', E13.6)") flowrate
 
-    !set inlet velocity profile, rectangular duct
-    n_vin = 1000
-    temp3 = 0.0d0
-    do n=1,n_vin,2
-        temp3 = temp3 + (1.0d0-dexp(-dble(n)*pi*la_y/la_x)) / ((1.0d0+dexp(-dble(n)*pi*la_y/la_x))*dble(n)**5)
-    enddo
-    temp3=1d0-192.0d0*la_x/(la_y*pi**5)*temp3
-
+    ! default uniform inlet velocity profile
     !$OMP PARALLEL DO private(i,x,y)
     do j=1,ny
         do i=1,nx
-            x = idx*nx + i
-            y = idy*ny + j
-            w_in(i,j) = 0d0
-            if(x>1.and.x<nxGlobal.and.y>1.and.y<nyGlobal)then
-                w_in(i,j) = w_in_channel(dble(x-1)-0.5d0,dble(y-1)-0.5d0,n_vin,uin_avg,temp3)     !inlet velocity profile from analytical solution
-                !w(i,j,:)=w_in(i,j)      
-                !w_in(i,j) = uin_avg    !uniform inlet velocity
-            endif
+          x = idx*nx + i
+          y = idy*ny + j
+          w_in(i,j) = 0d0
+          if(x>1.and.x<nxGlobal.and.y>1.and.y<nyGlobal)then  
+            w_in(i,j) = uin_avg    
+          endif
         enddo
     enddo
+
+    n_vin = 1000
+    ! if analytical velocity profile is seleceted
+    call inlet_vel_profile_rectangular(uin_avg_0, n_vin)
 
     if(target_inject_pore_volume>0)then  ! stop simulation based on injected volume is enabled
         ntime_max = dble(target_inject_pore_volume * pore_sum) / flowrate
@@ -451,7 +445,7 @@ subroutine MemAllocate(flag)
             f15(1-overlap:nx+overlap,1-overlap:ny+overlap,1-overlap:nz+overlap),&
             f16(1-overlap:nx+overlap,1-overlap:ny+overlap,1-overlap:nz+overlap),&
             f17(1-overlap:nx+overlap,1-overlap:ny+overlap,1-overlap:nz+overlap),&
-            f18(1-overlap:nx+overlap,1-overlap:ny+overlap,1-overlap:nz+overlap),&          
+            f18(1-overlap:nx+overlap,1-overlap:ny+overlap,1-overlap:nz+overlap)&
             )      
 
         !convective BC
