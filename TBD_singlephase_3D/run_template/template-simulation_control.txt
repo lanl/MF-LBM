@@ -29,6 +29,12 @@ extreme_large_sim_cmd 0
 # 1 - steady state simulation (complete based on flowrate)
 steady_state_option 0
 
+# MRT collision parameters presets: 
+# 1 - bounceback optimization
+# 2 - original
+# 3 - SRT
+MRT_collision_parameter_preset 1
+
 # Convergence_criteria:
 # used in steady state simulation. 
 convergence_criteria 1d-6
@@ -76,6 +82,10 @@ char_length  11.0
 # Reynolds number 
 # only used in velocity inlet BC
 Reynolds_number  100.0
+
+# Density (pressure) drop
+# only used in pressure inlet and outlet BC
+rho_drop 0.01
 
 #===================================== MPI information ========================================
 # mpi process numbers along each axis: npx, npy, npz

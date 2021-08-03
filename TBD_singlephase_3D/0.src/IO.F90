@@ -87,6 +87,10 @@ subroutine read_parameter
                         write(*,"(1X,'Convergence_criteria: ', ES13.6)") convergence_criteria
                         print*, '---------------------------'
 
+                    case ('MRT_collision_parameter_preset')  
+                        read(buffer, *, iostat=ios) mrt_para_preset
+                        write(*,"(1X,'MRT_collision_parameter_preset: ', I2)") mrt_para_preset
+                        print*, '---------------------------'
 
                     case ('benchmark_cmd')
                         read(buffer, *, iostat=ios) benchmark_cmd
@@ -176,6 +180,10 @@ subroutine read_parameter
                     case ('Reynolds_number') 
                         read(buffer, *, iostat=ios) Re
                         write(*,"(1X,'Reynolds_number = ', F10.3)") Re
+
+                    case ('rho_drop') 
+                        read(buffer, *, iostat=ios) rho_drop
+                        write(*,"(1X,'inlet/outlet density drop = ', F6.4)") rho_drop
                     
                     case ('target_inject_pore_volume') 
                         read(buffer, *, iostat=ios)target_inject_pore_volume
@@ -235,6 +243,7 @@ subroutine read_parameter
         print*, '************** End reading in parameters from control file *******************'
         print*,''
  
+        N(2) = mrt_para_preset
         N(3) = steady_state_option
         N(4) = benchmark_cmd
 
@@ -288,6 +297,7 @@ subroutine read_parameter
         A(2) = force_z0
         A(3) = D_force_Z
         A(4) = Re
+        A(5) = rho_drop 
 
         A(10)= la_nu
         A(12) = d_vol_monitor
@@ -308,6 +318,7 @@ subroutine read_parameter
     call mpi_bcast(N,100,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
     call mpi_bcast(A,100,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 
+    mrt_para_preset = N(2)
     steady_state_option = N(3)
     benchmark_cmd = N(4) 
 
@@ -361,6 +372,7 @@ subroutine read_parameter
     force_z0 = A(2)
     D_force_Z = A(3)
     Re = A(4)
+    rho_drop = A(5)
     la_nu = A(10)
 
     d_vol_monitor =  A(12)

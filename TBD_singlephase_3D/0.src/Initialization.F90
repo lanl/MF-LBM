@@ -90,28 +90,30 @@ subroutine initialization_basic
     !MRT PARAMETERS
     omega = 1d0/(3d0*la_nu+0.5d0)
     s_nu =  omega
-#if mrt==1
-    !************bounceback opt************
-    s_e =  omega
-    s_e2 = omega
-    s_pi = omega
-    s_q =  8.0d0*(2.0d0-omega)/(8.0d0-omega)
-    s_t = s_q
-#elif mrt==2
-    !************original opt************
-    s_e =  1.19d0
-    s_e2 = 1.4d0
-    s_pi = 1.4d0
-    s_q= 1.2d0
-    s_t = 1.98d0
-#elif mrt==3            
-    !************SRT************
-    s_e =  omega
-    s_e2 = omega
-    s_pi = omega
-    s_q =  omega
-    s_t = omega
-#endif 
+
+    if(mrt_para_preset==1)then
+      !************bounceback opt************
+      s_e =  omega
+      s_e2 = omega
+      s_pi = omega
+      s_q =  8.0d0*(2.0d0-omega)/(8.0d0-omega)
+      s_t = s_q
+    elseif(mrt_para_preset==1)then
+      !************original opt************
+      s_e =  1.19d0
+      s_e2 = 1.4d0
+      s_pi = 1.4d0
+      s_q= 1.2d0
+      s_t = 1.98d0
+    else
+      !************SRT************
+      s_e =  omega
+      s_e2 = omega
+      s_pi = omega
+      s_q =  omega
+      s_t = omega
+    endif
+
 
     ! body force, pressure gradient
     ! if pressure or velocity BC is used to drive the flow, force_z should be set to 0
@@ -124,9 +126,8 @@ subroutine initialization_basic
     if(kper==0.and.domain_wall_status_z_min==0.and.domain_wall_status_z_max==0)then    !non-periodic BC along flow direction (z)
         if(inlet_BC==1)then  !velocity inlet bc
             call initialization_open_velocity_inlet_bc
-        elseif(inlet_BC==2)then   !pressure inlet bc
-            p_gradient = -force_z0/3d0         !pressure gradient
-            rho_in = rho_out- p_gradient*nzglobal
+        elseif(inlet_BC==2)then   !pressure inlet bc           
+            rho_in = rho_out + rho_drop
             if(id==0)write(*,"(' Inlet density (pressure inlet BC) = ', F6.4)") rho_in
         endif
     endif

@@ -298,7 +298,7 @@ subroutine outlet_Zou_He_pressure_BC_before_odd    !before streaming type BC
     IMPLICIT NONE
     integer :: i,j,k
     integer(kind=1) :: wall_indicator
-    real(kind=8) :: tmp1,tmp2,tnx,tny,rho1,ux1,uy1,uz1
+    real(kind=8) :: tmp1,tnx,tny
 
     if(idz==npz-1)then
         !$omp parallel
@@ -310,7 +310,7 @@ subroutine outlet_Zou_He_pressure_BC_before_odd    !before streaming type BC
             do i=1,nx
                 wall_indicator = walls(i,j,nz)
 
-                !outlet pressure BC    k=1a
+                !outlet pressure BC    k=1
                 tmp1 = (&
                     f0(i,j,nz)+&
                     f1(i-1,j,nz)+&

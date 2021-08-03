@@ -154,17 +154,18 @@ MODULE Fluid_singlephase
     real(kind=8) ::  rt,rti,la_nu,la_nui !viscosity for singlephase fluid
     real(kind=8) ::  force_x,force_y,force_z, D_force_z, force_z0   !body force, default flow direction: z
     real(kind=8) ::  uin_max,uin_avg,uin_avg_0,flowrate
-    real(kind=8) ::  p_gradient,rho_out ,rho_in,rho_in_avg,rho_avg_inlet,rho_avg_outlet, rho_drop
+    real(kind=8) ::  rho_out ,rho_in,rho_in_avg,rho_avg_inlet,rho_avg_outlet, rho_drop
     real(kind=8) ::  relaxation,uin_avg_convec,p_max, rho_in_max, umax_global, target_inject_pore_volume
 
     !MRT relaxation parameters
     real(kind=8) ::   s_e,s_e2,s_q,s_nu,s_pi,s_t
+    integer :: mrt_para_preset
 
     !fluid distribution of previous step for convective outlet BC
     real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: f_convec_bc
 
     ! flow condition
-    real(kind=8) :: Re  
+    real(kind=8) :: Re
 
     !temporary arrays
     real(kind=8),ALLOCATABLE,DIMENSION(:) :: fl,pre   !flowrate, pressure
