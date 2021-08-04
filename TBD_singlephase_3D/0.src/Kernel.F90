@@ -59,7 +59,6 @@ subroutine kernel_odd(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
                 fy = 0d0
                 fz = force_Z   !body force force_z along flow direction
 
-
                 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MRT kernel, repeated part~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 !+++++++++- !calculate macroscopic variables++++++++++++
                 den=  ft0+ft1+ft2+ft3+ft4+ft5+ft6+ft7+ft8+ft9+ft10+ft11+ft12+ft13+ft14+ft15+ft16+ft17+ft18
@@ -99,7 +98,7 @@ subroutine kernel_odd(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
                 m_tx =   ft7  - ft8  + ft9  - ft10 - ft11 + ft12 - ft13 + ft14
                 m_ty = - ft7  - ft8  + ft9  + ft10 + ft15 - ft16 + ft17 - ft18
                 m_tz =   ft11 + ft12 - ft13 - ft14 - ft15 - ft16 + ft17 + ft18
-         
+
                 !relaxtion in moment space                
                 m_e = m_e - s_e*(m_e - (-11.0d0*den+19.0d0*u2)) + (38d0-19d0*s_e)*(fx*ux+fy*uy+fz*uz)                           !m1
                 m_e2 = m_e2 - s_e2*(m_e2 - (3.0d0*den - 5.5d0*u2)) + (-11d0+5.5d0*s_e2)*(fx*ux+fy*uy+fz*uz)                     !m2               
@@ -172,7 +171,6 @@ subroutine kernel_odd(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
                 ft17 = (  sum4 +  sum6 - sum7 - sum8*2d0     - m_pyz + m_ty + m_tz ) * (1d0-wall_indicator) + f16(i  ,j+1,k-1)*wall_indicator
                 ft18 = (  sum4 -  sum6 - sum7 - sum8*2d0     + m_pyz - m_ty + m_tz ) * (1d0-wall_indicator) + f15(i  ,j-1,k-1)*wall_indicator
                 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MRT kernel, repeated part~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
                 !+++++++++- AA pattern push step++++++++++++
                 f0(i,j,k)  = ft0

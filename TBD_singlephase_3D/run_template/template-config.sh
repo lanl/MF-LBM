@@ -44,69 +44,22 @@ cp $template_directory/clean.sh ./
 
 cp $template_directory/template-simulation_control.txt simulation_control.txt
 
-# benchmark_cmd=0
-# sed $sed_option "s|benchmark_cmd .*|benchmark_cmd $benchmark_cmd|g" ./simulation_control.txt
-# steady_state_option=0
-# sed $sed_option "s|steady_state_option .*|steady_state_option $steady_state_option|g" ./simulation_control.txt
-# convergence_criteria=1d-6
-# sed $sed_option "s|convergence_criteria .*|convergence_criteria $convergence_criteria|g" ./simulation_control.txt
-# external_geometry_read_cmd=0
-# sed $sed_option "s|external_geometry_read_cmd .*|external_geometry_read_cmd $external_geometry_read_cmd|g" ./simulation_control.txt
-# geometry_preprocess_cmd=0
-# sed $sed_option "s|geometry_preprocess_cmd .*|geometry_preprocess_cmd $geometry_preprocess_cmd|g" ./simulation_control.txt
-# extreme_large_sim_cmd=0
-# sed $sed_option "s|extreme_large_sim_cmd .*|extreme_large_sim_cmd $extreme_large_sim_cmd|g" ./simulation_control.txt
+# examples:
 
-# domain info
 # nx=40
 # ny=40
 # nz=60
 # sed $sed_option "s|lattice_dimensions .*|lattice_dimensions $nx,$ny,$nz|g" ./simulation_control.txt
-# exclude_layers_inlet=10
-# exclude_layers_outlet=10
-# sed $sed_option "s|excluded_layers .*|excluded_layers $exclude_layers_inlet,$exclude_layers_outlet|g" ./simulation_control.txt
+
 # periodic_x=0
 # periodic_y=0
 # periodic_z=0
 # sed $sed_option "s|periodic_indicator .*|periodic_indicator $periodic_x,$periodic_y,$periodic_z|g" ./simulation_control.txt
+
 # mpi_npx=1  # x-axis domain decomposition currently disabled, keep using mpi_npx=1 
 # mpi_npy=1
 # mpi_npz=2
 # sed $sed_option "s|MPI_process_num .*|MPI_process_num $mpi_npx,$mpi_npy,$mpi_npz|g" ./simulation_control.txt
-
-# fluid properties
-# fluid1_viscosity=0.004
-# fluid2_viscosity=0.06
-# sed $sed_option "s|fluid1_viscosity .*|fluid1_viscosity $fluid1_viscosity|g" ./simulation_control.txt
-# sed $sed_option "s|fluid2_viscosity .*|fluid2_viscosity $fluid2_viscosity|g" ./simulation_control.txt
-# surface_tension=0.03
-# sed $sed_option "s|surface_tension .*|surface_tension $surface_tension|g" ./simulation_control.txt
-# theta=30
-# sed $sed_option "s|theta .*|theta $theta|g" ./simulation_control.txt
-
-# flow condition
-# target_inject_pore_volume=1.0
-# sed $sed_option "s|target_inject_pore_volume .*|target_inject_pore_volume $target_inject_pore_volume|g" ./simulation_control.txt
-# body_force_0=0d-6
-# sed $sed_option "s|body_force_0 .*|body_force_0 $body_force_0|g" ./simulation_control.txt
-
-# timers
-# ntime_visual=10000000
-# sed $sed_option "s|ntime_visual .*|ntime_visual $ntime_visual|g" ./simulation_control.txt
-# monitor_timer=1000
-# sed $sed_option "s|monitor_timer .*|monitor_timer $monitor_timer|g" ./simulation_control.txt
-# display_steps_timer=1000
-# sed $sed_option "s|display_steps_timer .*|display_steps_timer $display_steps_timer|g" ./simulation_control.txt
-# checkpoint_save_timer=2.0
-# sed $sed_option "s|checkpoint_save_timer .*|checkpoint_save_timer $checkpoint_save_timer|g" ./simulation_control.txt
-# simulation_duration_timer=15.7
-# sed $sed_option "s|simulation_duration_timer .*|simulation_duration_timer $simulation_duration_timer|g" ./simulation_control.txt
-
-# d_vol_animation=0.05
-# sed $sed_option "s|d_vol_animation .*|d_vol_animation $d_vol_animation|g" ./simulation_control.txt
-# d_vol_monitor=0.01
-# sed $sed_option "s|d_vol_monitor .*|d_vol_monitor $d_vol_monitor|g" ./simulation_control.txt
-
 
 
 

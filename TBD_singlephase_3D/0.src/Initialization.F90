@@ -7,8 +7,8 @@ subroutine initialization_basic
     use Fluid_singlephase
     use mpi_variable
     IMPLICIT NONE
-    integer:: i,j,k, lx,ly,lz,n,z,n_vin, n_small,n_large    !n_vin number of terms in inlet velocity profile
-    real(kind=8) :: temp,x,y, dp_small, dp_large, A_xy_full, omega
+    integer :: i,j,k, lx,ly,lz,n_vin
+    real(kind=8) :: omega
     LOGICAL :: ALIVE
 
     call read_parameter
@@ -37,13 +37,12 @@ subroutine initialization_basic
     call set_walls
     
     !~~~~~~~~~~~~~~~~~~ dimensions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ! la_x,y,z only used in fluid displacement simulation
-    ! channel walls are considered below for effective sample volume and cross sectional area
-    la_z =  nz_sample - 1 - 1       
-    la_y =  ny_sample - 1 - 1
-    la_x =  nx_sample - 1 - 1
-    A_xy = la_x*la_y  !cross section area
-    volume_sample = A_xy*nz_sample     !rock volume
+    ! effective dimensions for an open channel (considering half-way bounceback)
+    ! those parameters are important in inlet velocity distribution calculation
+    la_z =  nzGlobal - 1   
+    la_y =  nyGlobal - 1 - 0.5 - 0.5    ! half-way bounceback 0.5 + 0.5
+    la_x =  nxGlobal - 1 - 0.5 - 0.5
+    A_xy = la_x*la_y  ! cross-sectional area for an open duct
     !~~~~~~~~~~~~~~~~~~~~~~~~~
 
     if(id==0)then
@@ -57,14 +56,14 @@ subroutine initialization_basic
 
         write(11,"('Total number of effective pore nodes (middle section for analysis) = ', I14)") pore_sum_effective
     
-        porosity_full = dble(pore_sum)/dble(nxGlobal-2)/dble(nyGlobal-2)/dble(nzglobal)
-        porosity_effective = dble(pore_sum_effective)/dble(nxGlobal-2)/dble(nyGlobal-2)/dble(nzglobal - n_exclude_outlet - n_exclude_inlet)
+        porosity_full = dble(pore_sum)/(la_x*la_y*la_z)
+        porosity_effective = dble(pore_sum_effective)/(la_x*la_y)/dble(nzglobal - n_exclude_outlet - n_exclude_inlet)
         write(11,"('Full domain porosity = ', F6.4)") porosity_full
         write(11,"('Effective domain porosity (eclude inlet/outlet) = ', F6.4)") porosity_effective
         close(11)
 
         write(*,"(' Total number of pore nodes (excluding buffer layers) = ', I14)") pore_sum 
-        write(*,"(' Inlet open cross sectional area = ', F14.2)") A_xy
+        write(*,"(' Inlet cross sectional area = ', F14.2)") A_xy
         print*, 'Total number of effective pore nodes (middle section for analysis) = '
         print*, pore_sum_effective
         write(*,"(' Full domain porosity = ', F6.4)") porosity_full
@@ -87,26 +86,26 @@ subroutine initialization_basic
         write(*,"(' Fluid relaxation time = ', F8.6)") rt
     endif
 
-    !MRT PARAMETERS
+    !MRT PARAMETERS, assuming viscosity is an constant
     omega = 1d0/(3d0*la_nu+0.5d0)
     s_nu =  omega
 
     if(mrt_para_preset==1)then
-      !************bounceback opt************
+      !************ optimized for bounceback ************
       s_e =  omega
       s_e2 = omega
       s_pi = omega
       s_q =  8.0d0*(2.0d0-omega)/(8.0d0-omega)
       s_t = s_q
     elseif(mrt_para_preset==1)then
-      !************original opt************
+      !************ original preset, more stable ************
       s_e =  1.19d0
       s_e2 = 1.4d0
       s_pi = 1.4d0
       s_q= 1.2d0
       s_t = 1.98d0
     else
-      !************SRT************
+      !************ single relaxation time ************
       s_e =  omega
       s_e2 = omega
       s_pi = omega
@@ -114,9 +113,8 @@ subroutine initialization_basic
       s_t = omega
     endif
 
-
-    ! body force, pressure gradient
-    ! if pressure or velocity BC is used to drive the flow, force_z should be set to 0
+    ! body force/pressure gradient
+    ! if pressure or velocity BC is used to drive the flow, force_z should 0
     force_Z=force_z0
     
     !outlet pressure (density) only used when outlet_BC==2
@@ -133,16 +131,6 @@ subroutine initialization_basic
     endif
     if(id==0)print*,'******************** End processing fluid and flow info **********************'
     if(id==0)print*,''
-
-    if(d_vol_animation>0d0.and.inlet_BC==1.and.kper==0.and.domain_wall_status_z_min==0.and.domain_wall_status_z_max==0)then 
-        ntime_animation = dble(d_vol_animation * pore_sum) / flowrate
-        ! due to AA pattern streaming, PDFs after odd step is stored in oppotite way.
-        ! only use even step for outputs 
-        if (MOD(ntime_animation,2) .eq. 1) then  
-            ntime_animation = ntime_animation + 1   
-        endif 
-        if(id==0)print*,'Animation VTK files timer is modified based on injected volume:', ntime_animation
-    endif
 
     if(d_vol_detail>0d0.and.inlet_BC==1.and.kper==0.and.domain_wall_status_z_min==0.and.domain_wall_status_z_max==0)then 
         ntime_visual = dble(d_vol_detail * pore_sum) / flowrate
@@ -201,7 +189,7 @@ subroutine initialization_open_velocity_inlet_BC
     enddo
 
     n_vin = 1000
-    ! if analytical velocity profile is seleceted
+    ! analytical velocity profile
     call inlet_vel_profile_rectangular(uin_avg_0, n_vin)
 
     if(target_inject_pore_volume>0)then  ! stop simulation based on injected volume is enabled
@@ -216,8 +204,6 @@ subroutine initialization_open_velocity_inlet_BC
 return
 end subroutine initialization_open_velocity_inlet_BC
 
-
-
 !=====================================================================================================================================
 !---------------------- initialization for new simulation - field variables ----------------------
 !=====================================================================================================================================
@@ -228,7 +214,7 @@ subroutine initialization_new
     IMPLICIT NONE
     include 'mpif.h'
     integer:: i,j,k ,m,n
-    real(kind=8) :: temp,x,y,z,tempa,tempc,usqrt,udotc,rho1,rho2,ux1,uy1,uz1,z1,z2
+    real(kind=8) :: temp,x,y,z,rho1,ux1,uy1,uz1
 
     ntime0=1
     !initializing fluid
@@ -259,7 +245,7 @@ subroutine initialization_new_pdf
     use mpi_variable
     IMPLICIT NONE
     integer:: i,j,k 
-    real(kind=8) :: usqrt,udotc,random,rho1
+    real(kind=8) :: usqrt,udotc,rho1
 
     !$OMP parallel DO private(i,j,rho1,usqrt) collapse(2)
     do k=1-overlap,nz+overlap
@@ -325,7 +311,6 @@ subroutine initialization_new_pdf
 end subroutine initialization_new_pdf
 
 
-
 !=====================================================================================================================================
 !---------------------- initialization for old simulation - field variables ----------------------
 !=====================================================================================================================================
@@ -387,7 +372,6 @@ subroutine initialization_old
 
     return
 end subroutine initialization_old
-
 
 
 !=====================================================================================================================================
@@ -504,7 +488,7 @@ subroutine MemAllocate(flag)
         isize_pdf_ex = nx !x edge
         isize_pdf_ey = ny
         isize_pdf_ez = nz
-       
+
         !MPI status
         allocate(MPI_STAT(MPI_STATUS_SIZE,4), MPI_ESTAT(MPI_STATUS_SIZE,8))
 
@@ -522,10 +506,15 @@ subroutine MemAllocate(flag)
             deallocate(f_convec_bc)
         endif
         
-        deallocate(send_pdf_xP,send_pdf_xM,send_pdf_yP,send_pdf_yM,send_pdf_zP,send_pdf_zM,recv_pdf_xM,recv_pdf_xP,recv_pdf_yM,recv_pdf_yP,recv_pdf_zM,recv_pdf_zP)
+        deallocate(send_pdf_xP,send_pdf_xM,send_pdf_yP,send_pdf_yM,send_pdf_zP,send_pdf_zM,&
+        recv_pdf_xM,recv_pdf_xP,recv_pdf_yM,recv_pdf_yP,recv_pdf_zM,recv_pdf_zP)
 
-        deallocate(send_pdf_yPzP,send_pdf_yMzP,send_pdf_yPzM,send_pdf_yMzM,send_pdf_xPzP,send_pdf_xMzP,send_pdf_xPzM,send_pdf_xMzM,send_pdf_xPyP,send_pdf_xMyP,send_pdf_xPyM,send_pdf_xMyM)
-        deallocate(recv_pdf_yPzP,recv_pdf_yMzP,recv_pdf_yPzM,recv_pdf_yMzM,recv_pdf_xPzP,recv_pdf_xMzP,recv_pdf_xPzM,recv_pdf_xMzM,recv_pdf_xPyP,recv_pdf_xMyP,recv_pdf_xPyM,recv_pdf_xMyM)
+        deallocate(send_pdf_yPzP,send_pdf_yMzP,send_pdf_yPzM,send_pdf_yMzM,send_pdf_xPzP,&
+        send_pdf_xMzP,send_pdf_xPzM,send_pdf_xMzM,send_pdf_xPyP,send_pdf_xMyP,send_pdf_xPyM,send_pdf_xMyM)
+
+        deallocate(recv_pdf_yPzP,recv_pdf_yMzP,recv_pdf_yPzM,recv_pdf_yMzM,recv_pdf_xPzP,&
+        recv_pdf_xMzP,recv_pdf_xPzM,recv_pdf_xMzM,recv_pdf_xPyP,recv_pdf_xMyP,recv_pdf_xPyM,recv_pdf_xMyM)
+        
         deallocate(fl,pre,tk)
 
     endif

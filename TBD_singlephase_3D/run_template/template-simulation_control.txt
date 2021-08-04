@@ -27,7 +27,7 @@ extreme_large_sim_cmd 0
 # Steady state option: 
 # 0 - non-steady state simulation (complete based on target injected PV or ntime_max)
 # 1 - steady state simulation (complete based on flowrate)
-steady_state_option 0
+steady_state_option 1
 
 # MRT collision parameters presets: 
 # 1 - bounceback optimization
@@ -77,11 +77,11 @@ periodic_indicator 0,0,0
 
 # characteristic length of the flow domain (used in the definition of Re number): 
 # default is nyGlobal; can be average pore size or obstacle diameter
-char_length  11.0
+char_length  20.0
 
 # Reynolds number 
 # only used in velocity inlet BC
-Reynolds_number  100.0
+Reynolds_number  10.0
 
 # Density (pressure) drop
 # only used in pressure inlet and outlet BC
@@ -105,14 +105,14 @@ fluid_viscosity 0.01
 # inlet_BC selection (overridden by z (flow) direction periodic BC): 1-velocity; 2-pressure 
 inlet_BC 1
 # outlet_BC selection (overridden by z (flow) direction periodic BC): 1-convective; 2-pressure 
-outlet_BC 1
+outlet_BC 2
 
 # Option to stop simulation based on reaching target fluid injection:
 # It is enabled by modifying ntime_max based on injection rate.
 # The value is in PV (pore-volume). 
 # It is not very precise considering the LBM compressibility error.
 # A negative value will disable target_inject_pore_volume – simulation continues until existing ntime_max
-target_inject_pore_volume 1.0
+target_inject_pore_volume -1.0
 
 # initial value of body force or pressure gradient along z direction
 body_force_0 0d-6
@@ -125,7 +125,7 @@ max_time_step 100000000
 max_time_step_benchmark 100
 
 # timer: when to output detailed visualization data - overridden by d_vol_detail if d_vol_detail>0  
-ntime_visual 10000000
+ntime_visual 10000
 
 # timer: when to output bulk property data - overridden by d_vol_monitor if d_vol_monitor>0 
 monitor_timer 1000
@@ -158,5 +158,5 @@ d_vol_detail -1.0
 
 # timer: when to output bulk property data - based on injected pore volume 
 # only effective for constant velocity BC, disabled if it is a negative value
-d_vol_monitor 0.01
+d_vol_monitor -0.01
 

@@ -9,7 +9,7 @@ subroutine set_walls
     IMPLICIT NONE
     include 'mpif.h'
     integer :: i,j,L,M,N,k,icount,isize,out1,out2,out3,rank,status(MPI_STATUS_SIZE),nmax
-    real(kind=8) :: random,x,y,z,r1,r2,xc,yc,zc
+    real(kind=8) :: x,y,z,r1,r2,xc,yc,zc
     LOGICAL ALIVE
     integer :: num
     character (len=200) :: flnm, dummy   !file name
@@ -24,6 +24,7 @@ subroutine set_walls
     isize = nx*ny*nz
 
     !~~~~~~~~~~~~~~~~ initialize wall array ~~~~~~~~~~~~~~~~~~~~
+    ! local
     !$OMP parallel
     !$omp do private(i,j) collapse(2)
     do k=1-overlap_walls,nz+overlap_walls
@@ -34,6 +35,7 @@ subroutine set_walls
         enddo
     enddo
 
+    ! global
     !$OMP DO private(i,j) collapse(2)
     do k=1,nzglobal
         do j=1,nyglobal
@@ -45,6 +47,9 @@ subroutine set_walls
     !$omp end parallel
 
     !~~~~~~~~~~~~~~~~ read wall data ~~~~~~~~~~~~~~~~~~~~
+    nx_sample=0
+    ny_sample=0
+    nz_sample=0
     if(external_geometry_read_cmd==1)then
         if(id==0)print*, 'This simulation uses external geometry data!'
         INQUIRE(FILE='./path_info.txt',EXIST=ALIVE)
@@ -70,13 +75,8 @@ subroutine set_walls
             call mpi_abort(MPI_COMM_WORLD,ierr)
         endif
     else
-        if(id==0)print*, 'This simulation does not use external geometry data!'
-        ! duct flow
-        nx_sample=nxglobal
-        ny_sample=nyglobal
-        nz_sample=nzGlobal
+        if(id==0)print*, 'This simulation does not use external geometry data!'        ! duct flow
     endif
-
 
     !~~~~~~~~~~~~~~~~ modify geometry or create hard coded geometry ~~~~~~~~~~~~~~~~~~~~
     if(modify_geometry_cmd==1.and.id==0)then
@@ -138,8 +138,8 @@ subroutine set_walls
     enddo
 
     !~~~~~~~~~~~~~~~~ specify channel walls for local wall arrays ~~~~~~~~~~~~~~~~~~~~
-    ! the reason to do this in local arrays is to specify correct solid nodes information in the 
-    ! overlap layers of local wall array. For example, wall(j>=ny)=1 means ny, ny+1,..., 
+    ! the reason to do this in local arrays is to specify correct solid nodes information for the 
+    ! overlap layers of the local wall array. For example, walls(j>=ny)=1 means ny, ny+1,..., 
     ! ny+overlap_walls are all solid nodes.
     ! walls=1: solid;  walls=0: fluid
     !$OMP PARALLEL DO private(i,j)  collapse(2)
@@ -189,6 +189,8 @@ subroutine set_walls
     enddo
 
     !~~~~~~~~~~~~~~~~ calculate open area at inlet ~~~~~~~~~~~~~~~~~~~~
+    ! A_xy_effective is not equal to A_xy
+    ! A_xy_effective is used when the inlet does not cover the entire xy plane
     icount = 0
     !$OMP PARALLEL DO private(i)reduction(+:icount)
     do j=1,nyglobal
@@ -196,7 +198,7 @@ subroutine set_walls
             if(walls_global(i,j,1)<=0)icount = icount + 1
         enddo
     enddo
-    A_xy_effective= icount  !inlet area
+    A_xy_effective= icount  !effecitve inlet area
     if(id==0)print*,'Inlet effective open area = ', A_xy_effective
     call pore_profile   !pore profile info along the flow direction z
 
@@ -234,7 +236,6 @@ subroutine set_walls
         if(id==0)print*,'Fluid point information saved!'
     endif
 
-
     call ztransport_walls(0,0,overlap_walls)
     call ytransport_walls(0,overlap_walls,overlap_walls)
     call xtransport_walls(overlap_walls,overlap_walls,overlap_walls)
@@ -255,7 +256,7 @@ subroutine modify_geometry
     xc = 0.5d0*dble(nxglobal+1)
     yc = 0.5d0*dble(nyglobal+1)
     zc = 0.5d0*dble(nzglobal+1)
-    r1 = 0.25d0*nyglobal  ! used to creat simple obstacle
+    r1 = 0.15d0*nyglobal  ! used to creat simple obstacle
     r2 = nyglobal * 0.5d0  ! tube radius
     buffer = 10    ! inlet outlet reservior
     !$OMP PARALLEL DO private(i,j)
@@ -402,7 +403,7 @@ end subroutine pore_profile
 !======================================================================================================================================
 !---------------------- compute macroscopic varaibles from PDFs ----------------------
 !======================================================================================================================================
-subroutine compute_macro_vars     ! u,v,w,rho   (phi already known)
+subroutine compute_macro_vars     ! u,v,w,rho  
     use Misc_module
     use Fluid_singlephase
     IMPLICIT NONE

@@ -68,21 +68,6 @@ module Misc_module
 
     integer :: n_fluid_node_local  !total fluid nodes of local domain
 
-    ! type indirect_solid_boundary_nodes
-    !     integer :: ix,iy,iz,i_fluid_num   !number of fluid nodes connected to the boundary node
-    !     integer, dimension (1:18) :: neighbor_list
-    !     real(kind=8) :: la_weight              !weight factor used in extrapolation
-    ! end type indirect_solid_boundary_nodes
-    ! type(indirect_solid_boundary_nodes), allocatable, dimension(:) :: solid_boundary_nodes
-    ! integer :: num_solid_boundary_global,num_solid_boundary     ! number of solid boundary nodes
-    
-    ! type indirect_fluid_boundary_nodes
-    !     integer :: ix,iy,iz
-    !     real(kind=8) :: nwx,nwy,nwz,cos_theta  !normal direction of the solid surface, local contact angle
-    ! end type indirect_fluid_boundary_nodes
-    ! type(indirect_fluid_boundary_nodes), allocatable, dimension(:) :: fluid_boundary_nodes
-    ! integer :: num_fluid_boundary_global,num_fluid_boundary     ! number of fluid boundary nodes
-
     integer,  allocatable, dimension(:) :: pore_profile_z   !used in IO for easier data process. Only available in MPI process id0
     integer :: pore_sum, pore_sum_effective  !effeictive pore sum excludes inlet and outlet portion
     real(kind=8) :: porosity_full, porosity_effective
@@ -105,27 +90,19 @@ module Misc_module
     real(kind=8), parameter :: w_equ_0=1.0d0/3.0d0
     real(kind=8), parameter :: w_equ_1=1.0d0/18.0d0
     real(kind=8), parameter :: w_equ_2=1.0d0/36.0d0
-    real(kind=8), parameter :: la_vel_norm_i=1.0d0/sqrt(2d0)   !account for the diagonal length
-
 
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ unsorted ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
     !timers
     integer :: ntime0, ntime, ntime_max, ntime_max_benchmark,ntime_macro,ntime_visual,ntime_pdf,ntime_relaxation,ntime_animation
     integer :: ntime_clock_sum, ntime_display_steps,ntime_monitor,ntime_monitor_profile,ntime_monitor_profile_ratio
     integer :: num_slice   !how many monitoring slices (evenly divided through y axis)
-    real(kind=8) :: d_sa_vol, sa_vol, d_vol_animation, d_vol_detail, d_vol_monitor, d_vol_monitor_prof
+    real(kind=8) :: d_vol_animation, d_vol_detail, d_vol_monitor, d_vol_monitor_prof
     real(kind=8) :: checkpoint_save_timer,checkpoint_2rd_save_timer, simulation_duration_timer  
     integer :: wallclock_timer_status_sum   !wall clock time reach desired time for each MPI process
     double precision :: wallclock_pdfsave_timer  ! save PDF data for restart simulation based on wall clock timer
 
     !monitors
     real(kind=8) :: monitor_previous_value , monitor_current_value
-    integer, parameter :: time_pt_max = 10      ! maximum 10 points in the history    
-    type monitor_time_pt
-        real(kind=8) :: v1,v2,v3,it  !  ntime / ntime_monitor
-    end type monitor_time_pt
-    type(monitor_time_pt),dimension(time_pt_max) :: monitor_pt          
-    integer :: n_current_monitor  !current index in the monitor_time_pt array
 
 #ifdef _openacc
     integer :: devnum
@@ -169,6 +146,7 @@ MODULE Fluid_singlephase
 
     !temporary arrays
     real(kind=8),ALLOCATABLE,DIMENSION(:) :: fl,pre   !flowrate, pressure
+
 END MODULE Fluid_singlephase
 !********************************************************************** Fluid - singlephase *************************************************************************
 
@@ -182,16 +160,9 @@ module mpi_variable
     INTEGER, DIMENSION(1:mpi_dim) :: mpi_coords
     INTEGER, PARAMETER :: TAG1 = 1, TAG2 = 2, TAG3 = 3, TAG4 = 4, TAG5 = 5, TAG6 = 6, TAG7 = 7, TAG8 = 8, TAG9 = 9, &
         TAG10 = 10, TAG11 = 11, TAG12 = 12, TAG13 = 13, TAG14 = 14, TAG15 = 15, TAG16 = 16, TAG17 = 17, TAG18 = 18
-    ! INTEGER, PARAMETER :: TAG_phi_zM =19,TAG_phi_zP =20, TAG_phi_yM =21,TAG_phi_yP =22, TAG_phi_xM =23,TAG_phi_xP =24, &
-    !     TAG_phi_xM_yM =25, TAG_phi_xP_yM =26, TAG_phi_xM_yP =27, TAG_phi_xP_yP =28, &
-    !     TAG_phi_xM_zM =29, TAG_phi_xP_zM =30, TAG_phi_xM_zP =31, TAG_phi_xP_zP =32, &
-    !     TAG_phi_yM_zM =33, TAG_phi_yP_zM =34, TAG_phi_yM_zP =35, TAG_phi_yP_zP =36, &
-    !     TAG_phi_xM_yM_zM =37 ,  TAG_phi_xM_yP_zM =38 ,  TAG_phi_xM_yM_zP =39 ,  TAG_phi_xM_yP_zP =40 ,  TAG_phi_xP_yM_zM =41 ,  TAG_phi_xP_yP_zM =42 ,  TAG_phi_xP_yM_zP =43 ,  TAG_phi_xP_yP_zP =44
 
     INTEGER, DIMENSION(:) :: MPI_REQ_X(4), MPI_REQ_Y(4), MPI_REQ_Z(4)
-    !INTEGER, DIMENSION(:) :: MPI_REQ_phi_X(4), MPI_REQ_phi_Y(4), MPI_REQ_phi_Z(4)  !macro varaibles such as phi
     INTEGER, DIMENSION(:) :: MPI_REQ_EX(8), MPI_REQ_EY(8), MPI_REQ_EZ(8)  !edge
-    !INTEGER, DIMENSION(:) :: MPI_REQ_phi_EX(8), MPI_REQ_phi_EY(8), MPI_REQ_phi_EZ(8)  !macro varaibles such as phi, edge
 
     INTEGER,ALLOCATABLE,DIMENSION(:,:) :: MPI_STAT, MPI_ESTAT
     logical :: mpi_x,mpi_y,mpi_z   ! MPI communication flags along different directions: 0 - no MPI communication; 1 - with MPI communication 
@@ -210,13 +181,6 @@ module mpi_variable
     integer :: isize_pdf_ex !buffer size for pdf, edge
     integer :: isize_pdf_ey
     integer :: isize_pdf_ez
-    ! integer :: isize_phi_x  !buffer size for phi
-    ! integer :: isize_phi_y
-    ! integer :: isize_phi_z
-    ! integer :: isize_phi_ex  !buffer size for phi, edge
-    ! integer :: isize_phi_ey
-    ! integer :: isize_phi_ez
-    ! integer :: isize_phi_corner  !buffer size for phi, corner
 
     integer :: tk_isize   !!buffer size used in monitor subroutine
     integer :: iz_async, iy_async, ix_async ! MPI boundary layers number for overlaping communication and computation
@@ -231,18 +195,6 @@ module mpi_variable
     real(kind=8),ALLOCATABLE,DIMENSION(:) :: recv_pdf_xPyP,recv_pdf_xMyP,recv_pdf_xPyM,recv_pdf_xMyM
 
     real(kind=8),ALLOCATABLE,DIMENSION(:) :: tk   !buffer used in monitor subroutine
-
-    ! real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: send_phi_xM,send_phi_xP,send_phi_yM,send_phi_yP,send_phi_zM,send_phi_zP
-    ! real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: recv_phi_xM,recv_phi_xP,recv_phi_yM,recv_phi_yP,recv_phi_zM,recv_phi_zP
-    ! real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: send_phi_yPzP,send_phi_yMzP,send_phi_yPzM,send_phi_yMzM    !edge send
-    ! real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: send_phi_xPzP,send_phi_xMzP,send_phi_xPzM,send_phi_xMzM
-    ! real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: send_phi_xPyP,send_phi_xMyP,send_phi_xPyM,send_phi_xMyM
-    ! real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: recv_phi_yPzP,recv_phi_yMzP,recv_phi_yPzM,recv_phi_yMzM    !edge recv
-    ! real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: recv_phi_xPzP,recv_phi_xMzP,recv_phi_xPzM,recv_phi_xMzM
-    ! real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: recv_phi_xPyP,recv_phi_xMyP,recv_phi_xPyM,recv_phi_xMyM
-    ! !corner
-    ! real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: send_phi_xPyPzP,send_phi_xPyMzP,send_phi_xPyPzM,send_phi_xPyMzM,send_phi_xMyPzP,send_phi_xMyMzP,send_phi_xMyPzM,send_phi_xMyMzM
-    ! real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: recv_phi_xPyPzP,recv_phi_xPyMzP,recv_phi_xPyPzM,recv_phi_xPyMzM,recv_phi_xMyPzP,recv_phi_xMyMzP,recv_phi_xMyPzM,recv_phi_xMyMzM
 
 end module mpi_variable
 !********************************************************************** MPI and OpenACC *****************************************************************************

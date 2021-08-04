@@ -74,8 +74,6 @@ subroutine inlet_bounce_back_velocity_BC_after_odd   !after streaming type BC
 end subroutine inlet_bounce_back_velocity_BC_after_odd
 
 
-
-
 !==================================================================================================================================================================
 !---------------------- Zou-He type pressure/velocity open inlet boundary conditions ----------------------
 ! currently, there should be only one dominant phase at the inlet boundary nodes, 
@@ -190,10 +188,6 @@ subroutine inlet_Zou_He_pressure_BC_after_odd   !after streaming type BC
 
     endif
 end subroutine inlet_Zou_He_pressure_BC_after_odd
-
-
-
-
 
 
 
