@@ -96,13 +96,12 @@ program main
     if(id0==0)print*,'************************** Initialization ends ********************************'
     if(id0==0)print*, ''
 
-    !$acc data copy(f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,g0,g1,g2,g3,g4,g5,g6,g7,g8,g9,g10,g11,g12,g13,g14,g15,g16,g17,g18,u,v,w,rho) &
+    !$acc data copy(f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,u,v,w,rho) &
     !$acc copyin(walls,w_in) create(fl,pre,tk) &
-    !$acc copyin(solid_boundary_nodes,fluid_boundary_nodes) &
     !$acc copy(f_convec_bc) &
     !$acc create(send_pdf_xP,send_pdf_xM,send_pdf_yP,send_pdf_yM,send_pdf_zP,send_pdf_zM, recv_pdf_xM,recv_pdf_xP,recv_pdf_yM,recv_pdf_yP,recv_pdf_zM,recv_pdf_zP, &
     !$acc send_pdf_yPzP,send_pdf_yMzP,send_pdf_yPzM,send_pdf_yMzM, send_pdf_xPzP,send_pdf_xMzP,send_pdf_xPzM,send_pdf_xMzM,send_pdf_xPyP,send_pdf_xMyP,send_pdf_xPyM,send_pdf_xMyM,&
-    !$acc recv_pdf_yPzP,recv_pdf_yMzP,recv_pdf_yPzM,recv_pdf_yMzM, recv_pdf_xPzP,recv_pdf_xMzP,recv_pdf_xPzM,recv_pdf_xMzM,recv_pdf_xPyP,recv_pdf_xMyP,recv_pdf_xPyM,recv_pdf_xMyM,&
+    !$acc recv_pdf_yPzP,recv_pdf_yMzP,recv_pdf_yPzM,recv_pdf_yMzM, recv_pdf_xPzP,recv_pdf_xMzP,recv_pdf_xPzM,recv_pdf_xMzM,recv_pdf_xPyP,recv_pdf_xMyP,recv_pdf_xPyM,recv_pdf_xMyM)
 
     t_all_sum=0.0d0
     ntime=ntime0

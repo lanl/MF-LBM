@@ -495,7 +495,7 @@ subroutine save_checkpoint(save_option)   ! option 0 - default location; option 
     character (len=30) :: flnm   !file name
     character (len=255) :: cwd
 
-    !$acc update host(f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,g0,g1,g2,g3,g4,g5,g6,g7,g8,g9,g10,g11,g12,g13,g14,g15,g16,g17,g18)
+    !$acc update host(f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18)
     if(outlet_bc==1)then    !convective BC
         !$acc update host(f_convec_bc)
     endif

@@ -179,7 +179,7 @@ subroutine mpi_pdf_pull_sync_update
         !$OMP DO private(i)
         !$acc update device(recv_pdf_zM,recv_pdf_zP)async(z_pdf_update_async)
         !$acc kernels present(f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,&
-        !$acc & ,send_pdf_zP,send_pdf_zM)async(z_pdf_update_async)
+        !$acc & send_pdf_zP,send_pdf_zM)async(z_pdf_update_async)
         !$acc loop
         do j = 1, ny
             do i = 1, nx
@@ -209,7 +209,7 @@ subroutine mpi_pdf_pull_sync_update
         !$OMP DO private(i)
         !$acc update device(recv_pdf_yM,recv_pdf_yP)async(y_pdf_update_async)
         !$acc kernels present(f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,&
-        !$acc & ,send_pdf_yP,send_pdf_yM)async(y_pdf_update_async)
+        !$acc & send_pdf_yP,send_pdf_yM)async(y_pdf_update_async)
         !$acc loop
         do k = 1, nz
             do i = 1, nx

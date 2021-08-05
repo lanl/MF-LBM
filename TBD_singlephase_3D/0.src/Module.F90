@@ -112,10 +112,8 @@ module Misc_module
     integer, parameter :: LBM_kernels=0
     integer, parameter :: LBM_sync=0, LBM_async=1, LBM_async_z=2, LBM_async_y=3, LBM_async_x=4
     integer, PARAMETER :: z_pdf_update_async=5, y_pdf_update_async=6, x_pdf_update_async=7
-    ! integer, PARAMETER :: z_phi_update_async=8, y_phi_update_async=9, x_phi_update_async=10
-    ! integer, PARAMETER :: edge_pdf_async=11, edge_pdf_update_async=12
-    ! integer, PARAMETER :: edge_phi_async=13, edge_phi_update_async=14
-
+    integer, PARAMETER :: edge_pdf_async=11, edge_pdf_update_async=12
+    
 end module Misc_module
 !*************************************************************************** Misc_module ****************************************************************************
 
