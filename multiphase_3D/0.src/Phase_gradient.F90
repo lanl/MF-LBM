@@ -115,7 +115,7 @@ subroutine color_graident
 
     ! ~~~~~~~~~~~~~~~~~~ calculate CSF forces based on interace curvature  ~~~~~~~~~~~~~~~~~~
     !$omp parallel do private(i,j,kxx,kxy,kxz,kyx,kyy,kyz,kzx,kzy,kzz) collapse(2)
-    !$acc kernels present(curv,cn_x,cn_y,cn_z,curv)
+    !$acc kernels present(curv,cn_x,cn_y,cn_z)
     !$acc loop device_type(NVIDIA)
     do k=1,nz
         ! !$acc loop device_type(NVIDIA)
