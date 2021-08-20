@@ -254,8 +254,8 @@ subroutine modify_geometry
 
     ! domain center, used as a reference point
     xc = 0.5d0*dble(nxglobal+1)
-    yc = 0.5d0*dble(nyglobal+1)
-    zc = 0.5d0*dble(nzglobal+1)
+    yc = 0.45d0*dble(nyglobal+1)
+    zc = 0.3d0*dble(nzglobal+1)
     r1 = 0.15d0*nyglobal  ! used to creat simple obstacle
     r2 = nyglobal * 0.5d0  ! tube radius
     buffer = 10    ! inlet outlet reservior

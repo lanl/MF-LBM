@@ -657,25 +657,48 @@ end subroutine change_inlet_fluid_phase
 
 
 !*************inlet velocity - analytical solution**********************************************************
-real(kind=8) function w_in_channel(x1,y1,kn,ua,coe_Q)
-    use Misc_module
-    use mpi_variable
-    IMPLICIT NONE
-    integer :: kn,n
-    real(kind=8) :: xx,yy,x1,y1, temp1,ua,coe_Q
+subroutine inlet_vel_profile_rectangular(vel_avg, num_terms)    
+  use Misc_module
+  use Fluid_singlephase
+  use mpi_variable
+  IMPLICIT NONE
+  real(kind=8) :: vel_avg, a, b, xx, yy, tmp1, tmp2, tmp3
+  integer :: n, num_terms, i,j, x, y
+  
+  a = 0.5d0 * la_x
+  b = 0.5d0 * la_y
 
-    xx = x1 - dble(nxGlobal-2)*0.5d0
-    yy = y1 - dble(nyGlobal-2)*0.5d0
+  tmp1 = 0.0d0
+  do n=1,num_terms,2
+      tmp1 = tmp1 + (dtanh(0.5d0*dble(n)*pi*b/a)) / n**5
+  enddo
 
-    temp1 = 0.0d0
-    do n=1,kn,2
-        temp1 = temp1 + (-1.0d0)**(0.5d0*dble(n-1)) * dcos(dble(n)*pi*xx/la_x)/dble(n)**3 *&
-            &(1.0d0 - (dexp(dble(n)*pi*(yy-la_y*0.5d0)/la_x)+dexp(dble(n)*pi*(-yy-la_y*0.5d0)/la_x))/(1.0d0+dexp(-dble(n)*pi*la_y/la_x)))
+  tmp2 = 1.0d0 - 192d0 / pi**5 * (a/b) * tmp1
+
+  tmp2 = -3d0 * vel_avg  / (tmp2 * a**2)
+
+  !$OMP PARALLEL DO private(i,n,x,y,xx,yy,tmp3)
+  do j=1,ny
+    do i=1,nx   
+        x = idx*nx + i
+        y = idy*ny + j
+        if(x>1.and.x<nxGlobal.and.y>1.and.y<nyGlobal)then
+          xx = x - 1.5d0 - a 
+          yy = y - 1.5d0 - b
+          tmp3 = 0d0
+          do n=1,num_terms,2
+            tmp3 = tmp3 + (-1.0d0)**(0.5d0*dble(n-1)) * dcos(0.5d0*n*pi*xx/a)/n**3 &
+            ! * (1.0d0 - dcosh(0.5d0*n*pi*yy/a) / dcosh(0.5d0*n*pi*b/a)) =   
+            * (1.0d0 - ( dexp(0.5d0*n*pi*(yy-b)/a) + dexp(0.5d0*n*pi*(-yy-b)/a)) / (1d0 + dexp(0.5d0*n*pi*(-b-b)/a)) )  
+          enddo
+          w_in(i,j) = tmp3 * ( -16d0 * tmp2 * a**2 * pi**(-3) ) 
+        endif
     enddo
+  enddo
 
-    w_in_channel = 48d0/(pi**3)*ua*temp1/coe_Q
+  return
+end subroutine inlet_vel_profile_rectangular
 
-    return
-end function w_in_channel
+
 
 

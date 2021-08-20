@@ -54,20 +54,20 @@ subroutine initialization_basic
         write(11,*)' Pore information:'
         write(11,"('Total number of pore nodes = ', I14)") pore_sum  
 
-        write(11,"('Total number of effective pore nodes (middle section for analysis) = ', I14)") pore_sum_effective
+        write(11,"('Total number of effective pore nodes (excluding inlet/outlet)  = ', I14)") pore_sum_effective
     
-        porosity_full = dble(pore_sum)/(la_x*la_y*la_z)
-        porosity_effective = dble(pore_sum_effective)/(la_x*la_y)/dble(nzglobal - n_exclude_outlet - n_exclude_inlet)
+        porosity_full = dble(pore_sum)/((nxGlobal-2)*(nyGlobal-2)*(nzGlobal))
+        porosity_effective = dble(pore_sum_effective)/((nxGlobal-2)*(nyGlobal-2))/dble(nzglobal - n_exclude_outlet - n_exclude_inlet)
         write(11,"('Full domain porosity = ', F6.4)") porosity_full
-        write(11,"('Effective domain porosity (eclude inlet/outlet) = ', F6.4)") porosity_effective
+        write(11,"('Effective domain porosity (excluding inlet/outlet) = ', F6.4)") porosity_effective
         close(11)
 
-        write(*,"(' Total number of pore nodes (excluding buffer layers) = ', I14)") pore_sum 
+        write(*,"(' Total number of pore nodes = ', I14)") pore_sum 
         write(*,"(' Inlet cross sectional area = ', F14.2)") A_xy
         print*, 'Total number of effective pore nodes (middle section for analysis) = '
         print*, pore_sum_effective
         write(*,"(' Full domain porosity = ', F6.4)") porosity_full
-        write(*,"(' Effective domain porosity (eclude inlet/outlet)  = ', F6.4)") porosity_effective
+        write(*,"(' Effective domain porosity (excluding inlet/outlet) = ', F6.4)") porosity_effective
     endif
     if(id==0)print*,'************************** End Processing geometry ***************************'
     if(id==0)print*,''
@@ -166,7 +166,7 @@ subroutine initialization_open_velocity_inlet_BC
     use Fluid_singlephase
     use mpi_variable
     IMPLICIT NONE
-    real(kind=8) :: temp,temp3,x,y
+    real(kind=8) :: x,y
     integer :: i,j, n_vin
 
     uin_avg_0 = Re * la_nu / char_length
