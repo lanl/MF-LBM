@@ -599,8 +599,7 @@ subroutine VTK_legacy_writer_3D(nt)
     integer :: i,j,k,i1,i2,j1,j2,k1,k2,rg,l1,l2,m1,m2,n1,n2,rf,m,nt,num,wall_indicator
     character :: buffer*80, lf*1, str1*10, str2*10, str3*10
     integer   :: ivtk = 9, int
-    real(kind=8),allocatable,dimension(:,:,:)::dd,ff,utt,vtt,wtt
-    real(kind=4),allocatable,dimension(:,:,:)::ff4    ! single precision
+    real(kind=8),allocatable,dimension(:,:,:)::dd,utt,vtt,wtt
 
     rg=0; rf=0;
     i1=1; i2=nx;

@@ -83,6 +83,12 @@ module Misc_module
     real(kind=8), parameter :: mrt_coef2=1d0/2394d0
     real(kind=8), parameter :: mrt_coef3=1d0/252d0
     real(kind=8), parameter :: mrt_coef4=1d0/72d0
+    real(kind=8), parameter :: mrt_e2_coef1=0d0
+    real(kind=8), parameter :: mrt_e2_coef2=-475d0/63d0
+    real(kind=8), parameter :: mrt_omega_xx=0d0
+    ! real(kind=8), parameter :: mrt_e2_coef1=3d0
+    ! real(kind=8), parameter :: mrt_e2_coef2=-11d0/2d0
+    ! real(kind=8), parameter :: mrt_omega_xx=-0.5d0
     !D3Q19 MODEL
     real(kind=8), dimension(:), parameter :: w_equ(0:18)=(/1d0/3d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,&
         1.0d0/18.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,&
