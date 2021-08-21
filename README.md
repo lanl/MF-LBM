@@ -123,8 +123,7 @@ Scaling up performance benchmarking is to show the scalability of the code.
 ### Prerequisites
 * A Fortran compiler 
 * A MPI implementation (most of the run scripts in this repo are based on OpenMPI)
-* CUDA toolkit (for NVIDIA GPU platform)
-* PGI Fortran compiler (for NVIDIA GPU platform)
+* NVIDIA HPC SDK (for NVIDIA GPU platform)
 * Intel Fortran compiler (for Intel Xeon Phi)
 * Make
 
@@ -270,7 +269,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ```sh
    # The geometry is created inside the main flow simulation code for convenience (Misc.F90/modify_geometry subroutine). Not the recommended way to run the program. 
    cd working_directory
-   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
+   cp path-to-MF-LBM/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
    your-preferred-editor config.sh
    ./config.sh    
@@ -298,11 +297,11 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./a.out
 
    cd working_directory
-   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed/config.sh ./
+   cp path-to-MF-LBM/test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
    # specify the paths of the geometry file and solid-boundary-info file on config.sh
    your-preferred-editor config.sh
-   ./config_sim.sh    
+   ./config.sh    
    ./irun.sh new
    ```
    This example simulates body force driven fractional flow for steady state relative permeability measurement, using external rock geometry file and corresponding pre-computed boundary info file. 
@@ -315,14 +314,27 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./a.out
 
    cd working_directory
-   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/6.performance_benchmarking/config.sh ./
+   cp path-to-MF-LBM/test_suites/3D_simulation/6.performance_benchmarking/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
    # specify the paths of the geometry file and solid-boundary-info file on config.sh
    your-preferred-editor config.sh
-   ./config_sim.sh    
+   ./config.sh    
    ./irun.sh new
    ```
    This example is identical to the previous [example](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed) except that the benchmarking command is enabled in [configuration file](test_suites/3D_simulation/6.performance_benchmarking/config.sh). The simulation will run 100 time steps and give the computational performance in MLUPS (million lattices update per second). Due to the size of the sample, this example is suitable for benchmarking performance on a single computing node or GPU card. 
+
+* [`Absolute permeability measurement`](test_suites/3D_simulation/7.singlephase_abs_perm)
+   ```sh
+  # The geometry file is created from the pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat).)
+   cd working_directory
+   cp path-to-MF-LBM/test_suites/3D_simulation/7.singlephase_abs_perm/config.sh ./
+   # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
+   # specify the paths of the geometry file on config.sh
+   your-preferred-editor config.sh
+   ./config.sh    
+   ./irun.sh new
+   ```
+   This example simulates body force driven single phase flow for absolute permeability measurement, using an external rock geometry file. The value of the body force should be adjusted so that the flow is in the Stokes flow regime.
 
 ### Output files
 Three output directories will be created:

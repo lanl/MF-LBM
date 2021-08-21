@@ -110,9 +110,9 @@ program main
         if(benchmark_cmd==0)then
             if(extreme_large_sim_cmd==0)then  ! initial distribution
                 call VTK_walls_bin
-                call VTK_legacy_writer_3D(ntime)
+                !call VTK_legacy_writer_3D(ntime)
             else
-                call save_macro(ntime)    ! parallel I/O, distributed files, require post processing
+                !call save_macro(ntime)    ! parallel I/O, distributed files, require post processing
             endif
         endif
     endif

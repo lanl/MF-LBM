@@ -7,7 +7,7 @@
 # -- CPU --
 arch = cpu
 # whether or not use avx512 for intel cpu, test before use 
-#openmp = enabled
+openmp = enabled
 #AVX512 = enabled
 
 # -- MIC(KNL) --
@@ -23,8 +23,8 @@ tool = gcc
 #tool = cray  (not implemented)
 
 # -- optimization options --
-optimization = debug
-#optimization = release
+#optimization = debug
+optimization = release
 #optimization = speedy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ options to choose ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 

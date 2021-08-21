@@ -24,8 +24,8 @@ tool = gcc
 
 # -- optimization options --
 #optimization = debug
-#optimization = release
-optimization = speedy
+optimization = release
+#optimization = speedy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ options to choose ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
 ############# DIR #################################
