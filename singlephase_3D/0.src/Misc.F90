@@ -9,7 +9,7 @@ subroutine set_walls
     IMPLICIT NONE
     include 'mpif.h'
     integer :: i,j,L,M,N,k,icount,isize,out1,out2,out3,rank,status(MPI_STATUS_SIZE),nmax
-    real(kind=8) :: random,x,y,z,r1,r2,xc,yc,zc
+    real(kind=8) :: x,y,z,r1,r2,xc,yc,zc
     LOGICAL ALIVE
     integer :: num
     character (len=200) :: flnm, dummy   !file name
@@ -24,6 +24,7 @@ subroutine set_walls
     isize = nx*ny*nz
 
     !~~~~~~~~~~~~~~~~ initialize wall array ~~~~~~~~~~~~~~~~~~~~
+    ! local
     !$OMP parallel
     !$omp do private(i,j) collapse(2)
     do k=1-overlap_walls,nz+overlap_walls
@@ -34,6 +35,7 @@ subroutine set_walls
         enddo
     enddo
 
+    ! global
     !$OMP DO private(i,j) collapse(2)
     do k=1,nzglobal
         do j=1,nyglobal
@@ -45,6 +47,9 @@ subroutine set_walls
     !$omp end parallel
 
     !~~~~~~~~~~~~~~~~ read wall data ~~~~~~~~~~~~~~~~~~~~
+    nx_sample=0
+    ny_sample=0
+    nz_sample=0
     if(external_geometry_read_cmd==1)then
         if(id==0)print*, 'This simulation uses external geometry data!'
         INQUIRE(FILE='./path_info.txt',EXIST=ALIVE)
@@ -54,8 +59,6 @@ subroutine set_walls
             read(11,'(A)')dummy
             read(11,'(A)')dummy  ! skip three lines
             read(11,'(A)')geo_file_path   ! read geometry file path
-            read(11,'(A)')dummy
-            read(11,'(A)')geo_boundary_file_path   ! read geometry boundary info file path
             close(11)
         else
             if(id==0)print*,'Error! path_info.txt is not found! Exiting program!'
@@ -72,13 +75,8 @@ subroutine set_walls
             call mpi_abort(MPI_COMM_WORLD,ierr)
         endif
     else
-        if(id==0)print*, 'This simulation does not use external geometry data!'
-        ! duct flow
-        nx_sample=nxglobal
-        ny_sample=nyglobal
-        nz_sample=nzGlobal
+        if(id==0)print*, 'This simulation does not use external geometry data!'        ! duct flow
     endif
-
 
     !~~~~~~~~~~~~~~~~ modify geometry or create hard coded geometry ~~~~~~~~~~~~~~~~~~~~
     if(modify_geometry_cmd==1.and.id==0)then
@@ -140,8 +138,8 @@ subroutine set_walls
     enddo
 
     !~~~~~~~~~~~~~~~~ specify channel walls for local wall arrays ~~~~~~~~~~~~~~~~~~~~
-    ! the reason to do this in local arrays is to specify correct solid nodes information in the 
-    ! overlap layers of local wall array. For example, wall(j>=ny)=1 means ny, ny+1,..., 
+    ! the reason to do this in local arrays is to specify correct solid nodes information for the 
+    ! overlap layers of the local wall array. For example, walls(j>=ny)=1 means ny, ny+1,..., 
     ! ny+overlap_walls are all solid nodes.
     ! walls=1: solid;  walls=0: fluid
     !$OMP PARALLEL DO private(i,j)  collapse(2)
@@ -191,6 +189,8 @@ subroutine set_walls
     enddo
 
     !~~~~~~~~~~~~~~~~ calculate open area at inlet ~~~~~~~~~~~~~~~~~~~~
+    ! A_xy_effective is not equal to A_xy
+    ! A_xy_effective is used when the inlet does not cover the entire xy plane
     icount = 0
     !$OMP PARALLEL DO private(i)reduction(+:icount)
     do j=1,nyglobal
@@ -198,7 +198,7 @@ subroutine set_walls
             if(walls_global(i,j,1)<=0)icount = icount + 1
         enddo
     enddo
-    A_xy_effective= icount  !inlet area
+    A_xy_effective= icount  !effecitve inlet area
     if(id==0)print*,'Inlet effective open area = ', A_xy_effective
     call pore_profile   !pore profile info along the flow direction z
 
@@ -236,7 +236,6 @@ subroutine set_walls
         if(id==0)print*,'Fluid point information saved!'
     endif
 
-
     call ztransport_walls(0,0,overlap_walls)
     call ytransport_walls(0,overlap_walls,overlap_walls)
     call xtransport_walls(overlap_walls,overlap_walls,overlap_walls)
@@ -255,9 +254,9 @@ subroutine modify_geometry
 
     ! domain center, used as a reference point
     xc = 0.5d0*dble(nxglobal+1)
-    yc = 0.5d0*dble(nyglobal+1)
-    zc = 0.5d0*dble(nzglobal+1)
-    r1 = 0.25d0*nyglobal  ! used to creat simple obstacle
+    yc = 0.45d0*dble(nyglobal+1)
+    zc = 0.3d0*dble(nzglobal+1)
+    r1 = 0.15d0*nyglobal  ! used to creat simple obstacle
     r2 = nyglobal * 0.5d0  ! tube radius
     buffer = 10    ! inlet outlet reservior
     !$OMP PARALLEL DO private(i,j)
@@ -267,9 +266,9 @@ subroutine modify_geometry
                 if(( i - xc )**2+( j - yc )**2+( k - zc )**2 < r1**2)then
                     walls_global(i,j,k)=1
                 endif
-                if(( i - xc )**2+( j - yc )**2 > r2**2 .and. k>buffer .and. k< nzglobal-buffer+1)then
-                    walls_global(i,j,k)=1
-                endif
+                ! if(( i - xc )**2+( j - yc )**2 > r2**2 .and. k>buffer .and. k< nzglobal-buffer+1)then
+                !     walls_global(i,j,k)=1
+                ! endif
             enddo
         enddo
     enddo
@@ -404,49 +403,47 @@ end subroutine pore_profile
 !======================================================================================================================================
 !---------------------- compute macroscopic varaibles from PDFs ----------------------
 !======================================================================================================================================
-subroutine compute_macro_vars     ! u,v,w,rho   (phi already known)
+subroutine compute_macro_vars     ! u,v,w,rho  
     use Misc_module
-    use Fluid_multiphase
     use Fluid_singlephase
     IMPLICIT NONE
     integer :: i,j,k
     integer*1 ::   wall_indicator
     real(kind=8) :: ft0,ft1,ft2,ft3,ft4,ft5,ft6,ft7,ft8,ft9,ft10,ft11,ft12,ft13,ft14,ft15,ft16,ft17,ft18,fx,fy,fz,tmp
 
-    !$OMP parallel DO private(i,j,ft0,ft1,ft2,ft3,ft4,ft5,ft6,ft7,ft8,ft9,ft10,ft11,ft12,ft13,ft14,ft15,ft16,ft17,ft18,wall_indicator,tmp,fx,fy,fz)
-    !$acc kernels present(phi,f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,&
-    !$acc & g0,g1,g2,g3,g4,g5,g6,g7,g8,g9,g10,g11,g12,g13,g14,g15,g16,g17,g18,cn_x,cn_y,cn_z,c_norm,u,v,w,rho,walls)
+    !$OMP parallel DO private(i,j,ft0,ft1,ft2,ft3,ft4,ft5,ft6,ft7,ft8,ft9,ft10,ft11,ft12,ft13,ft14,ft15,ft16,ft17,ft18,wall_indicator,fx,fy,fz)
+    !$acc kernels present(f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18,&
+    !$acc & u,v,w,rho,walls)
     !$acc loop collapse(3) device_type(NVIDIA)
     do k=1,nz
         do j=1,ny
             do i=1,nx
                 wall_indicator = walls(i,j,k)
-                ft0 = f0(i,j,k) + g0(i,j,k)
-                ft1  = f1(i,j,k) + g1(i,j,k)
-                ft2  = f2(i,j,k) + g2(i,j,k)
-                ft3  = f3(i,j,k) + g3(i,j,k)
-                ft4  = f4(i,j,k) + g4(i,j,k)
-                ft5  = f5(i,j,k) + g5(i,j,k)
-                ft6  = f6(i,j,k) + g6(i,j,k)
-                ft7  = f7(i,j,k) + g7(i,j,k)
-                ft8  = f8(i,j,k) + g8(i,j,k)
-                ft9  = f9(i,j,k) + g9(i,j,k)
-                ft10  = f10(i,j,k) + g10(i,j,k)
-                ft11  = f11(i,j,k) + g11(i,j,k)
-                ft12  = f12(i,j,k) + g12(i,j,k)
-                ft13  = f13(i,j,k) + g13(i,j,k)
-                ft14  = f14(i,j,k) + g14(i,j,k)
-                ft15  = f15(i,j,k) + g15(i,j,k)
-                ft16  = f16(i,j,k) + g16(i,j,k)
-                ft17  = f17(i,j,k) + g17(i,j,k)
-                ft18  = f18(i,j,k) + g18(i,j,k)
+                ft0 = f0(i,j,k)
+                ft1  = f1(i,j,k)
+                ft2  = f2(i,j,k)
+                ft3  = f3(i,j,k)
+                ft4  = f4(i,j,k)
+                ft5  = f5(i,j,k)
+                ft6  = f6(i,j,k)
+                ft7  = f7(i,j,k)
+                ft8  = f8(i,j,k)
+                ft9  = f9(i,j,k)
+                ft10  = f10(i,j,k)
+                ft11  = f11(i,j,k)
+                ft12  = f12(i,j,k)
+                ft13  = f13(i,j,k)
+                ft14  = f14(i,j,k)
+                ft15  = f15(i,j,k)
+                ft16  = f16(i,j,k)
+                ft17  = f17(i,j,k)
+                ft18  = f18(i,j,k)
 
                 rho(i,j,k)=(ft0+ft1+ft2+ft3+ft4+ft5+ft6+ft7+ft8+ft9+ft10+ft11+ft12+ft13+ft14+ft15+ft16+ft17+ft18)* (1-wall_indicator)
 
-                tmp = 0.5d0*gamma*curv(i,j,k)*c_norm(i,j,k)
-                fx = tmp*cn_x(i,j,k)
-                fy = tmp*cn_y(i,j,k)
-                fz = tmp*cn_z(i,j,k) + force_Z
+                fx = 0d0
+                fy = 0d0
+                fz = force_Z
 
                 !here "- 0.5fx" is due to that PDFs are after even step, which is post collision before streaming
                 !to use the post collision PDFs to calculate the velocities, one must substruct the forcing terms applied during collision step
@@ -454,8 +451,6 @@ subroutine compute_macro_vars     ! u,v,w,rho   (phi already known)
                 u(i,j,k)=  (ft1 - ft2 + ft7 - ft8 + ft9 - ft10 + ft11 - ft12 + ft13 - ft14 - 0.5d0*fx)* (1-wall_indicator)
                 v(i,j,k)=  (ft3 - ft4 + ft7 + ft8 - ft9 - ft10 + ft15 - ft16 + ft17 - ft18 - 0.5d0*fy)* (1-wall_indicator)
                 w(i,j,k)=  (ft5 - ft6 + ft11+ ft12- ft13- ft14 + ft15 + ft16 - ft17 - ft18 - 0.5d0*fz)* (1-wall_indicator)
-
-                phi(i,j,k)=0d0*wall_indicator + phi(i,j,k)*(1-wall_indicator)
             enddo
         enddo
     enddo
@@ -539,166 +534,46 @@ end function setDevice
 !---------------------- Unsorted ----------------------
 !====================================================================================================================================
 !*************inlet velocity - analytical solution**********************************************************
-subroutine change_inlet_fluid_phase
+subroutine inlet_vel_profile_rectangular(vel_avg, num_terms)    
     use Misc_module
     use Fluid_singlephase
-    use Fluid_multiphase
     use mpi_variable
     IMPLICIT NONE
-    include 'mpif.h'
-    integer:: i,j,k ,m, x,y,z
+    real(kind=8) :: vel_avg, a, b, xx, yy, tmp1, tmp2, tmp3
+    integer :: n, num_terms, i,j, x, y
+    
+    a = 0.5d0 * la_x
+    b = 0.5d0 * la_y
 
-    if(change_inlet_fluid_phase_cmd==1)then
-        !$OMP parallel DO private(i,j,x,y,z) collapse(2)
-        do k=1-overlap,nz+overlap
-            do j=1-overlap,ny+overlap
-                do i=1-overlap,nx+overlap
-                    x = idx*nx + i
-                    y = idy*ny + j
-                    z = idz*nz + k
-                    if(z<=interface_z0)then
-                        f0(i,j,k)  = f0(i,j,k) + g0(i,j,k)
-                        f1(i,j,k)  = f1(i,j,k) + g1(i,j,k)
-                        f2(i,j,k)  = f2(i,j,k) + g2(i,j,k)
-                        f3(i,j,k)  = f3(i,j,k) + g3(i,j,k)
-                        f4(i,j,k)  = f4(i,j,k) + g4(i,j,k)
-                        f5(i,j,k)  = f5(i,j,k) + g5(i,j,k)
-                        f6(i,j,k)  = f6(i,j,k) + g6(i,j,k)
-                        f7(i,j,k)  = f7(i,j,k) + g7(i,j,k)
-                        f8(i,j,k)  = f8(i,j,k) + g8(i,j,k)
-                        f9(i,j,k)  = f9(i,j,k) + g9(i,j,k)
-                        f10(i,j,k)  = f10(i,j,k) + g10(i,j,k)
-                        f11(i,j,k)  = f11(i,j,k) + g11(i,j,k)
-                        f12(i,j,k)  = f12(i,j,k) + g12(i,j,k)
-                        f13(i,j,k)  = f13(i,j,k) + g13(i,j,k)
-                        f14(i,j,k)  = f14(i,j,k) + g14(i,j,k)
-                        f15(i,j,k)  = f15(i,j,k) + g15(i,j,k)
-                        f16(i,j,k)  = f16(i,j,k) + g16(i,j,k)
-                        f17(i,j,k)  = f17(i,j,k) + g17(i,j,k)
-                        f18(i,j,k)  = f18(i,j,k) + g18(i,j,k)
-                        g0(i,j,k)  = 0d0
-                        g1(i,j,k)  = 0d0
-                        g2(i,j,k)  = 0d0
-                        g3(i,j,k)  = 0d0
-                        g4(i,j,k)  = 0d0
-                        g5(i,j,k)  = 0d0
-                        g6(i,j,k)  = 0d0
-                        g7(i,j,k)  = 0d0
-                        g8(i,j,k)  = 0d0
-                        g9(i,j,k)  = 0d0
-                        g10(i,j,k)  = 0d0
-                        g11(i,j,k)  = 0d0
-                        g12(i,j,k)  = 0d0
-                        g13(i,j,k)  = 0d0
-                        g14(i,j,k)  = 0d0
-                        g15(i,j,k)  = 0d0
-                        g16(i,j,k)  = 0d0
-                        g17(i,j,k)  = 0d0
-                        g18(i,j,k)  = 0d0
-                    endif
-                enddo
+    tmp1 = 0.0d0
+    do n=1,num_terms,2
+        tmp1 = tmp1 + (dtanh(0.5d0*dble(n)*pi*b/a)) / n**5
+    enddo
+
+    tmp2 = 1.0d0 - 192d0 / pi**5 * (a/b) * tmp1
+
+    tmp2 = -3d0 * vel_avg  / (tmp2 * a**2)
+  
+    !$OMP PARALLEL DO private(i,n,x,y,xx,yy,tmp3)
+    do j=1,ny
+      do i=1,nx   
+          x = idx*nx + i
+          y = idy*ny + j
+          if(x>1.and.x<nxGlobal.and.y>1.and.y<nyGlobal)then
+            xx = x - 1.5d0 - a 
+            yy = y - 1.5d0 - b
+            tmp3 = 0d0
+            do n=1,num_terms,2
+              tmp3 = tmp3 + (-1.0d0)**(0.5d0*dble(n-1)) * dcos(0.5d0*n*pi*xx/a)/n**3 &
+              ! * (1.0d0 - dcosh(0.5d0*n*pi*yy/a) / dcosh(0.5d0*n*pi*b/a)) =   
+              * (1.0d0 - ( dexp(0.5d0*n*pi*(yy-b)/a) + dexp(0.5d0*n*pi*(-yy-b)/a)) / (1d0 + dexp(0.5d0*n*pi*(-b-b)/a)) )  
             enddo
-        enddo
-    elseif(change_inlet_fluid_phase_cmd==2)then
-        !$OMP parallel DO private(i,j,x,y,z) collapse(2)
-        do k=1-overlap,nz+overlap
-            do j=1-overlap,ny+overlap
-                do i=1-overlap,nx+overlap
-                    x = idx*nx + i
-                    y = idy*ny + j
-                    z = idz*nz + k
-                    if(z<=interface_z0)then
-                        g0(i,j,k)  = f0(i,j,k) + g0(i,j,k)
-                        g1(i,j,k)  = f1(i,j,k) + g1(i,j,k)
-                        g2(i,j,k)  = f2(i,j,k) + g2(i,j,k)
-                        g3(i,j,k)  = f3(i,j,k) + g3(i,j,k)
-                        g4(i,j,k)  = f4(i,j,k) + g4(i,j,k)
-                        g5(i,j,k)  = f5(i,j,k) + g5(i,j,k)
-                        g6(i,j,k)  = f6(i,j,k) + g6(i,j,k)
-                        g7(i,j,k)  = f7(i,j,k) + g7(i,j,k)
-                        g8(i,j,k)  = f8(i,j,k) + g8(i,j,k)
-                        g9(i,j,k)  = f9(i,j,k) + g9(i,j,k)
-                        g10(i,j,k)  = f10(i,j,k) + g10(i,j,k)
-                        g11(i,j,k)  = f11(i,j,k) + g11(i,j,k)
-                        g12(i,j,k)  = f12(i,j,k) + g12(i,j,k)
-                        g13(i,j,k)  = f13(i,j,k) + g13(i,j,k)
-                        g14(i,j,k)  = f14(i,j,k) + g14(i,j,k)
-                        g15(i,j,k)  = f15(i,j,k) + g15(i,j,k)
-                        g16(i,j,k)  = f16(i,j,k) + g16(i,j,k)
-                        g17(i,j,k)  = f17(i,j,k) + g17(i,j,k)
-                        g18(i,j,k)  = f18(i,j,k) + g18(i,j,k)
-                        f0(i,j,k)  = 0d0
-                        f1(i,j,k)  = 0d0
-                        f2(i,j,k)  = 0d0
-                        f3(i,j,k)  = 0d0
-                        f4(i,j,k)  = 0d0
-                        f5(i,j,k)  = 0d0
-                        f6(i,j,k)  = 0d0
-                        f7(i,j,k)  = 0d0
-                        f8(i,j,k)  = 0d0
-                        f9(i,j,k)  = 0d0
-                        f10(i,j,k)  = 0d0
-                        f11(i,j,k)  = 0d0
-                        f12(i,j,k)  = 0d0
-                        f13(i,j,k)  = 0d0
-                        f14(i,j,k)  = 0d0
-                        f15(i,j,k)  = 0d0
-                        f16(i,j,k)  = 0d0
-                        f17(i,j,k)  = 0d0
-                        f18(i,j,k)  = 0d0
-                    endif
-                enddo
-            enddo
-        enddo
-    endif
+            w_in(i,j) = tmp3 * ( -16d0 * tmp2 * a**2 * pi**(-3) ) 
+          endif
+      enddo
+    enddo
 
     return
-end subroutine change_inlet_fluid_phase
-
-
-!*************inlet velocity - analytical solution**********************************************************
-subroutine inlet_vel_profile_rectangular(vel_avg, num_terms)    
-  use Misc_module
-  use Fluid_singlephase
-  use mpi_variable
-  IMPLICIT NONE
-  real(kind=8) :: vel_avg, a, b, xx, yy, tmp1, tmp2, tmp3
-  integer :: n, num_terms, i,j, x, y
-  
-  a = 0.5d0 * la_x
-  b = 0.5d0 * la_y
-
-  tmp1 = 0.0d0
-  do n=1,num_terms,2
-      tmp1 = tmp1 + (dtanh(0.5d0*dble(n)*pi*b/a)) / n**5
-  enddo
-
-  tmp2 = 1.0d0 - 192d0 / pi**5 * (a/b) * tmp1
-
-  tmp2 = -3d0 * vel_avg  / (tmp2 * a**2)
-
-  !$OMP PARALLEL DO private(i,n,x,y,xx,yy,tmp3)
-  do j=1,ny
-    do i=1,nx   
-        x = idx*nx + i
-        y = idy*ny + j
-        if(x>1.and.x<nxGlobal.and.y>1.and.y<nyGlobal)then
-          xx = x - 1.5d0 - a 
-          yy = y - 1.5d0 - b
-          tmp3 = 0d0
-          do n=1,num_terms,2
-            tmp3 = tmp3 + (-1.0d0)**(0.5d0*dble(n-1)) * dcos(0.5d0*n*pi*xx/a)/n**3 &
-            ! * (1.0d0 - dcosh(0.5d0*n*pi*yy/a) / dcosh(0.5d0*n*pi*b/a)) =   
-            * (1.0d0 - ( dexp(0.5d0*n*pi*(yy-b)/a) + dexp(0.5d0*n*pi*(-yy-b)/a)) / (1d0 + dexp(0.5d0*n*pi*(-b-b)/a)) )  
-          enddo
-          w_in(i,j) = tmp3 * ( -16d0 * tmp2 * a**2 * pi**(-3) ) 
-        endif
-    enddo
-  enddo
-
-  return
 end subroutine inlet_vel_profile_rectangular
-
-
 
 

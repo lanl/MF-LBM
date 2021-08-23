@@ -68,11 +68,11 @@ subroutine initialization_basic_multi
     !~~~~~~~~~~~~~~~~~~ dimensions ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     ! la_x,y,z only used in fluid displacement simulation
     ! channel walls are considered below for effective sample volume and cross sectional area
-    la_z =  nz_sample - 1       
-    la_y =  ny_sample - 1
-    la_x =  nx_sample - 1
-    A_xy = la_x*la_y  !cross section area
-    volume_sample = A_xy*nz_sample     !rock volume
+    la_z =  nzGlobal - 1       
+    la_y =  nyGlobal - 1 - 0.5 - 0.5    ! half-way bounceback 0.5 + 0.5
+    la_x =  nxGlobal - 1 - 0.5 - 0.5
+    A_xy = la_x*la_y  !cross-sectional area for an open duct
+    volume_sample = A_xy*la_z     !domain volume
     !~~~~~~~~~~~~~~~~~~~~~~~~~
 
     if(id==0)then
@@ -86,20 +86,20 @@ subroutine initialization_basic_multi
         write(11,"('Total number of solid boundary nodes = ', I14)") num_solid_boundary_global
         write(11,"('Total number of fluid boundary nodes = ', I14)") num_fluid_boundary_global
 
-        write(11,"('Total number of effective pore nodes (middle section for analysis) = ', I14)") pore_sum_effective
+        write(11,"('Total number of effective pore nodes (excluding inlet/outlet) = ', I14)") pore_sum_effective
     
-        porosity_full = dble(pore_sum)/dble(nxGlobal-2)/dble(nyGlobal-2)/dble(nzglobal)
-        porosity_effective = dble(pore_sum_effective)/dble(nxGlobal-2)/dble(nyGlobal-2)/dble(nzglobal - n_exclude_outlet - n_exclude_inlet)
+        porosity_full = dble(pore_sum)/((nxGlobal-2)*(nyGlobal-2)*(nzGlobal))
+        porosity_effective = dble(pore_sum_effective)/((nxGlobal-2)*(nyGlobal-2))/dble(nzglobal - n_exclude_outlet - n_exclude_inlet)
         write(11,"('Full domain porosity = ', F6.4)") porosity_full
-        write(11,"('Effective domain porosity (eclude inlet/outlet) = ', F6.4)") porosity_effective
+        write(11,"('Effective domain porosity  (excluding inlet/outlet) = ', F6.4)") porosity_effective
         close(11)
 
-        write(*,"(' Total number of pore nodes (excluding buffer layers) = ', I14)") pore_sum 
+        write(*,"(' Total number of pore nodes = ', I14)") pore_sum 
         write(*,"(' Inlet open cross sectional area = ', F14.2)") A_xy
-        print*, 'Total number of effective pore nodes (middle section for analysis) = '
+        print*, 'Total number of effective pore nodes (excluding inlet/outlet) = '
         print*, pore_sum_effective
         write(*,"(' Full domain porosity = ', F6.4)") porosity_full
-        write(*,"(' Effective domain porosity (eclude inlet/outlet)  = ', F6.4)") porosity_effective
+        write(*,"(' Effective domain porosity  (excluding inlet/outlet) = ', F6.4)") porosity_effective
     endif
     if(id==0)print*,'************************** End Processing geometry ***************************'
     if(id==0)print*,''
@@ -196,37 +196,31 @@ subroutine initialization_open_velocity_inlet_BC
     use Fluid_multiphase
     use mpi_variable
     IMPLICIT NONE
-    real(kind=8) :: temp,temp3,x,y
-    integer :: n,i,j,k,n_vin
-    real(kind=8), external :: w_in_channel
+    real(kind=8) :: x, y
+    integer :: i,j,k,n_vin
 
     uin_avg_0 = ca_0*gamma/La_nu1            !common definition
     uin_avg = uin_avg_0
     flowrate = uin_avg_0 * A_xy
-    if(id==0)write(*,"(' Inlet average velocity = ', E13.6)") uin_avg_0
+    if(id==0)write(*,"(' Inlet average velocity = ', F13.6)") uin_avg_0
     if(id==0)write(*,"(' Inlet flowrate = ', E13.6)") flowrate
 
-    !set inlet velocity profile, rectangular duct
-    n_vin = 1000
-    temp3 = 0.0d0
-    do n=1,n_vin,2
-        temp3 = temp3 + (1.0d0-dexp(-dble(n)*pi*la_y/la_x)) / ((1.0d0+dexp(-dble(n)*pi*la_y/la_x))*dble(n)**5)
-    enddo
-    temp3=1d0-192.0d0*la_x/(la_y*pi**5)*temp3
-
+    ! default uniform inlet velocity profile
     !$OMP PARALLEL DO private(i,x,y)
     do j=1,ny
-        do i=1,nx
-            x = idx*nx + i
-            y = idy*ny + j
-            w_in(i,j) = 0d0
-            if(x>1.and.x<nxGlobal.and.y>1.and.y<nyGlobal)then
-                w_in(i,j) = w_in_channel(dble(x-1)-0.5d0,dble(y-1)-0.5d0,n_vin,uin_avg,temp3)     !inlet velocity profile from analytical solution
-                !w(i,j,:)=w_in(i,j)      
-                !w_in(i,j) = uin_avg    !uniform inlet velocity
-            endif
-        enddo
-    enddo
+      do i=1,nx
+        x = idx*nx + i
+        y = idy*ny + j
+        w_in(i,j) = 0d0
+        if(x>1.and.x<nxGlobal.and.y>1.and.y<nyGlobal)then  
+          w_in(i,j) = uin_avg    
+        endif
+      enddo
+  enddo
+
+    n_vin = 1000
+    ! analytical velocity profile
+    call inlet_vel_profile_rectangular(uin_avg_0, n_vin)
 
     if(target_inject_pore_volume>0)then  ! stop simulation based on injected volume is enabled
         ntime_max = dble(target_inject_pore_volume * pore_sum) / flowrate

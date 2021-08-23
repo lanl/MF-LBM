@@ -30,7 +30,5 @@
 *.exe
 *.out
 *.app
-MF_LBM.cpu
-MF_LBM.mic
-MF_LBM.gpu
+
 

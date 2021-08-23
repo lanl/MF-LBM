@@ -136,13 +136,12 @@ LINK = ${compiler}
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-objects = Module.o Main_multiphase.o Init_multiphase.o Misc.o IO_multiphase.o Kernel_multiphase.o Monitor.o Mpi_misc.o Mpi.o \
-Boundary_multiphase_inlet.o Boundary_multiphase_outlet.o Boundary_multiphase_other.o Phase_gradient.o Geometry_preprocessing.o
+objects = Module.o Main.o Initialization.o Misc.o IO.o Kernel.o Monitor.o Mpi_misc.o Mpi.o Boundary.o 
 
 pref_objects = $(addprefix $(OBJ_DIR), $(objects))
 
 LBM : | make_dir $(pref_objects)
-	${LINK} $(LFLAGS) -o $(EXEC_DIR)MF_LBM.$(BIN_SUFFIX) $(pref_objects)
+	${LINK} $(LFLAGS) -o $(EXEC_DIR)MF_LBM_singlephase.$(BIN_SUFFIX) $(pref_objects)
 
 
 $(OBJ_DIR)%.o: $(SRC_DIR)%.F90

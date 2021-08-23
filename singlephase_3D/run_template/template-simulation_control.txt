@@ -1,0 +1,162 @@
+#*********************************************************************************#
+#*          CONTROL FILE FOR SINGLEPHASE FLOW SIMULATION IN MF-LBM               *#
+#*********************************************************************************#
+
+#=========================== simulation_status ====================================
+# value stored on job_status.txt                                      
+# new_simulation                - new simulation                                  
+# continue_simulation           - continue previous simulation               
+# simulation_done               - previous simulation is finished. stop              
+# simulation_failed             - previous simulation failed. stop    
+# simulation_reached_max_step   - previous simulation reached maximum step. stop    
+# else                          - wrong status. stop                                       
+
+#=========================== simulation setup =====================================
+# Benchmark_cmd: 
+# 0 - regular simulation
+# 1 - benchmarking simulation (obtain computational performance in MLUPS)
+benchmark_cmd 0
+
+# Necesssary modifications for extreme large simulations:
+# nxglobal*nyglobal*nzglobal may be too large.
+# parallel I/O for visualization files are needed.
+# recommended for grid points > 1 billion. 
+# 0 - no; 1 - yes 
+extreme_large_sim_cmd 0 
+
+# Steady state option: 
+# 0 - non-steady state simulation (complete based on target injected PV or ntime_max)
+# 1 - steady state simulation (complete based on flowrate)
+steady_state_option 1
+
+# MRT collision parameters presets: 
+# 1 - bounceback optimization
+# 2 - original
+# 3 - SRT
+MRT_collision_parameter_preset 1
+
+# Convergence_criteria:
+# used in steady state simulation. 
+convergence_criteria 1d-6
+
+# Modify_geometry_cmd: 
+# 0 do not modify geometry; 1 modify geometry in the code (hard coded, Misc.F90) 
+modify_geometry_cmd 0
+
+# Use external geometry cmd:  
+# 0 - no; 1 - yes 
+external_geometry_read_cmd  0
+
+# Option to save secondary backup checkpoint data (increase storage space): 
+# 0 - no; 1 - yes 
+# stored in a seperate location in case the default checkpoint data corrupted
+double_bak_checkpoint_pdf_cmd 1  
+
+#=================================  geometry ======================================
+# Lattice dimensions nxGlobal, nyGlobal, nzGlobal, must be integral multiple of 
+# npx, npy and npz, respectively 
+lattice_dimensions 40,40,60
+
+# inlet/outlet zone excluded in the bulk properties calculation 
+# 1<=k<=n_exclude_inlet and nzglobal-n_exclude_outlet+1<=k<=nzglobal
+# does not affect simulation
+excluded_layers 10,10
+
+# domain_wall_status at xmin and xmax, status: 1 - wall; 0 - no wall
+domain_wall_status_x 1,1
+
+# domain_wall_status at ymin and ymax, status: 1 - wall; 0 - no wall
+domain_wall_status_y 1,1
+
+# default flow direction, domain_wall_status at ymin and ymax, status: 1 - wall; 0 - no wall
+domain_wall_status_z 0,0
+
+# periodic BC indicator, 1 periodic, 0 non-periodic
+# currently, x direction can not apply periodic BC
+periodic_indicator 0,0,1
+
+# characteristic length of the flow domain (used in the definition of Re number): 
+# default is nyGlobal; can be average pore size or obstacle diameter
+char_length  20.0
+
+# Reynolds number 
+# only used in velocity inlet BC
+Reynolds_number  10.0
+
+# Density (pressure) drop
+# only used in pressure inlet and outlet BC
+rho_drop 0.01
+
+#===================================== MPI information ========================================
+# mpi process numbers along each axis: npx, npy, npz
+# x direction domain decomposition disabled: npx = 1
+MPI_process_num 1,1,2
+
+# Number of halo nodes used in overlaping computation and communication. 
+# x direction domain decomposition disabled and must be 0
+# This option should only be modified when you fully understand how it works.
+MPI_async_layers_num  0,4,4
+
+#=============================== fluid property ===================================
+# fluid viscosity
+fluid_viscosity 0.01
+
+#============================= injection conditions ===============================
+# inlet_BC selection (overridden by z (flow) direction periodic BC): 1-velocity; 2-pressure 
+inlet_BC 1
+# outlet_BC selection (overridden by z (flow) direction periodic BC): 1-convective; 2-pressure 
+outlet_BC 1
+
+# Option to stop simulation based on reaching target fluid injection:
+# It is enabled by modifying ntime_max based on injection rate.
+# The value is in PV (pore-volume). 
+# It is not very precise considering the LBM compressibility error.
+# A negative value will disable target_inject_pore_volume – simulation continues until existing ntime_max
+target_inject_pore_volume -1.0
+
+# initial value of body force or pressure gradient along z direction
+body_force_0 1d-6
+
+#================================== timers ========================================
+# timer: max iterations, will be modified if target_inject_pore_volume > 0
+max_time_step 100000000
+
+# timer: max iterations for benchmarking 
+max_time_step_benchmark 100
+
+# timer: when to output detailed visualization data - overridden by d_vol_detail if d_vol_detail>0  
+ntime_visual 10000
+
+# timer: when to output bulk property data - overridden by d_vol_monitor if d_vol_monitor>0 
+monitor_timer 1000
+
+# timer: when to output profile data along flow direction (Z)
+# monitor_profile_timer = monitor_profile_timer_ratio * monitor_timer 
+monitor_profile_timer_ratio 5
+
+# timer: gaps used to record computation time
+# it is also used to check the checkpoint data saving status
+computation_time_timer 1000
+
+# timer: when to display time steps
+display_steps_timer 1000
+
+# timer: interval to save checkpoint data based on wall clock time, in hours
+checkpoint_save_timer 2.0
+
+# timer: interval to save secondary checkpoint data based on wall clock time, in hours
+# only effective when double_bak_checkpoint_pdf_cmd = 1
+checkpoint_2rd_save_timer 5.5
+
+# timer: simulation duration in hours
+# save checkpoint data and exit program after simulation_duration_timer
+simulation_duration_timer 15.7
+
+# timer: when to output full field data - based on injected pore volume 
+# only effective for constant velocity BC, disabled if it is a negative value
+d_vol_detail -1.0
+
+# timer: when to output bulk property data - based on injected pore volume 
+# only effective for constant velocity BC, disabled if it is a negative value
+d_vol_monitor -0.01
+
