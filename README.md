@@ -84,7 +84,7 @@ MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct nume
   * [`wall_boundary_preprocess`](preprocessing/3.wall_boundary_preprocess): computing normal directions of the solid surfaces
 * [`Main simulation code`](multiphase_3D):
   * [`multiphase_3D`](multiphase_3D): 3D multiphase flow simulation code
-  * (coming soon) 3D single phase flow simulation code 
+  * [`singlephase_3D`](singlephase_3D): 3D single-phase flow simulation code
 * [`Post-processing code`](postprocessing):
   * [`distributed_phi_to_vtk_conversion`](postprocessing/exteme_large_sim_parallel_IO/distributed_phi_to_vtk_conversion): for extremely large simulation only, converting distributed phase field data to vtk file for visualization
   * [`distributed_full_flow_field_process`](postprocessing/exteme_large_sim_parallel_IO/distributed_full_flow_field_process): for extremely large simulation only, converting distributed full flow field data for further analysis
@@ -334,7 +334,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates body force driven single phase flow for absolute permeability measurement, using an external rock geometry file. The value of the body force should be adjusted so that the flow is in the Stokes flow regime.
+   This example simulates body force driven single-phase flow for absolute permeability measurement, using an external rock geometry file. The value of the body force should be adjusted so that the flow is in the Stokes flow regime.
 
 ### Output files
 Three output directories will be created:
