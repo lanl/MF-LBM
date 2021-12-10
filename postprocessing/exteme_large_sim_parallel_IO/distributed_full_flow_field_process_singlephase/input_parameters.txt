@@ -1,0 +1,3 @@
+2  !total number of MPI processes in the original simulation
+240,240,260  !dimensions of the entire simulation domain
+500, 500, 500  !start time step, time interval, end time step

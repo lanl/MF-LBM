@@ -8,7 +8,7 @@
 MODULE misc
     IMPLICIT NONE
     SAVE
-    real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: phi,u,v,w,rho
+    real(kind=8),ALLOCATABLE,DIMENSION(:,:,:) :: u,v,w,rho
     integer :: np
     integer :: ntime0,ntime_interval,ntime_max
     integer :: nxglobal,nyglobal,nzglobal
@@ -18,7 +18,7 @@ END MODULE misc
 !################################################################################################################################
 !Main Start
 !################################################################################################################################
-program main_multiphase
+program main_singlephase
     use misc
     IMPLICIT NONE
     integer :: i,j,k
@@ -33,12 +33,11 @@ program main_multiphase
     read(5,*)ntime0,ntime_interval,ntime_max  !start time step, time interval, end time step
     close(5)
 
-    allocate(phi(nxglobal,nyglobal,nzglobal),u(nxglobal,nyglobal,nzglobal),v(nxglobal,nyglobal,nzglobal),w(nxglobal,nyglobal,nzglobal),rho(nxglobal,nyglobal,nzglobal))
+    allocate(u(nxglobal,nyglobal,nzglobal),v(nxglobal,nyglobal,nzglobal),w(nxglobal,nyglobal,nzglobal),rho(nxglobal,nyglobal,nzglobal))
     !$OMP parallel DO private(i,j)
     do k=1,nzglobal
         do j=1,nyglobal
             do i=1,nxglobal
-                phi(i,j,k)=0d0
                 u(i,j,k)=0d0
                 v(i,j,k)=0d0
                 w(i,j,k)=0d0
@@ -49,9 +48,9 @@ program main_multiphase
 
     call read_save_macro  
 
-    deallocate(phi,u,v,w,rho)
+    deallocate(u,v,w,rho)
 
-End program main_multiphase
+End program main_singlephase
 !################################################################################################################################
 !Main End
 !################################################################################################################################
@@ -97,16 +96,15 @@ subroutine read_save_macro
     do n_step=1,ncount
         nt = ntime0 + (n_step-1)*ntime_interval
         print*, 'Start processing macro field of ntime=', nt
-        !$omp parallel do private(flnm,num,v1,v2,v3,v4,v5,i,j,k)
+        !$omp parallel do private(flnm,num,v2,v3,v4,v5,i,j,k)
         do id=0,np-1
             write(flnm,"('full_nt',i9.9,'_id',i5.5)")nt,id
             open(unit=9+id, file='./data/'//trim(flnm), FORM='unformatted', status='old',access='stream')
             do num=1,fluid_array(id)%n_fluid_node_local
-                read(9+id)v1,v2,v3,v4,v5
+                read(9+id)v2,v3,v4,v5
                 i = fluid_array(id)%ix(num)
                 j = fluid_array(id)%iy(num)
                 k = fluid_array(id)%iz(num)
-                phi(i,j,k) = v1
                 u(i,j,k) = v2
                 v(i,j,k) = v3
                 w(i,j,k) = v4
@@ -115,8 +113,9 @@ subroutine read_save_macro
             close(9+id)
         enddo
 
-        call save_macro(nt)
+        !call save_macro(nt)
         !call VTK_detail_bin(nt)
+        call VTK_detail_bin_half(nt)
         print*, 'End processing macro field of ntime=', nt
     enddo
 
@@ -134,9 +133,6 @@ subroutine save_macro(nt)
     integer :: nt
 
     write(flnm,'(i10.10,".dat")')nt
-    open(unit=9,file='./output/phi_ntime_'//trim(flnm),FORM='unformatted',access='stream',status='replace',convert='BIG_ENDIAN')
-    write(9)phi
-    close(9)
     open(unit=9,file='./output/rho_ntime_'//trim(flnm),FORM='unformatted',access='stream',status='replace',convert='BIG_ENDIAN')
     write(9)rho
     close(9)
@@ -156,7 +152,7 @@ subroutine VTK_detail_bin(nt)
     character*30 :: flnm
     integer :: i,j,k, nt
     integer(kind=8) :: num
-    character :: buffer*80, lf*1, str1*10, str2*10, str3*10, str4*14
+    character :: buffer*80, lf*1, str1*10, str2*10, str3*10
     integer   :: ivtk = 9, int
 
     write(flnm,'(i10.10,".vtk")')nt
@@ -185,10 +181,10 @@ subroutine VTK_detail_bin(nt)
     write(str3(1:10),'(i10)')1
     buffer = 'SPACING '//str1//' '//str2//' '//str3//lf                                               ; write(ivtk) trim(buffer)
 
-    num=int(nxGlobal,kind=8)*int(nyGlobal,kind=8)*int(nzGlobal,kind=8)
+    num=nxglobal*nyglobal*nzglobal
 
-    write(str4(1:14),'(i14)')num
-    buffer = 'POINT_DATA '//str4//lf                                               ; write(ivtk) trim(buffer)
+    write(str1(1:10),'(i10)')num
+    buffer = 'POINT_DATA '//str1//lf                                               ; write(ivtk) trim(buffer)
 
     !scalar - density
     buffer = 'SCALARS density double'//lf
@@ -196,12 +192,6 @@ subroutine VTK_detail_bin(nt)
     buffer = 'LOOKUP_TABLE default'//lf
     write(ivtk) trim(buffer)
     write(ivtk)(((rho(i,j,k),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)
-
-    !scalar - phase field
-    buffer = 'SCALARS phi double'//lf                                          ; write(ivtk) trim(buffer)
-    buffer = 'LOOKUP_TABLE default'//lf                                          ; write(ivtk) trim(buffer)
-    write(ivtk)(((phi(i,j,k),i=1,nxglobal),j=1,nyglobal),k=1,nzglobal)
-
 
     buffer = 'SCALARS velocity_X double'//lf
     write(ivtk) trim(buffer)
@@ -226,13 +216,14 @@ subroutine VTK_detail_bin(nt)
     return
 end
 
+
 subroutine VTK_detail_bin_half(nt)   
   use Misc
   IMPLICIT NONE
   character*30 :: flnm
   integer :: i,j,k, nt
   integer(kind=8) :: num
-  character :: buffer*80, lf*1, str1*10, str2*10, str3*10, str4*14
+  character :: buffer*80, lf*1, str1*10, str2*10, str3*10,str4*14
   integer   :: ivtk = 9, int
 
   write(flnm,'(i10.10,".vtk")')nt
@@ -261,7 +252,7 @@ subroutine VTK_detail_bin_half(nt)
   write(str3(1:10),'(i10)')1
   buffer = 'SPACING '//str1//' '//str2//' '//str3//lf                                               ; write(ivtk) trim(buffer)
 
-  num = int(nxGlobal,kind=8)*int(nyGlobal,kind=8)*int(nzGlobal,kind=8)/8
+  num=int(nxGlobal,kind=8)*int(nyGlobal,kind=8)*int(nzGlobal,kind=8)/8
 
   write(str4(1:14),'(i14)')num
   buffer = 'POINT_DATA '//str4//lf                                               ; write(ivtk) trim(buffer)
@@ -273,11 +264,6 @@ subroutine VTK_detail_bin_half(nt)
   write(ivtk) trim(buffer)
   write(ivtk)(((real(rho(i,j,k)),i=1,nxGlobal,2),j=1,nyGlobal,2),k=1,nzGlobal,2)
 
-  buffer = 'SCALARS phi float'//lf
-  write(ivtk) trim(buffer)
-  buffer = 'LOOKUP_TABLE default'//lf
-  write(ivtk) trim(buffer)
-  write(ivtk)(((real(phi(i,j,k)),i=1,nxGlobal,2),j=1,nyGlobal,2),k=1,nzGlobal,2)
 
   buffer = 'SCALARS velocity_X float'//lf
   write(ivtk) trim(buffer)

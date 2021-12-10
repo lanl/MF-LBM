@@ -391,8 +391,8 @@ subroutine pore_profile
         enddo
 
     endif
-    call MPI_Bcast(pore_sum,1,MPI_INTEGER,0,MPI_COMM_vgrid,ierr)
-    call MPI_Bcast(pore_sum_effective,1,MPI_INTEGER,0,MPI_COMM_vgrid,ierr)
+    call MPI_Bcast(pore_sum,1,MPI_INTEGER4,0,MPI_COMM_vgrid,ierr)
+    call MPI_Bcast(pore_sum_effective,1,MPI_INTEGER4,0,MPI_COMM_vgrid,ierr)
 
     deallocate(tt1,pore)
     return

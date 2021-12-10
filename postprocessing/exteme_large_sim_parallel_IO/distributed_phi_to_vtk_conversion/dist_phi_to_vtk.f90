@@ -66,9 +66,9 @@ subroutine read_save_phi
     end type geometry
 
     type(geometry), allocatable :: fluid_array(:)
-
+    
     allocate(fluid_array(0:np-1))
-
+    !$omp parallel do private(flnm,num,idx,idy,idz,nx,ny,nz,i,j,k)
     do id=0,np-1
         write(flnm,"('./data/geometry_id',i5.5)")id
         open(unit=9+id, file=trim(flnm), FORM='unformatted', status='old',access='stream')

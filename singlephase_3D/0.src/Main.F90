@@ -112,6 +112,7 @@ program main
                 call VTK_walls_bin
                 !call VTK_legacy_writer_3D(ntime)
             else
+                call VTK_walls_bin_half
                 !call save_macro(ntime)    ! parallel I/O, distributed files, require post processing
             endif
         endif
@@ -167,6 +168,7 @@ program main
                     call VTK_legacy_writer_3D(ntime)
                 else
                     call save_macro(ntime)    ! parallel I/O, distributed files, require post processing
+                    !call VTK_legacy_writer_3D_half(ntime)
                 endif
             endif
             !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ output ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~        

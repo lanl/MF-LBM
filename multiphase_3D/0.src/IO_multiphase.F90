@@ -833,8 +833,9 @@ subroutine VTK_legacy_writer_3D(nt, vtk_type)
     include 'mpif.h'
     character*30 :: flnm,fmt
     integer :: vtk_type
-    integer :: i,j,k,i1,i2,j1,j2,k1,k2,rg,l1,l2,m1,m2,n1,n2,rf,m,nt,num,wall_indicator
-    character :: buffer*80, lf*1, str1*10, str2*10, str3*10
+    integer :: i,j,k,i1,i2,j1,j2,k1,k2,rg,l1,l2,m1,m2,n1,n2,rf,m,nt,wall_indicator
+    integer(kind=8) :: num
+    character :: buffer*80, lf*1, str1*10, str2*10, str3*10, str4*14
     integer   :: ivtk = 9, int
     real(kind=8),allocatable,dimension(:,:,:)::dd,ff,utt,vtt,wtt
     real(kind=4),allocatable,dimension(:,:,:)::ff4    ! single precision
@@ -929,8 +930,9 @@ subroutine VTK_legacy_writer_3D(nt, vtk_type)
         write(str3(1:10),'(i10)')1
         buffer = 'SPACING '//str1//' '//str2//' '//str3//lf
         write(ivtk) trim(buffer)
-        write(str1(1:10),'(i10)')nxglobal*nyglobal*nzglobal
-        buffer = 'POINT_DATA '//str1//lf
+        num=int(nxGlobal,kind=8)*int(nyGlobal,kind=8)*int(nzGlobal,kind=8)
+        write(str4(1:14),'(i14)')num
+        buffer = 'POINT_DATA '//str4//lf
         write(ivtk) trim(buffer)
 
         if(vtk_type == 1.or.vtk_type == 3)then
@@ -1080,7 +1082,8 @@ subroutine VTK_walls_bin   !solid geometry
     IMPLICIT NONE
     include 'mpif.h'
     integer :: i,j,k,m,nt
-    character :: buffer*80, lf*1, str1*10, str2*10, str3*10
+    integer(kind=8) :: num
+    character :: buffer*80, lf*1, str1*10, str2*10, str3*10, str4*14
     integer   :: ivtk = 9, int
 
     if(id.eq.0)then
@@ -1105,9 +1108,9 @@ subroutine VTK_walls_bin   !solid geometry
         write(str2(1:10),'(i10)')1
         write(str3(1:10),'(i10)')1
         buffer = 'SPACING '//str1//' '//str2//' '//str3//lf                                               ; write(ivtk) trim(buffer)
-
-        write(str1(1:10),'(i10)')nxglobal*nyglobal*nzglobal
-        buffer = 'POINT_DATA '//str1//lf                                               ; write(ivtk) trim(buffer)
+        num=int(nxGlobal,kind=8)*int(nyGlobal,kind=8)*int(nzGlobal,kind=8)
+        write(str4(1:14),'(i14)')num
+        buffer = 'POINT_DATA '//str4//lf                                               ; write(ivtk) trim(buffer)
 
         !scalar - walls
         buffer = 'SCALARS walls int'//lf                                          ; write(ivtk) trim(buffer)

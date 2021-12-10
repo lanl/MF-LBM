@@ -69,7 +69,7 @@ module Misc_module
     integer :: n_fluid_node_local  !total fluid nodes of local domain
 
     integer,  allocatable, dimension(:) :: pore_profile_z   !used in IO for easier data process. Only available in MPI process id0
-    integer :: pore_sum, pore_sum_effective  !effeictive pore sum excludes inlet and outlet portion
+    integer(kind=4) :: pore_sum, pore_sum_effective  !effeictive pore sum excludes inlet and outlet portion
     real(kind=8) :: porosity_full, porosity_effective
 
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ lattice ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 

@@ -564,7 +564,7 @@ subroutine save_macro(nt)
 
     if(id==0)print*,'Start to save full macro variables data.'
 
-    open(unit=9+id, file='out3.field_data/full_flow_field/'//trim(flnm), FORM='unformatted', status='replace',access='stream')
+    open(unit=9+id, file='out3.field_data/'//trim(flnm), FORM='unformatted', status='replace',access='stream')
     do k=1,nz
         do j=1,ny
             do i=1,nx
@@ -596,8 +596,9 @@ subroutine VTK_legacy_writer_3D(nt)
     include 'mpif.h'
     character*30 :: flnm,fmt
     integer :: vtk_type
-    integer :: i,j,k,i1,i2,j1,j2,k1,k2,rg,l1,l2,m1,m2,n1,n2,rf,m,nt,num,wall_indicator
-    character :: buffer*80, lf*1, str1*10, str2*10, str3*10
+    integer :: i,j,k,i1,i2,j1,j2,k1,k2,rg,l1,l2,m1,m2,n1,n2,rf,m,nt,wall_indicator
+    integer(kind=8) :: num
+    character :: buffer*80, lf*1, str1*10, str2*10, str3*10, str4*14
     integer   :: ivtk = 9, int
     real(kind=8),allocatable,dimension(:,:,:)::dd,utt,vtt,wtt
 
@@ -650,8 +651,9 @@ subroutine VTK_legacy_writer_3D(nt)
         write(str3(1:10),'(i10)')1
         buffer = 'SPACING '//str1//' '//str2//' '//str3//lf
         write(ivtk) trim(buffer)
-        write(str1(1:10),'(i10)')nxglobal*nyglobal*nzglobal
-        buffer = 'POINT_DATA '//str1//lf
+        num = int(nxGlobal,kind=8)*int(nyGlobal,kind=8)*int(nzGlobal,kind=8)
+        write(str4(1:14),'(i14)')num
+        buffer = 'POINT_DATA '//str4//lf                                               
         write(ivtk) trim(buffer)
 
         buffer = 'SCALARS density '//fmt//lf
@@ -682,6 +684,103 @@ subroutine VTK_legacy_writer_3D(nt)
     return
 end subroutine VTK_legacy_writer_3D
 
+subroutine VTK_legacy_writer_3D_half(nt)    
+  use Misc_module
+  use Fluid_singlephase
+  use mpi_variable
+  IMPLICIT NONE
+  include 'mpif.h'
+  character*30 :: flnm,fmt
+  integer :: vtk_type
+  integer :: i,j,k,i1,i2,j1,j2,k1,k2,rg,l1,l2,m1,m2,n1,n2,rf,m,nt,wall_indicator
+  integer(kind=8) :: num
+  character :: buffer*80, lf*1, str1*10, str2*10, str3*10, str4*14
+  integer   :: ivtk = 9, int
+  real(kind=8),allocatable,dimension(:,:,:)::dd,utt,vtt,wtt
+
+  rg=0; rf=0;
+  i1=1; i2=nx;
+  j1=1; j2=ny;
+  k1=1; k2=nz;
+  l1=1; l2=nxGlobal;
+  m1=1; m2=nyGlobal;
+  n1=1; n2=nzGlobal;
+
+  fmt = 'float'
+  if(id.eq.0)then
+      allocate(dd(l1:l2,m1:m2,n1:n2),utt(l1:l2,m1:m2,n1:n2),vtt(l1:l2,m1:m2,n1:n2),wtt(l1:l2,m1:m2,n1:n2))
+  endif          
+  call compute_macro_vars
+  !$acc update host(u,v,w,rho)
+  call AllGather(u(1:nx,1:ny,1:nz),i1,i2,j1,j2,k1,k2,rg,utt,l1,l2,m1,m2,n1,n2,rf)
+  call AllGather(v(1:nx,1:ny,1:nz),i1,i2,j1,j2,k1,k2,rg,vtt,l1,l2,m1,m2,n1,n2,rf)
+  call AllGather(w(1:nx,1:ny,1:nz),i1,i2,j1,j2,k1,k2,rg,wtt,l1,l2,m1,m2,n1,n2,rf)
+  call AllGather(rho(1:nx,1:ny,1:nz),i1,i2,j1,j2,k1,k2,rg,dd,l1,l2,m1,m2,n1,n2,rf)
+
+
+  if(id.eq.0)then
+      write(flnm,'(i10.10,".vtk")')nt
+
+      OPEN(UNIT = ivtk, FILE ='out3.field_data/full_flow_field_half_'//flnm, FORM='unformatted',access='stream',status='replace',convert='BIG_ENDIAN')
+
+      lf = char(10) ! line feed character
+      buffer = '# vtk DataFile Version 3.0'//lf
+      write(ivtk) trim(buffer)
+      buffer = 'vtk output'//lf
+      write(ivtk) trim(buffer)
+      buffer = 'BINARY'//lf
+      write(ivtk) trim(buffer)
+      buffer = 'DATASET STRUCTURED_POINTS '//lf
+      write(ivtk) trim(buffer)
+      write(str1(1:10),'(i10)')nxglobal/2
+      write(str2(1:10),'(i10)')nyglobal/2
+      write(str3(1:10),'(i10)')nzglobal/2
+      buffer = 'DIMENSIONS '//str1//' '//str2//' '//str3//lf
+      write(ivtk) trim(buffer)
+      write(str1(1:10),'(i10)')1
+      write(str2(1:10),'(i10)')1
+      write(str3(1:10),'(i10)')1
+      buffer = 'ORIGIN '//str1//' '//str2//' '//str3//lf
+      write(ivtk) trim(buffer)
+      write(str1(1:10),'(i10)')1
+      write(str2(1:10),'(i10)')1
+      write(str3(1:10),'(i10)')1
+      buffer = 'SPACING '//str1//' '//str2//' '//str3//lf
+      write(ivtk) trim(buffer)
+      num = int(nxGlobal,kind=8)*int(nyGlobal,kind=8)*int(nzGlobal,kind=8)/8
+      write(str4(1:14),'(i14)')num
+      buffer = 'POINT_DATA '//str4//lf                                               
+      write(ivtk) trim(buffer)
+
+      buffer = 'SCALARS density '//fmt//lf
+      write(ivtk) trim(buffer)
+      buffer = 'LOOKUP_TABLE default'//lf
+      write(ivtk) trim(buffer)
+      write(ivtk)(((real(dd(i,j,k)),i=1,nxGlobal,2),j=1,nyGlobal,2),k=1,nzGlobal,2)  
+      buffer = 'SCALARS velocity_X '//fmt//lf
+      write(ivtk) trim(buffer)
+      buffer = 'LOOKUP_TABLE default'//lf
+      write(ivtk) trim(buffer)
+      write(ivtk)(((real(utt(i,j,k)),i=1,nxGlobal,2),j=1,nyGlobal,2),k=1,nzGlobal,2)   
+      buffer = 'SCALARS velocity_Y '//fmt//lf
+      write(ivtk) trim(buffer)
+      buffer = 'LOOKUP_TABLE default'//lf
+      write(ivtk) trim(buffer)
+      write(ivtk)(((real(vtt(i,j,k)),i=1,nxGlobal,2),j=1,nyGlobal,2),k=1,nzGlobal,2)   
+      buffer = 'SCALARS velocity_Z '//fmt//lf
+      write(ivtk) trim(buffer)
+      buffer = 'LOOKUP_TABLE default'//lf
+      write(ivtk) trim(buffer)
+      write(ivtk)(((real(wtt(i,j,k)),i=1,nxGlobal,2),j=1,nyGlobal,2),k=1,nzGlobal,2)              
+      deallocate(dd,utt,vtt,wtt)
+
+      close(ivtk)
+  endif
+
+  return
+end subroutine VTK_legacy_writer_3D_half
+ 
+
 
  !****************** save geometry VTK ***********************
 subroutine VTK_walls_bin   !solid geometry
@@ -690,7 +789,8 @@ subroutine VTK_walls_bin   !solid geometry
     IMPLICIT NONE
     include 'mpif.h'
     integer :: i,j,k,m,nt
-    character :: buffer*80, lf*1, str1*10, str2*10, str3*10
+    integer(kind=8) :: num
+    character :: buffer*80, lf*1, str1*10, str2*10, str3*10, str4*14
     integer   :: ivtk = 9, int
 
     if(id.eq.0)then
@@ -715,9 +815,9 @@ subroutine VTK_walls_bin   !solid geometry
         write(str2(1:10),'(i10)')1
         write(str3(1:10),'(i10)')1
         buffer = 'SPACING '//str1//' '//str2//' '//str3//lf                                               ; write(ivtk) trim(buffer)
-
-        write(str1(1:10),'(i10)')nxglobal*nyglobal*nzglobal
-        buffer = 'POINT_DATA '//str1//lf                                               ; write(ivtk) trim(buffer)
+        num = int(nxGlobal,kind=8)*int(nyGlobal,kind=8)*int(nzGlobal,kind=8)
+        write(str4(1:14),'(i14)')num
+        buffer = 'POINT_DATA '//str4//lf                                               ; write(ivtk) trim(buffer)
 
         !scalar - walls
         buffer = 'SCALARS walls int'//lf                                          ; write(ivtk) trim(buffer)
@@ -729,4 +829,52 @@ subroutine VTK_walls_bin   !solid geometry
     endif
     return
 end subroutine VTK_walls_bin
+
+subroutine VTK_walls_bin_half   !solid geometry
+  use Misc_module
+  use mpi_variable
+  IMPLICIT NONE
+  include 'mpif.h'
+  integer :: i,j,k,m,nt
+  integer(kind=8) :: num
+  character :: buffer*80, lf*1, str1*10, str2*10, str3*10, str4*14
+  integer   :: ivtk = 9, int
+
+  if(id.eq.0)then
+      open(unit=ivtk,file='out3.field_data/walls_bin.vtk',FORM='unformatted',access='stream',status='replace',convert='BIG_ENDIAN')
+      lf = char(10) ! line feed character
+      buffer = '# vtk DataFile Version 3.0'//lf                                             ; write(ivtk) trim(buffer)
+      buffer = 'vtk output'//lf                                                             ; write(ivtk) trim(buffer)
+      buffer = 'BINARY'//lf                                                                 ; write(ivtk) trim(buffer)
+      buffer = 'DATASET STRUCTURED_POINTS '//lf                                          ; write(ivtk) trim(buffer)
+
+      write(str1(1:10),'(i10)')nxglobal/2
+      write(str2(1:10),'(i10)')nyglobal/2
+      write(str3(1:10),'(i10)')nzglobal/2
+      buffer = 'DIMENSIONS '//str1//' '//str2//' '//str3//lf                                               ; write(ivtk) trim(buffer)
+
+      write(str1(1:10),'(i10)')1
+      write(str2(1:10),'(i10)')1
+      write(str3(1:10),'(i10)')1
+      buffer = 'ORIGIN '//str1//' '//str2//' '//str3//lf                                               ; write(ivtk) trim(buffer)
+
+      write(str1(1:10),'(i10)')1
+      write(str2(1:10),'(i10)')1
+      write(str3(1:10),'(i10)')1
+      buffer = 'SPACING '//str1//' '//str2//' '//str3//lf                                               ; write(ivtk) trim(buffer)
+
+      num = int(nxGlobal,kind=8)*int(nyGlobal,kind=8)*int(nzGlobal,kind=8)/8
+      write(str4(1:14),'(i14)')num
+      buffer = 'POINT_DATA '//str4//lf                                               ; write(ivtk) trim(buffer)
+
+      !scalar - walls
+      buffer = 'SCALARS walls int'//lf                                          ; write(ivtk) trim(buffer)
+      buffer = 'LOOKUP_TABLE default'//lf                                          ; write(ivtk) trim(buffer)
+      write(ivtk)(((int(walls_global(i,j,k)),i=1,nxGlobal,2),j=1,nyGlobal,2),k=1,nzGlobal,2)
+
+      close(ivtk)
+
+  endif
+  return
+end subroutine VTK_walls_bin_half
 
