@@ -25,7 +25,7 @@ program main_multiphase
     USE,INTRINSIC :: IEEE_ARITHMETIC
     IMPLICIT NONE
     include 'mpif.h'
-    !indicator used to save extra backup pdf data in the middle of simulation
+    !indicator used to save extra backup checkpoint(pdf) data
     integer :: save_checkpoint_data_indicator, save_2rd_checkpoint_data_indicator   
     integer :: counter_checkpoint_save, counter_2rd_checkpoint_save
     real (kind = 8) :: t_all_sum, t_all, t_run_time, t_start1, t_end1, t_start2, t_end2

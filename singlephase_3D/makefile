@@ -1,26 +1,25 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ options to choose ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 # -- GPU --
-#arch = gpu
+# arch = gpu
 # extreme scale simulation results in very large array
 #x_scale = enabled    
 
 # -- CPU --
 arch = cpu
-# whether or not use avx512 for intel cpu, test before use 
 openmp = enabled
+# whether or not to use avx512 for intel cpu, test before use 
 #AVX512 = enabled
 
 # -- MIC(KNL) --
 # arch = mic
-# # OpenMP and AVX512 should both be enabled for MIC
+# OpenMP and AVX512 should both be enabled for MIC
 # openmp = enabled
 # AVX512 = enabled
 
 # -- compiler --
 tool = gcc
-#tool = pgi
+#tool = nvidia
 #tool = intel
-#tool = cray  (not implemented)
 
 # -- optimization options --
 #optimization = debug
@@ -49,6 +48,9 @@ ifeq ($(strip $(arch)), gpu)
 	openmp = disabled
 #compatible with pgi compiler, for cray compiler: ARCH_FLAGS = -h acc,noomp -h msgs
 	ARCH_FLAGS = -acc -Mcuda -Minfo=accel -ta=tesla:pinned   
+	FPP_FLAGS = -D_openacc 
+#enable gpu profiling
+#FPP_FLAGS += -Dgpu_profiling  
 endif
 
 ifeq ($(strip $(arch)), mic)
@@ -57,15 +59,15 @@ ifeq ($(strip $(arch)), mic)
 		ARCH_FLAGS = -xMIC-AVX512		
 	endif
 endif
-
 ############# architecture ########################
 
-############# tool ################################
-# gcc
+############# tools ################################
+# -------------- gcc ----------------
 ifeq ($(strip $(tool)), gcc)
 # -J 0.obj put .mod files to 0.obj directory
 	MISC_FLAGS = -ffree-line-length-300 -J $(OBJ_DIR)  
-#for gcc10, add the following temporary fix: MISC_FLAGS += -fallow-argument-mismatch   
+#for gcc10, enable the following temporary fix: 
+	MISC_FLAGS += -fallow-argument-mismatch   
 
 	ifeq ($(strip $(optimization)), debug)
 		OPT_FLAGS = -g
@@ -73,22 +75,24 @@ ifeq ($(strip $(tool)), gcc)
 		OPT_FLAGS = -O2
 	else	
 		OPT_FLAGS = -O3
-    endif
+  endif
 	
 	ifeq ($(strip $(openmp)), enabled)
 		OMP_FLAGS = -fopenmp
 	endif
 endif
 
-# pgi
-ifeq ($(strip $(tool)), pgi)
+# -------------- nvidia ----------------
+ifeq ($(strip $(tool)), nvidia)
 	MISC_FLAGS = -module $(OBJ_DIR) 
 
 	ifeq ($(strip $(optimization)), debug)
 		OPT_FLAGS = -g
-	else 
+	else ifeq ($(strip $(optimization)), release)
+		OPT_FLAGS = -O2
+	else	
 		OPT_FLAGS = -fast
-    endif
+  endif
 
 	ifeq ($(strip $(openmp)), enabled)
 		OMP_FLAGS = -mp
@@ -98,10 +102,9 @@ ifeq ($(strip $(tool)), pgi)
 	ifeq ($(strip $(x_scale)), enabled)
 		MISC_FLAGS += -mcmodel=medium 
 	endif
-
 endif
 
-# intel
+# -------------- intel ----------------
 ifeq ($(strip $(tool)), intel)
 	MISC_FLAGS = -module $(OBJ_DIR) 
 
@@ -116,9 +119,8 @@ ifeq ($(strip $(tool)), intel)
 	ifeq ($(strip $(openmp)), enabled)
 		OMP_FLAGS = -qopenmp
 	endif
-
 endif
-############# tool ################################
+############# tools ################################
 
 compiler = mpif90
 #compiler = ftn
@@ -134,7 +136,6 @@ LFLAGS = $(CFLAGS)
 COMPILE = ${compiler} 
 LINK = ${compiler}
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 objects = Module.o Main.o Initialization.o Misc.o IO.o Kernel.o Monitor.o Mpi_misc.o Mpi.o Boundary.o 
 

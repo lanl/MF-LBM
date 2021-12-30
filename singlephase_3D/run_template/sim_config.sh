@@ -26,8 +26,6 @@ then
     sed_option="-i.bak"
 fi
 
-
-
 # -------------------------------------- modify path --------------------------------------
 #  write above paths to path_info.txt
 cp $template_directory/template-path_info.txt path_info.txt
@@ -37,37 +35,16 @@ sed $sed_option "s|geometry_boundary_file_path_holder|$geometry_boundary_info_fi
 cp $template_directory/clean.sh ./
 
 
-#----------------- parameters to be modified for the present simulation ------------------- 
-# Only the most common parameters that require modification are listed here with default value.
-# Comment out the ones you want to change, and modify the values.
-# One can further change the script to modify the control file or edit the control file directly.
-
+#----------------- simulation control ------------------- 
+# copy the sample simulation control file and further edit the parameters
 cp $template_directory/template-simulation_control.txt simulation_control.txt
-
-# examples:
-
-# nx=40
-# ny=40
-# nz=60
-# sed $sed_option "s|lattice_dimensions .*|lattice_dimensions $nx,$ny,$nz|g" ./simulation_control.txt
-
-# periodic_x=0
-# periodic_y=0
-# periodic_z=0
-# sed $sed_option "s|periodic_indicator .*|periodic_indicator $periodic_x,$periodic_y,$periodic_z|g" ./simulation_control.txt
-
-# mpi_npx=1  # x-axis domain decomposition currently disabled, keep using mpi_npx=1 
-# mpi_npy=1
-# mpi_npz=2
-# sed $sed_option "s|MPI_process_num .*|MPI_process_num $mpi_npx,$mpi_npy,$mpi_npz|g" ./simulation_control.txt
-
 
 
 # -------------------------- modify interactive run script ----------------------------------
 
 MPI_process_num=2   # MPI_process_num must be equal to mpi_npx * mpi_npy * mpi_npz
 
-# Below is the run command for typical CPU computing node with two sockets
+# Below is the run command for a typical CPU computing node with two sockets
 run_command="mpirun -n $MPI_process_num --map-by ppr:2:node --bind-to numa $exec_location"
 # check out other run commands below for different platforms
 
@@ -76,7 +53,7 @@ run_command="mpirun -n $MPI_process_num --map-by ppr:2:node --bind-to numa $exec
 # ~~~~~ typical CPU computing nodes with 2 CPUs per node
 # mpirun -n $MPI_process_num --map-by ppr:2:node --bind-to numa $exec_location
 
-# ~~~~~ local consumer machine
+# ~~~~~ single socket consumer-grade machine
 # mpirun -n $MPI_process_num $exec_location
 
 # ~~~~~ LANL Darwin IBM POWER9 GPU nodes with 4 GPUs per node
@@ -87,7 +64,7 @@ run_command="mpirun -n $MPI_process_num --map-by ppr:2:node --bind-to numa $exec
 # ~~~~~ LANL Kodiak GPU nodes with 4 GPUs per node
 # mpirun -n $MPI_process_num --map-by ppr:4:node --bind-to socket $exec_location
 
-# ~~~~~ use srun
+# ~~~~~ slurm
 # srun -n $MPI_process_num $exec_location
 
 # Intel Xeon Phi 'KNL' node
@@ -96,7 +73,7 @@ run_command="mpirun -n $MPI_process_num --map-by ppr:2:node --bind-to numa $exec
 
 ################# sample run command #################
 
-# Interactive run script. Slurm job scripts can be generated easily based on irun.sh
+# Interactive run script (Slurm or other job scripts can be generated easily based on irun.sh)
 cp $template_directory/template-irun.sh irun.sh
 sed $sed_option "s|run_command|$run_command|" irun.sh
 

@@ -1,3 +1,8 @@
+data location:
+../../../singlephase_3D/test/out3.field_data
 2  !total number of MPI processes in the original simulation
 240,240,260  !dimensions of the entire simulation domain
-500, 500, 500  !start time step, time interval, end time step
+5000, 5000, 5000  !start time step, time interval, end time step
+2      ! input precision: single precision - 1; double precision - 2
+1      ! output precision: single precision - 1; double precision - 2
+0      ! full output - 0; skip point output (reduce file size) - 1

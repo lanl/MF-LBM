@@ -1,4 +1,3 @@
-#include "./preprocessor.h"
 !============================================================================================================================================================================
 !---------------------- Bounce-back type velocity open inlet boundary conditions (default) ----------------------
 !============================================================================================================================================================================
@@ -76,8 +75,6 @@ end subroutine inlet_bounce_back_velocity_BC_after_odd
 
 !==================================================================================================================================================================
 !---------------------- Zou-He type pressure/velocity open inlet boundary conditions ----------------------
-! currently, there should be only one dominant phase at the inlet boundary nodes, 
-! otherwise recolor scheme conflicts with zou-he BC for individual fluid component (momentumn for individual fluid is not conserved)
 !==================================================================================================================================================================
 !************************** before odd step kernel *****************************************
 subroutine inlet_Zou_He_pressure_BC_before_odd    !before streaming type BC
@@ -218,8 +215,7 @@ subroutine outlet_convective_BC_before_odd    !before streaming type BC
         do j=1,ny
             do i=1,nx
                 wall_indicator = walls(i,j,nz)
-            
-                !if outlet convective BC
+
                 f6(i    , j    , nz + 1) = ((f_convec_bc(i,j,6) + u_convec * f6(i    , j    , nz + 1 - 1)) * temp) * (1 - wall_indicator) + f6(i    , j    , nz + 1)*wall_indicator
                 f13(i - 1, j    , nz + 1) = ((f_convec_bc(i,j,13) + u_convec * f13(i - 1, j    , nz + 1 - 1)) * temp) * (1 - wall_indicator) + f13(i - 1, j    , nz + 1)*wall_indicator
                 f14(i + 1, j    , nz + 1) = ((f_convec_bc(i,j,14) + u_convec * f14(i + 1, j    , nz + 1 - 1)) * temp) * (1 - wall_indicator) + f14(i + 1, j    , nz + 1)*wall_indicator
