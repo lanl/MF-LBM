@@ -69,7 +69,7 @@ module Misc_module
     integer :: n_fluid_node_local  !total fluid nodes of the partitioned domain
 
     integer, allocatable, dimension(:) :: pore_profile_z   !used in IO for easier data processing. Only available on rank id0
-    integer(kind=4) :: pore_sum, pore_sum_effective  !effeictive pore sum excludes inlet and outlet portion
+    integer(kind=8) :: pore_sum, pore_sum_effective  !effeictive pore sum excludes inlet and outlet portion
     real(kind=8) :: porosity_full, porosity_effective
 
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ lattice ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

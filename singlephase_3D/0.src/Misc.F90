@@ -15,9 +15,9 @@ subroutine set_walls
 
     !~~~~~~~~~~~~~ temporary fix for IBM Power9 nodes. Otherwise, MPI_Bcast will be extremely slow for a large array. ~~~~~~~~~~~~~~~~~~~~
     ! cause unknown. likely have something to do with memory allocation of the MPI buffers.
-    integer(kind=1), allocatable, dimension(:, :, :) :: tt
-    allocate (tt(1:nx, 1:ny, 1:nz))
-    deallocate (tt)
+    ! integer(kind=1), allocatable, dimension(:, :, :) :: tt
+    ! allocate (tt(1:nx, 1:ny, 1:nz))
+    ! deallocate (tt)
     !~~~~~~~~~~~~~ temporary fix for IBM Power9 nodes. Otherwise, MPI_Bcast will be extremely slow for a large array. ~~~~~~~~~~~~~~~~~~~~
 
     isize = nx*ny*nz
@@ -354,10 +354,9 @@ subroutine pore_profile
         do k = 1 + n_exclude_inlet, nzGlobal - n_exclude_outlet
             pore_sum_effective = pore_sum_effective + pore_profile_z(k)
         end do
-
     end if
-    call MPI_Bcast(pore_sum, 1, MPI_INTEGER4, 0, MPI_COMM_vgrid, ierr)
-    call MPI_Bcast(pore_sum_effective, 1, MPI_INTEGER4, 0, MPI_COMM_vgrid, ierr)
+    call MPI_Bcast(pore_sum, 1, MPI_INTEGER8, 0, MPI_COMM_vgrid, ierr)
+    call MPI_Bcast(pore_sum_effective, 1, MPI_INTEGER8, 0, MPI_COMM_vgrid, ierr)
 
     deallocate (tt1, pore)
     return

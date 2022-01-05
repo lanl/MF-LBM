@@ -50,18 +50,18 @@ subroutine initialization_basic
         write (11, "('Inlet open cross sectional area = ', F14.2)") A_xy
 
         write (11, *) ' Pore information:'
-        write (11, "('Total number of pore nodes = ', I14)") pore_sum
+        write (11, "('Total number of pore nodes = ', I16)") pore_sum
 
-        write (11, "('Total number of effective pore nodes (excluding inlet/outlet)  = ', I14)") pore_sum_effective
+        write (11, "('Total number of effective pore nodes (excluding inlet/outlet)  = ', I16)") pore_sum_effective
 
-        porosity_full = dble(pore_sum)/((nxGlobal - 2)*(nyGlobal - 2)*(nzGlobal))
+        porosity_full = dble(pore_sum)/((nxGlobal - 2)*(nyGlobal - 2))/(nzGlobal)
         porosity_effective = dble(pore_sum_effective)/((nxGlobal - 2)*(nyGlobal - 2))/&
         &dble(nzglobal - n_exclude_outlet - n_exclude_inlet)
         write (11, "('Full domain porosity = ', F6.4)") porosity_full
         write (11, "('Effective domain porosity (excluding inlet/outlet) = ', F6.4)") porosity_effective
         close (11)
 
-        write (*, "(' Total number of pore nodes = ', I14)") pore_sum
+        write (*, "(' Total number of pore nodes = ', I16)") pore_sum
         write (*, "(' Inlet cross sectional area = ', F14.2)") A_xy
         print *, 'Total number of effective pore nodes (middle section for analysis) = '
         print *, pore_sum_effective
