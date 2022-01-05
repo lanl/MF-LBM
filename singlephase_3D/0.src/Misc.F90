@@ -110,11 +110,11 @@ subroutine set_walls
         call MPI_Bcast(walls_global, nxGlobal*nyGlobal*nzGlobal, MPI_INTEGER1, 0, MPI_COMM_VGRID, ierr)
     else
         ! walls_global array may be too large and the value of (nxGlobal)*(nyGlobal)*(nzGlobal) exceeds 2^31 limit of MPI_Bcast
-        nmax = 4 ! divide the array into nmax pieces (nzglobal must be completely divided by nmax)
-        if (mod(nzglobal, nmax) == 0) then
-            do n = 1, nmax
-                k = 1 + nzglobal/nmax*(n - 1)
-                out3 = nzGlobal/nmax
+        ! divide the array into npz pieces (nzglobal must be completely divided by npz)
+        if (mod(nzglobal, npz) == 0) then
+            do n = 1, npz
+                k = 1 + nzglobal/npz*(n - 1)
+                out3 = nzGlobal/npz
                 call MPI_Bcast(walls_global(1, 1, k), (nxGlobal)*(nyGlobal)*out3, MPI_INTEGER1, 0, MPI_COMM_VGRID, ierr)
             end do
         else
