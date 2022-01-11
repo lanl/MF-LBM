@@ -334,7 +334,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates body force driven single-phase flow for absolute permeability measurement, using an external rock geometry file. The value of the body force should be adjusted so that the flow is in the Stokes flow regime.
+   This example simulates body force driven single-phase flow for absolute permeability measurement, using an external rock geometry file. The value of the body force should be adjusted so that the flow is in the Stokes flow regime. The provided sample configuration file assumes the executable is the GPU version.
 
 ### Output files
 Three output directories will be created:

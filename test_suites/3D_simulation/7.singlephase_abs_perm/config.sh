@@ -6,7 +6,7 @@
 #--------------------------------------- PATH --------------------------------------------- 
 # absolute or relative paths of corresponding files or directories 
 template_directory="../../../singlephase_3D/run_template/"
-exec_location="../../../singlephase_3D/1.exec/MF_LBM_singlephase.cpu"
+exec_location="../../../singlephase_3D/1.exec/MF_LBM_singlephase.gpu"
 
 # if external geometry is used (external_geometry_read_cmd = 1)
 geometry_file="../../../MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat"
@@ -59,10 +59,10 @@ periodic_y=0
 periodic_z=1
 sed $sed_option "s|periodic_indicator .*|periodic_indicator $periodic_x,$periodic_y,$periodic_z|g" ./simulation_control.txt
 
-# mpi_npx=1  # x-axis domain decomposition currently disabled, keep using mpi_npx=1 
-# mpi_npy=1
-# mpi_npz=2
-# sed $sed_option "s|MPI_process_num .*|MPI_process_num $mpi_npx,$mpi_npy,$mpi_npz|g" ./simulation_control.txt
+mpi_npx=1  # x-axis domain decomposition currently disabled, keep using mpi_npx=1 
+mpi_npy=1
+mpi_npz=1
+sed $sed_option "s|MPI_process_num .*|MPI_process_num $mpi_npx,$mpi_npy,$mpi_npz|g" ./simulation_control.txt
 
 body_force_0=10d-6
 sed $sed_option "s|body_force_0 .*|body_force_0 $body_force_0|g" ./simulation_control.txt
@@ -70,10 +70,9 @@ sed $sed_option "s|body_force_0 .*|body_force_0 $body_force_0|g" ./simulation_co
 
 # -------------------------- modify interactive run script ----------------------------------
 
-MPI_process_num=2   # MPI_process_num must be equal to mpi_npx * mpi_npy * mpi_npz
+MPI_process_num=1   # MPI_process_num must be equal to mpi_npx * mpi_npy * mpi_npz
 
-# Below is the run command for typical CPU computing node with two sockets
-run_command="mpirun -n $MPI_process_num --map-by ppr:2:node --bind-to numa $exec_location"
+run_command="mpirun -n $MPI_process_num $exec_location"
 # check out other run commands below for different platforms
 
 ################# sample run command #################

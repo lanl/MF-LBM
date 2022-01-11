@@ -66,15 +66,15 @@ endif
 ifeq ($(strip $(tool)), gcc)
 # -J 0.obj put .mod files to 0.obj directory
 	MISC_FLAGS = -ffree-line-length-300 -J $(OBJ_DIR)  
-#for gcc10, enable the following temporary fix: 
-	MISC_FLAGS += -fallow-argument-mismatch   
+#for gcc10+, enable the following temporary fix: 
+#MISC_FLAGS += -fallow-argument-mismatch   
 
 	ifeq ($(strip $(optimization)), debug)
 		OPT_FLAGS = -g
 	else ifeq ($(strip $(optimization)), release)
 		OPT_FLAGS = -O2
 	else	
-		OPT_FLAGS = -O3
+		OPT_FLAGS = -Ofast
   endif
 	
 	ifeq ($(strip $(openmp)), enabled)
@@ -113,7 +113,7 @@ ifeq ($(strip $(tool)), intel)
 	else ifeq ($(strip $(optimization)), release)
 		OPT_FLAGS = -O2
 	else	
-		OPT_FLAGS = -O3
+		OPT_FLAGS = -Ofast
     endif
 
 	ifeq ($(strip $(openmp)), enabled)
