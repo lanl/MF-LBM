@@ -1,6 +1,6 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ options to choose ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 # -- GPU --
-# arch = gpu
+#arch = gpu
 # extreme scale simulation results in very large array
 #x_scale = enabled    
 
@@ -48,6 +48,9 @@ ifeq ($(strip $(arch)), gpu)
 	openmp = disabled
 #compatible with pgi compiler, for cray compiler: ARCH_FLAGS = -h acc,noomp -h msgs
 	ARCH_FLAGS = -acc -Mcuda -Minfo=accel -ta=tesla:pinned   
+	FPP_FLAGS = -D_openacc 
+#enable gpu profiling
+#FPP_FLAGS += -Dgpu_profiling  
 endif
 
 ifeq ($(strip $(arch)), mic)
@@ -63,14 +66,15 @@ endif
 ifeq ($(strip $(tool)), gcc)
 # -J 0.obj put .mod files to 0.obj directory
 	MISC_FLAGS = -ffree-line-length-300 -J $(OBJ_DIR)  
-#for gcc10, enable the following temporary fix: MISC_FLAGS += -fallow-argument-mismatch   
+#for gcc10+, enable the following temporary fix: 
+#MISC_FLAGS += -fallow-argument-mismatch   
 
 	ifeq ($(strip $(optimization)), debug)
 		OPT_FLAGS = -g
 	else ifeq ($(strip $(optimization)), release)
-		OPT_FLAGS = -O2
-	else	
 		OPT_FLAGS = -O3
+	else	
+		OPT_FLAGS = -Ofast
   endif
 	
 	ifeq ($(strip $(openmp)), enabled)
@@ -85,7 +89,7 @@ ifeq ($(strip $(tool)), nvidia)
 	ifeq ($(strip $(optimization)), debug)
 		OPT_FLAGS = -g
 	else ifeq ($(strip $(optimization)), release)
-		OPT_FLAGS = -O2
+		OPT_FLAGS = -O3
 	else	
 		OPT_FLAGS = -fast
   endif
@@ -107,9 +111,9 @@ ifeq ($(strip $(tool)), intel)
 	ifeq ($(strip $(optimization)), debug)
 		OPT_FLAGS = -debug
 	else ifeq ($(strip $(optimization)), release)
-		OPT_FLAGS = -O2
-	else	
 		OPT_FLAGS = -O3
+	else	
+		OPT_FLAGS = -Ofast
     endif
 
 	ifeq ($(strip $(openmp)), enabled)

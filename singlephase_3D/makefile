@@ -72,7 +72,7 @@ ifeq ($(strip $(tool)), gcc)
 	ifeq ($(strip $(optimization)), debug)
 		OPT_FLAGS = -g
 	else ifeq ($(strip $(optimization)), release)
-		OPT_FLAGS = -O2
+		OPT_FLAGS = -O3
 	else	
 		OPT_FLAGS = -Ofast
   endif
@@ -89,7 +89,7 @@ ifeq ($(strip $(tool)), nvidia)
 	ifeq ($(strip $(optimization)), debug)
 		OPT_FLAGS = -g
 	else ifeq ($(strip $(optimization)), release)
-		OPT_FLAGS = -O2
+		OPT_FLAGS = -O3
 	else	
 		OPT_FLAGS = -fast
   endif
@@ -111,7 +111,7 @@ ifeq ($(strip $(tool)), intel)
 	ifeq ($(strip $(optimization)), debug)
 		OPT_FLAGS = -debug
 	else ifeq ($(strip $(optimization)), release)
-		OPT_FLAGS = -O2
+		OPT_FLAGS = -O3
 	else	
 		OPT_FLAGS = -Ofast
     endif
