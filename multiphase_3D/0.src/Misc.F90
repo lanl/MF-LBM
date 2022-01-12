@@ -16,9 +16,9 @@ subroutine set_walls
 
     !~~~~~~~~~~~~~ temporary fix for IBM Power9 nodes. Otherwise, MPI_Bcast will be extremely slow for a large array. ~~~~~~~~~~~~~~~~~~~~
     ! cause unknown. likely have something to do with memory allocation of the MPI buffers.
-    integer(kind=1), allocatable,dimension(:,:,:) :: tt
-    allocate(tt(1:nx,1:ny,1:nz))
-    deallocate(tt)
+    ! integer(kind=1), allocatable,dimension(:,:,:) :: tt
+    ! allocate(tt(1:nx,1:ny,1:nz))
+    ! deallocate(tt)
     !~~~~~~~~~~~~~ temporary fix for IBM Power9 nodes. Otherwise, MPI_Bcase will be extremely slow for a large array. ~~~~~~~~~~~~~~~~~~~~
 
     isize = nx*ny*nz
@@ -109,23 +109,23 @@ subroutine set_walls
     endif
 
     !~~~~~~~~~~~~~~~~ broadcast and distribute geometry data ~~~~~~~~~~~~~~~~~~~~
-    if(extreme_large_sim_cmd==0)then
-        call MPI_Bcast(walls_global,nxGlobal*nyGlobal*nzGlobal,MPI_INTEGER1,0,MPI_COMM_VGRID,ierr)
+    if (extreme_large_sim_cmd == 0) then
+      call MPI_Bcast(walls_global, nxGlobal*nyGlobal*nzGlobal, MPI_INTEGER1, 0, MPI_COMM_VGRID, ierr)
     else
-        ! walls_global array may be too large that (nxGlobal)*(nyGlobal)*(nzGlobal) exceeds 2^31 limit of MPI_Bcast
-        nmax = 4 ! divide the array into nmax pieces (nzglobal must be completely divided by nmax)
-        if(mod(nzglobal,nmax)==0)then
-            do n=1,nmax
-                k = 1+nzglobal/nmax*(n-1)
-                out3 = nzGlobal/nmax
-                call MPI_Bcast(walls_global(1,1,k),(nxGlobal)*(nyGlobal)*out3,MPI_INTEGER1,0,MPI_COMM_VGRID,ierr)
-            enddo
-        else
-            if(id==0)print*,'Error in broadcasting walls_global array! mod(nzglobal,nmax)/=0'
-            call MPI_Barrier(MPI_COMM_WORLD,ierr)
-            call mpi_abort(MPI_COMM_WORLD,ierr)
-        endif
-    endif
+      ! walls_global array may be too large and the value of (nxGlobal)*(nyGlobal)*(nzGlobal) exceeds 2^31 limit of MPI_Bcast
+      ! divide the array into npz pieces (nzglobal must be completely divided by npz)
+      if (mod(nzglobal, npz) == 0) then
+          do n = 1, npz
+              k = 1 + nzglobal/npz*(n - 1)
+              out3 = nzGlobal/npz
+              call MPI_Bcast(walls_global(1, 1, k), (nxGlobal)*(nyGlobal)*out3, MPI_INTEGER1, 0, MPI_COMM_VGRID, ierr)
+          end do
+      else
+          if (id == 0) print *, 'Error in broadcasting walls_global array! mod(nzglobal,nmax)/=0'
+          call MPI_Barrier(MPI_COMM_WORLD, ierr)
+          call mpi_abort(MPI_COMM_WORLD, ierr)
+        end if
+    end if
 
     !$OMP PARALLEL DO private(i,j,l,m,n)
     do k=1,nz
