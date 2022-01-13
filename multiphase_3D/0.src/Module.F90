@@ -54,6 +54,9 @@ module Misc_module
 
     ! necesssary modifications for extreme large simulations including number limit and I/O related issues: 0 - no; 1 - yes
     integer :: extreme_large_sim_cmd
+
+    ! output field data precision (simulation is always double precision): 0 - single precision; 1 - double precision
+    integer :: output_fieldData_precision_cmd
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ input commands ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
 

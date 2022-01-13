@@ -101,7 +101,12 @@ subroutine read_parameter_multi
                         read(buffer, *, iostat=ios) benchmark_cmd
                         write(*,"(1X,'Benchmark_cmd: ', I2)") benchmark_cmd
                         print*, '---------------------------'
-        
+
+                    case ('output_fieldData_precision_cmd')
+                        read (buffer, *, iostat=ios) output_fieldData_precision_cmd
+                        write (*, "(1X,'output_fieldData_precision_cmd: ', I2)") output_fieldData_precision_cmd
+                        print *, '---------------------------'
+
                     case ('extreme_large_sim_cmd')
                         read(buffer, *, iostat=ios) extreme_large_sim_cmd
                         write(*,"(1X,'Extreme_large_sim_cmd: ', I2)") extreme_large_sim_cmd
@@ -287,6 +292,7 @@ subroutine read_parameter_multi
         N(2) = breakthrough_check
         N(3) = steady_state_option
         N(4) = benchmark_cmd
+        N(8) = output_fieldData_precision_cmd
 
         N(5) = nxGlobal
         N(6) = nyGlobal
@@ -375,6 +381,7 @@ subroutine read_parameter_multi
     breakthrough_check = N(2) 
     steady_state_option = N(3)
     benchmark_cmd = N(4) 
+    output_fieldData_precision_cmd = N(8)
 
     nxGlobal = N(5)
     nyGlobal = N(6)
@@ -541,9 +548,6 @@ subroutine read_parameter_multi
         error_signal = 1 
     endif
 
-
-
-
     if(error_signal==1)then
         call MPI_Barrier(MPI_COMM_WORLD,ierr)
         call mpi_abort(MPI_COMM_WORLD,ierr)
@@ -662,15 +666,12 @@ subroutine save_phi(nt)
     if(id==0)print*,'Start to save phase field data.'
 
     open(unit=9+id, file='out3.field_data/phase_distribution/'//trim(flnm), FORM='unformatted', status='replace',access='stream')
-    do k=1,nz
-        do j=1,ny
-            do i=1,nx
-                if(walls(i,j,k)==0)then
-                    write(9+id)real(phi(i,j,k))
-                endif
-            enddo
-        enddo
-    enddo
+    write (9 + id) idx, idy, idz, nx, ny, nz
+    if (output_fieldData_precision_cmd == 0) then
+      write (9 + id) (((real(phi(i, j, k)), i=1, nx), j=1, ny), k=1, nz)
+    else
+      write (9 + id) (((phi(i, j, k), i=1, nx), j=1, ny), k=1, nz)
+    end if
     close(9+id)
 
     if(id==0)print*,'Phase field data saved!'
@@ -694,22 +695,26 @@ subroutine save_macro(nt)
 
     write(flnm,"('full_nt',i9.9,'_id',i5.5)")nt,id
 
-    if(id==0)print*,'Start to save full macro variables data.'
+    if (id == 0) print *, 'Start to save full flow field data.'
 
     open(unit=9+id, file='out3.field_data/full_flow_field/'//trim(flnm), FORM='unformatted', status='replace',access='stream')
-    do k=1,nz
-        do j=1,ny
-            do i=1,nx
-                if(walls(i,j,k)==0)then
-                    write(9+id)phi(i,j,k),u(i,j,k),v(i,j,k),w(i,j,k),rho(i,j,k)
-                endif
-            enddo
-        enddo
-    enddo
-
+    write (9 + id) idx, idy, idz, nx, ny, nz
+    if (output_fieldData_precision_cmd == 0) then
+        write (9 + id) (((real(u(i, j, k)), i=1, nx), j=1, ny), k=1, nz)
+        write (9 + id) (((real(v(i, j, k)), i=1, nx), j=1, ny), k=1, nz)
+        write (9 + id) (((real(w(i, j, k)), i=1, nx), j=1, ny), k=1, nz)
+        write (9 + id) (((real(rho(i, j, k)), i=1, nx), j=1, ny), k=1, nz)
+        write (9 + id) (((real(phi(i, j, k)), i=1, nx), j=1, ny), k=1, nz)
+    else
+        write (9 + id) (((u(i, j, k), i=1, nx), j=1, ny), k=1, nz)
+        write (9 + id) (((v(i, j, k), i=1, nx), j=1, ny), k=1, nz)
+        write (9 + id) (((w(i, j, k), i=1, nx), j=1, ny), k=1, nz)
+        write (9 + id) (((rho(i, j, k), i=1, nx), j=1, ny), k=1, nz)
+        write (9 + id) (((phi(i, j, k), i=1, nx), j=1, ny), k=1, nz)
+    end if
     close(9+id)
 
-    if(id==0)print*,'Full macro variables data saved!'
+    if (id == 0) print *, 'Full flow field data saved!'
 
     return
 end subroutine save_macro
@@ -848,11 +853,10 @@ subroutine VTK_legacy_writer_3D(nt, vtk_type)
     m1=1; m2=nyGlobal;
     n1=1; n2=nzGlobal;
 
-    ! vtk_type 1: full flow field info for detailed analysis 
-    ! vtk_type 2: phase field info, with single precision to save space
-    ! vtk_type 3: force vectors from the CSF model
+    ! vtk_type 1: full flow field info for detailed analysis with options to save single/double precision data 
+    ! vtk_type 2: phase field info, single precision only
+    ! vtk_type 3: force vectors from the CSF model with options to save single/double precision data 
     if(vtk_type == 1.or.vtk_type == 3)then 
-        fmt = 'double'
         if(id.eq.0)then
             allocate(dd(l1:l2,m1:m2,n1:n2),ff(l1:l2,m1:m2,n1:n2),utt(l1:l2,m1:m2,n1:n2),vtt(l1:l2,m1:m2,n1:n2),wtt(l1:l2,m1:m2,n1:n2))
         endif
@@ -871,8 +875,7 @@ subroutine VTK_legacy_writer_3D(nt, vtk_type)
             call AllGather(cn_z(1:nx,1:ny,1:nz),i1,i2,j1,j2,k1,k2,rg,wtt,l1,l2,m1,m2,n1,n2,rf)
             call AllGather(c_norm(1:nx,1:ny,1:nz),i1,i2,j1,j2,k1,k2,rg,dd,l1,l2,m1,m2,n1,n2,rf)
             call AllGather(phi(1:nx,1:ny,1:nz),i1,i2,j1,j2,k1,k2,rg,ff,l1,l2,m1,m2,n1,n2,rf)
-        endif
-        
+        endif        
     elseif(vtk_type == 2)then   ! phase field info, with single precision to save space
         fmt = 'float'
         if(id.eq.0)then
@@ -936,31 +939,61 @@ subroutine VTK_legacy_writer_3D(nt, vtk_type)
         write(ivtk) trim(buffer)
 
         if(vtk_type == 1.or.vtk_type == 3)then
-            buffer = 'SCALARS phi '//fmt//lf
-            write(ivtk) trim(buffer)
-            buffer = 'LOOKUP_TABLE default'//lf
-            write(ivtk) trim(buffer)
-            write(ivtk)(((ff(i,j,k),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)  
-            buffer = 'SCALARS density '//fmt//lf
-            write(ivtk) trim(buffer)
-            buffer = 'LOOKUP_TABLE default'//lf
-            write(ivtk) trim(buffer)
-            write(ivtk)(((dd(i,j,k),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)  
-            buffer = 'SCALARS velocity_X '//fmt//lf
-            write(ivtk) trim(buffer)
-            buffer = 'LOOKUP_TABLE default'//lf
-            write(ivtk) trim(buffer)
-            write(ivtk)(((utt(i,j,k),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)   
-            buffer = 'SCALARS velocity_Y '//fmt//lf
-            write(ivtk) trim(buffer)
-            buffer = 'LOOKUP_TABLE default'//lf
-            write(ivtk) trim(buffer)
-            write(ivtk)(((vtt(i,j,k),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)   
-            buffer = 'SCALARS velocity_Z '//fmt//lf
-            write(ivtk) trim(buffer)
-            buffer = 'LOOKUP_TABLE default'//lf
-            write(ivtk) trim(buffer)
-            write(ivtk)(((wtt(i,j,k),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)              
+            if (output_fieldData_precision_cmd == 0) then
+              fmt = 'float'
+              buffer = 'SCALARS phi '//fmt//lf
+              write(ivtk) trim(buffer)
+              buffer = 'LOOKUP_TABLE default'//lf
+              write(ivtk) trim(buffer)
+              write(ivtk)(((real(ff(i,j,k)),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)  
+              buffer = 'SCALARS density '//fmt//lf
+              write(ivtk) trim(buffer)
+              buffer = 'LOOKUP_TABLE default'//lf
+              write(ivtk) trim(buffer)
+              write(ivtk)(((real(dd(i,j,k)),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)  
+              buffer = 'SCALARS velocity_X '//fmt//lf
+              write(ivtk) trim(buffer)
+              buffer = 'LOOKUP_TABLE default'//lf
+              write(ivtk) trim(buffer)
+              write(ivtk)(((real(utt(i,j,k)),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)   
+              buffer = 'SCALARS velocity_Y '//fmt//lf
+              write(ivtk) trim(buffer)
+              buffer = 'LOOKUP_TABLE default'//lf
+              write(ivtk) trim(buffer)
+              write(ivtk)(((real(vtt(i,j,k)),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)   
+              buffer = 'SCALARS velocity_Z '//fmt//lf
+              write(ivtk) trim(buffer)
+              buffer = 'LOOKUP_TABLE default'//lf
+              write(ivtk) trim(buffer)
+              write(ivtk)(((real(wtt(i,j,k)),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal) 
+            else
+              fmt = 'double'
+              buffer = 'SCALARS phi '//fmt//lf
+              write(ivtk) trim(buffer)
+              buffer = 'LOOKUP_TABLE default'//lf
+              write(ivtk) trim(buffer)
+              write(ivtk)(((ff(i,j,k),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)  
+              buffer = 'SCALARS density '//fmt//lf
+              write(ivtk) trim(buffer)
+              buffer = 'LOOKUP_TABLE default'//lf
+              write(ivtk) trim(buffer)
+              write(ivtk)(((dd(i,j,k),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)  
+              buffer = 'SCALARS velocity_X '//fmt//lf
+              write(ivtk) trim(buffer)
+              buffer = 'LOOKUP_TABLE default'//lf
+              write(ivtk) trim(buffer)
+              write(ivtk)(((utt(i,j,k),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)   
+              buffer = 'SCALARS velocity_Y '//fmt//lf
+              write(ivtk) trim(buffer)
+              buffer = 'LOOKUP_TABLE default'//lf
+              write(ivtk) trim(buffer)
+              write(ivtk)(((vtt(i,j,k),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal)   
+              buffer = 'SCALARS velocity_Z '//fmt//lf
+              write(ivtk) trim(buffer)
+              buffer = 'LOOKUP_TABLE default'//lf
+              write(ivtk) trim(buffer)
+              write(ivtk)(((wtt(i,j,k),i=1,nxGlobal),j=1,nyGlobal),k=1,nzGlobal) 
+            endif             
             deallocate(ff,dd,utt,vtt,wtt)
         elseif(vtk_type == 2)then
             ! single precision phase field

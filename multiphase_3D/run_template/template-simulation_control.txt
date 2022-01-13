@@ -54,6 +54,10 @@ steady_state_option 0
 # time and deal with fluctuation
 convergence_criteria 1d-6
 
+# output field data precision (simulation is always double precision): 
+# 0 - single precision; 1 - double precision
+output_fieldData_precision_cmd 0
+
 # Modify_geometry_cmd: 
 # 0 do not modify geometry; 1 modify geometry in the code (hard coding, Misc.F90) 
 modify_geometry_cmd 0
