@@ -202,41 +202,6 @@ subroutine set_walls
     if(id==0)print*,'Inlet effective open area = ', A_xy_effective
     call pore_profile   !pore profile info along the flow direction z
 
-    !~~~~~~~~~~~~~~~~ save fluid point information ~~~~~~~~~~~~~~~~~~~~
-    ! only used when extreme_large_sim_cmd==1, to be combined with save_phi (distributed phi data)
-    if(extreme_large_sim_cmd==1)then
-        icount = 0
-        !$OMP PARALLEL DO private(i,j) reduction(+:icount)
-        do k=1,nz
-            do j=1,ny
-                do i=1,nx
-                    if(walls(i,j,k)<=0)then
-                        icount = icount + 1
-                    endif
-                enddo
-            enddo
-        enddo
-        n_fluid_node_local = icount  ! total fluid nodes of local domain
-
-        write(flnm,"('geometry_id',i5.5)")id
-        if(id==0)print*,'Start to save fluid point information'
-        open(unit=9+id, file='out3.field_data/'//trim(flnm), FORM='unformatted', status='replace',access='stream')
-        write(9+id)n_fluid_node_local
-        write(9+id)idx,idy,idz,nx,ny,nz
-        do k=1,nz
-            do j=1,ny
-                do i=1,nx
-                    if(walls(i,j,k)==0)then
-                        write(9+id)i,j,k
-                    endif
-                enddo
-            enddo
-        enddo
-        close(9+id)
-        if(id==0)print*,'Fluid point information saved!'
-    endif
-
-
     call ztransport_walls(0,0,overlap_walls)
     call ytransport_walls(0,overlap_walls,overlap_walls)
     call xtransport_walls(overlap_walls,overlap_walls,overlap_walls)

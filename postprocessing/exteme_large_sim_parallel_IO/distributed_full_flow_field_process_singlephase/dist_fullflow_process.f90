@@ -94,7 +94,7 @@ subroutine read_save_macro
     double precision :: v1, v2, v3, v4, v5
 
     ncount = (ntime_max - ntime0)/ntime_interval + 1
-    print *, 'number of vtk files pending processing:', ncount
+    print *, 'number of snapshots pending processing:', ncount
 
     do n_step = 1, ncount
         nt = ntime0 + (n_step - 1)*ntime_interval

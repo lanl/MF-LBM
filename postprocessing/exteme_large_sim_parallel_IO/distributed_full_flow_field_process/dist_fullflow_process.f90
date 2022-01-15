@@ -55,7 +55,7 @@ program main_multiphase
     end do
 
     if (input_precision_choice == 1) then
-      allocate(usp(nxglobal,nyglobal,nzglobal),vsp(nxglobal,nyglobal,nzglobal),wsp(nxglobal,nyglobal,nzglobal),rhosp(nxglobal,nyglobal,nzglobal))
+      allocate(phisp(nxglobal,nyglobal,nzglobal), usp(nxglobal,nyglobal,nzglobal),vsp(nxglobal,nyglobal,nzglobal),wsp(nxglobal,nyglobal,nzglobal),rhosp(nxglobal,nyglobal,nzglobal))
         !$omp parallel DO private(i,j)
         do k = 1, nzglobal
             do j = 1, nyglobal
@@ -64,6 +64,7 @@ program main_multiphase
                     vsp(i, j, k) = 0d0
                     wsp(i, j, k) = 0d0
                     rhosp(i, j, k) = 1d0
+                    phisp(i, j, k) = 0d0
                 end do
             end do
         end do
@@ -97,12 +98,12 @@ subroutine read_save_macro
     double precision :: v1, v2, v3, v4, v5
 
     ncount = (ntime_max - ntime0)/ntime_interval + 1
-    print *, 'number of vtk files pending processing:', ncount
+    print *, 'number of snapshots pending processing:', ncount
 
     do n_step = 1, ncount
         nt = ntime0 + (n_step - 1)*ntime_interval
         print *, 'Start processing macro field of ntime=', nt
-        !$omp parallel do private(flnm,num,v1,v2,v3,v4,v5,i,j,k)
+        !$omp parallel do private(flnm,i,j,k,idx,idy,idz,nx,ny,nz)
         do id = 0, np - 1
             write (flnm, "('full_nt',i9.9,'_id',i5.5)") nt, id
             open (unit=9 + id, file=trim(data_location)//'/'//trim(flnm), FORM='unformatted', status='old', access='stream')
@@ -138,6 +139,7 @@ subroutine read_save_macro
                             v(i, j, k) = vsp(i, j, k)
                             w(i, j, k) = wsp(i, j, k)
                             rho(i, j, k) = rhosp(i, j, k)
+                            phi(i, j, k) = phisp(i, j, k)
                         end do
                     end do
                 end do
@@ -206,7 +208,7 @@ subroutine VTK_detail_bin(nt)
 
     write (flnm, '(i10.10,".vtk")') nt
 
-    open (unit=ivtk, file='./output/detail_'//flnm, FORM='unformatted', access='stream', status='replace', convert='BIG_ENDIAN')
+    open (unit=ivtk, file=trim(data_location)//'/processed_field_data/detail_'//flnm, FORM='unformatted', access='stream', status='replace', convert='BIG_ENDIAN')
 
     lf = char(10) ! line feed character
 
@@ -315,7 +317,7 @@ subroutine VTK_detail_bin_half_sp(nt)
 
     write (flnm, '(i10.10,".vtk")') nt
 
-   open (unit=ivtk, file='./output/detail_half_'//flnm, FORM='unformatted', access='stream', status='replace', convert='BIG_ENDIAN')
+    open (unit=ivtk, file=trim(data_location)//'/processed_field_data/detail_'//flnm, FORM='unformatted', access='stream', status='replace', convert='BIG_ENDIAN')
 
     lf = char(10) ! line feed character
 
