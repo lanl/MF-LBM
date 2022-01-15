@@ -1,7 +1,7 @@
 !==============================================================================
-! This code converts distributed macro data (save_macro function in MF-LBM)
+! This code converts distributed macro data (save_macro function in MF-LBM-singlephase)
 ! to full domain field data for easy analysis. save_macro is activated when
-! extreme_large_sim_cmd = 1 in control file (99% of chance that you don't need this)
+! extreme_large_sim_cmd = 1 in control file
 !==============================================================================
 
 MODULE misc
@@ -9,7 +9,7 @@ MODULE misc
     SAVE
     real(kind=8), ALLOCATABLE, DIMENSION(:, :, :) :: u, v, w, rho
     real(kind=4), ALLOCATABLE, DIMENSION(:, :, :) :: usp, vsp, wsp, rhosp     !single precision version
-    integer :: np, input_precision_choice, output_precision_choice, skip_point_choice
+    integer :: np, input_precision_choice, output_vtk_precision_choice, skip_point_choice, save_macro_choice, save_vtk_choice
     integer :: ntime0, ntime_interval, ntime_max
     integer :: nxglobal, nyglobal, nzglobal
     character(len=300) :: data_location
@@ -32,7 +32,9 @@ program main_singlephase
     read (5, *) nxglobal, nyglobal, nzglobal  !dimensions of the entire simulation domain
     read (5, *) ntime0, ntime_interval, ntime_max  !start time step, time interval, end time step
     read (5, *) input_precision_choice
-    read (5, *) output_precision_choice
+    read (5, *) save_macro_choice
+    read (5, *) save_vtk_choice
+    read (5, *) output_vtk_precision_choice
     read (5, *) skip_point_choice
     close (5)
 
@@ -117,24 +119,29 @@ subroutine read_save_macro
             close (9 + id)
         end do
 
-        !call save_macro(nt)   
-        if (input_precision_choice == 1) then
-            !$omp parallel DO private(i,j)
-            do k = 1, nzglobal
-                do j = 1, nyglobal
-                    do i = 1, nxglobal
-                        u(i, j, k) = usp(i, j, k)
-                        v(i, j, k) = vsp(i, j, k)
-                        w(i, j, k) = wsp(i, j, k)
-                        rho(i, j, k) = rhosp(i, j, k)
+        if (save_macro_choice == 1) then
+            call save_macro(nt)
+        end if
+
+        if (save_vtk_choice == 1) then
+            if (input_precision_choice == 1) then
+                !$omp parallel DO private(i,j)
+                do k = 1, nzglobal
+                    do j = 1, nyglobal
+                        do i = 1, nxglobal
+                            u(i, j, k) = usp(i, j, k)
+                            v(i, j, k) = vsp(i, j, k)
+                            w(i, j, k) = wsp(i, j, k)
+                            rho(i, j, k) = rhosp(i, j, k)
+                        end do
                     end do
                 end do
-            end do
-        end if
-        if (skip_point_choice == 1) then
-            call VTK_detail_bin_half_sp(nt)  !single precision only
-        else
-            call VTK_detail_bin(nt)
+            end if
+            if (skip_point_choice == 1) then
+                call VTK_detail_bin_half_sp(nt)  !single precision only
+            else
+                call VTK_detail_bin(nt)
+            end if
         end if
 
         print *, 'End processing macro field of ntime=', nt
@@ -217,7 +224,7 @@ subroutine VTK_detail_bin(nt)
     write (str4(1:14), '(i14)') num
     buffer = 'POINT_DATA '//str4//lf; write (ivtk) trim(buffer)
 
-    if (output_precision_choice == 1.or.input_precision_choice == 1) then   ! dp in sp out / sp in sp out
+    if (output_vtk_precision_choice == 1 .or. input_precision_choice == 1) then   ! dp in sp out / sp in sp out
         fmt = 'float'
         buffer = 'SCALARS density '//fmt//lf
         write (ivtk) trim(buffer)
