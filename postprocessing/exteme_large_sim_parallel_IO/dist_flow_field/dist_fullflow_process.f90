@@ -25,8 +25,6 @@ program main_multiphase
     double precision :: temp
     character(len=300) :: flnm, syscmd, dummy   !file name
 
-    call system('mkdir ./output')
-
     open (5, file='input_parameters.txt', status='old')
     read (5, '(A)') dummy
     read (5, '(A)') data_location
