@@ -72,11 +72,6 @@ external_geometry_read_cmd  0
 # 1 - load external pre-processed geometry boundary info data
 geometry_preprocess_cmd 0
 
-# Option to save secondary backup checkpoint data (increase storage space): 
-# 0 - no; 1 - yes 
-# stored in a seperate location in case the default checkpoint data corrupted
-double_bak_checkpoint_pdf_cmd 1  
-
 # Place a porous plate along the flow direction: 
 # 0 - no; 1 - block fluid1; 2 - block fluid2
 # example 1: injecting fluid2 (wetting) during imbibition cycle and block fluid1 from 
@@ -220,8 +215,8 @@ display_steps_timer 1000
 # timer: interval to save checkpoint data based on wall clock time, in hours
 checkpoint_save_timer 2.0
 
-# timer: interval to save secondary checkpoint data based on wall clock time, in hours
-# only effective when double_bak_checkpoint_pdf_cmd = 1
+# timer: time interval used to save secondary checkpoint data based on wall clock time, in hours
+# use a large value to reduce the storage size
 checkpoint_2rd_save_timer 5.5
 
 # timer: simulation duration in hours

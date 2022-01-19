@@ -106,11 +106,6 @@ subroutine read_parameter
                     write (*, "(1X,'Extreme_large_sim_cmd: ', I2)") extreme_large_sim_cmd
                     print *, '---------------------------'
 
-                case ('double_bak_checkpoint_pdf_cmd')
-                    read (buffer, *, iostat=ios) double_bak_checkpoint_pdf_cmd
-                    write (*, "(1X,'Double_bak_checkpoint_pdf_cmd: ', I2)") double_bak_checkpoint_pdf_cmd
-                    print *, '---------------------------'
-
                 case ('modify_geometry_cmd')
                     read (buffer, *, iostat=ios) modify_geometry_cmd
                     write (*, "(1X,'Modify_geometry_cmd: ', I2)") modify_geometry_cmd

@@ -20,7 +20,7 @@ subroutine initialization_basic
     if (id == 0) print *, '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
     if (id == 0) print *, 'Creating output directories if not exist'
     if (id == 0) call system('mkdir out2.checkpoint')
-    if (id == 0 .and. double_bak_checkpoint_pdf_cmd == 1) call system('mkdir out2.checkpoint/2rd_backup')
+    if (id == 0) call system('mkdir out2.checkpoint/2rd_backup')
     if (id == 0) call system('mkdir out1.output')
     if (id == 0) call system('mkdir out1.output/profile')
     if (id == 0) call system('mkdir out3.field_data')

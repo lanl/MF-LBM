@@ -149,7 +149,7 @@ display_steps_timer 1000
 checkpoint_save_timer 2.0
 
 # timer: time interval used to save secondary checkpoint data based on wall clock time, in hours
-# only effective when double_bak_checkpoint_pdf_cmd = 1
+# use a large value to reduce the storage size
 checkpoint_2rd_save_timer 5.5
 
 # timer: simulation duration in hours

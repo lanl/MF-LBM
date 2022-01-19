@@ -112,11 +112,6 @@ subroutine read_parameter_multi
                         write(*,"(1X,'Extreme_large_sim_cmd: ', I2)") extreme_large_sim_cmd
                         print*, '---------------------------'
 
-                    case ('double_bak_checkpoint_pdf_cmd')
-                        read(buffer, *, iostat=ios) double_bak_checkpoint_pdf_cmd
-                        write(*,"(1X,'Double_bak_checkpoint_pdf_cmd: ', I2)") double_bak_checkpoint_pdf_cmd
-                        print*, '---------------------------'
-
                     case ('modify_geometry_cmd')
                         read(buffer, *, iostat=ios) modify_geometry_cmd
                         write(*,"(1X,'Modify_geometry_cmd: ', I2)") modify_geometry_cmd
@@ -336,8 +331,6 @@ subroutine read_parameter_multi
         N(42) = iy_async
         N(43) = iz_async
 
-        N(44) = double_bak_checkpoint_pdf_cmd
-
         N(45) = porous_plate_cmd
 
         N(46) = Z_porous_plate
@@ -426,7 +419,6 @@ subroutine read_parameter_multi
     iy_async = N(42)
     iz_async = N(43)
 
-    double_bak_checkpoint_pdf_cmd = N(44)
     porous_plate_cmd = N(45) 
     Z_porous_plate =  N(46) 
     extreme_large_sim_cmd = N(47)
