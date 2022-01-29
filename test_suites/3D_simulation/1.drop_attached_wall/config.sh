@@ -50,10 +50,6 @@ periodic_x=0
 periodic_y=1
 periodic_z=1
 sed $sed_option "s|periodic_indicator .*|periodic_indicator $periodic_x,$periodic_y,$periodic_z|g" ./simulation_control.txt
-mpi_npx=1  # x-axis domain decomposition currently disabled, keep using mpi_npx=1 
-mpi_npy=1
-mpi_npz=2
-sed $sed_option "s|MPI_process_num .*|MPI_process_num $mpi_npx,$mpi_npy,$mpi_npz|g" ./simulation_control.txt
 theta=45
 sed $sed_option "s|theta .*|theta $theta|g" ./simulation_control.txt
 initial_interface_position=18.0

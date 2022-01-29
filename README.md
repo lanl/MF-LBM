@@ -255,7 +255,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example is used to measure contact angle, where a nonwetting drop (fluid1 drop) is attached to a flat wall (y=1 plane)
+   This example is used to measure contact angle, where a nonwetting drop (fluid1 drop) is attached to a flat wall (y=1 plane). The default run script is for a two-NUMA CPU system.
 
 * [`Drainage in a square duct`](test_suites/3D_simulation/2.drainage)
    ```sh
@@ -266,7 +266,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates nonwetting fluid1 displacing wetting fluid2 in a square duct until one pore-volume fluid1 is injected.
+   This example simulates nonwetting fluid1 displacing wetting fluid2 in a square duct until one pore-volume of fluid1 is injected. The default run script is for a single GPU system.
 
 * [`Drainage in a tube with a spherical obstacle`](test_suites/3D_simulation/3.drainage_hardcode_geometry)
    ```sh
