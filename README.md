@@ -278,7 +278,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates nonwetting fluid1 displacing wetting fluid2 in a tube with a spherical obstacle in the center. The tube and spherical obstacle are created inside the simulation code. Simulation stops when the nonwetting fluid reaches outlet.
+   This example simulates nonwetting fluid1 displacing wetting fluid2 in a tube with a spherical obstacle in the center. The tube and spherical obstacle are created inside the simulation code. Simulation stops when the nonwetting fluid reaches outlet. The default run script is for a single GPU system.
 
 * [`Imbibition in a real rock sample using external rock geometry file`](test_suites/3D_simulation/4.imbibition_external_geometry)
    ```sh
