@@ -1,12 +1,12 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ options to choose ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 # -- GPU --
-#arch = gpu
+arch = gpu
 # extreme scale simulation results in very large array
 #x_scale = enabled    
 
 # -- CPU --
-arch = cpu
-openmp = enabled
+#arch = cpu
+#openmp = enabled
 # whether or not to use avx512 for intel cpu, test before use 
 #AVX512 = enabled
 
@@ -17,14 +17,14 @@ openmp = enabled
 # AVX512 = enabled
 
 # -- compiler --
-tool = gcc
-#tool = nvidia
+#tool = gcc
+tool = nvidia
 #tool = intel
 
 # -- optimization options --
 #optimization = debug
-optimization = release
-#optimization = speedy
+#optimization = release
+optimization = speedy
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ options to choose ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
 ############# DIR #################################
