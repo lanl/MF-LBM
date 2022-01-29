@@ -27,7 +27,7 @@ then
 fi
 
 # -------------------------------------- modify path --------------------------------------
-#  write above paths to path_info.txt
+# write above paths to path_info.txt
 cp $template_directory/template-path_info.txt path_info.txt
 sed $sed_option "s|exec_path_holder|$exec_location|" path_info.txt
 sed $sed_option "s|geometry_file_path_holder|$geometry_file|" path_info.txt
@@ -35,35 +35,31 @@ sed $sed_option "s|geometry_boundary_file_path_holder|$geometry_boundary_info_fi
 cp $template_directory/clean.sh ./
 
 
-#----------------- parameters to be modified for the present simulation ------------------- 
-# Only the most common parameters that require modification are listed here with default value.
-# Comment out the ones you want to change, and modify the values.
-# One can further change the script to modify the control file or edit the control file directly.
-
+#---------------------- copy and modify the control file template -------------------------- 
 cp $template_directory/template-simulation_control.txt simulation_control.txt
+# one can add sed commands here to modify the simulation control file using the script, i.e., 
+# nx=240
+# ny=240
+# nz=260
+# sed $sed_option "s|lattice_dimensions .*|lattice_dimensions $nx,$ny,$nz|g" ./simulation_control.txt
+
 
 # -------------------------- modify interactive run script ----------------------------------
-
 MPI_process_num=2   # MPI_process_num must be equal to mpi_npx * mpi_npy * mpi_npz
 
-# Below is the run command for typical CPU computing node with two sockets
+# Below is the run command for typical CPU computing node with two NUMAs
 run_command="mpirun -n $MPI_process_num --map-by ppr:2:node --bind-to numa $exec_location"
 # check out other run commands below for different platforms
 
 ################# sample run command #################
 
-# ~~~~~ typical CPU computing nodes with 2 CPUs per node
+# ~~~~~ typical CPU computing nodes with two NUMAs per node
 # mpirun -n $MPI_process_num --map-by ppr:2:node --bind-to numa $exec_location
 
-# ~~~~~ local consumer machine
+# ~~~~~ consumer-grade desktop or laptop
 # mpirun -n $MPI_process_num $exec_location
 
-# ~~~~~ LANL Darwin IBM POWER9 GPU nodes with 4 GPUs per node
-# mpirun -n $MPI_process_num --map-by ppr:4:node --bind-to socket --mca btl ^openib $exec_location
-# ~~~~~ nvprof
-# mpirun -n $MPI_process_num --map-by ppr:4:node --bind-to socket --mca btl ^openib nvprof --profile-from-start off  --print-gpu-trace -o output.%h.%p.%q{OMPI_COMM_WORLD_RANK}.nvvp $exec_location
-
-# ~~~~~ LANL Kodiak GPU nodes with 4 GPUs per node
+# ~~~~~ GPU nodes with 4 GPUs per node
 # mpirun -n $MPI_process_num --map-by ppr:4:node --bind-to socket $exec_location
 
 # ~~~~~ use srun

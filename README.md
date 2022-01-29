@@ -61,7 +61,7 @@
 
 ## About The Code
 
-MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct numerical simulation (DNS) of flow in porous media, primarily developed by Dr. Yu Chen (LANL), under the supervision of Prof. Albert Valocchi (UIUC), Dr. Qinjun Kang (LANL) and Dr. Hari Viswananthan (LANL). 'MF' refers to microfluidics or 'Magic Find'. The code was first developed at University of Illinois at Urbana-Champaign based on a mainstream LB color-gradient multiphase model and further improved at Los Alamos National Laboratory by implementing the Continuum-Surface-Force and geometrical wetting models to reduce spurious currents so that the inertial effects in scCO<sub>2</sub> and brine displacement in porous media can be accounted for [2]. 
+MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct numerical simulation (DNS) of flow in porous media, primarily developed by Dr. Yu Chen (LANL), under the supervision of Prof. Albert Valocchi (UIUC), Dr. Qinjun Kang (LANL) and Dr. Hari Viswananthan (LANL). 'MF' refers to microfluidics or 'Magic Find'. The code was first developed at University of Illinois at Urbana-Champaign based on a mainstream LB color-gradient multiphase model and further improved at Los Alamos National Laboratory by implementing the Continuum-Surface-Force and geometrical wetting models to reduce spurious currents so that the inertial effects in scCO<sub>2</sub> and brine displacement in porous media can be accounted for [2]. In addition, a single-phase flow version is also provided for absolute permeability measurement or DNS of turbulent flow.
 
 ### Features
 * exploring multiple levels of parallelism
@@ -89,7 +89,7 @@ MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct nume
   * [`distributed_phi_to_vtk_conversion`](postprocessing/exteme_large_sim_parallel_IO/distributed_phi_to_vtk_conversion): for extremely large simulation only, converting distributed phase field data to vtk file for visualization
   * [`distributed_full_flow_field_process`](postprocessing/exteme_large_sim_parallel_IO/distributed_full_flow_field_process): for extremely large simulation only, converting distributed full flow field data for further analysis
 ### Technical details of the main simulation code
-Modern manycore processors/coprocessors, such as GPUs and Intel Xeon Phi processors, are developing rapidly and greatly boost computing power. These processors not only provide much higher FLOPS (floating-point operations per second) but also much higher memory bandwidth compared with traditional CPU. One of the most attractive features of the lattice Boltzmann method (LBM) is that it is explicit in time, has nearest neighbor communication, and the computational effort is in the collision step, which is localized at a grid node. For these reasons, the LBM is well suited for manycore processors which require a higher degree of explicit parallelism. The data movement in the LBM is much more intensive than for traditional CFD considering that the D3Q19 lattice model has 19 lattice velocities. Given the current state of computational hardware, in particular the relative speed and capacity of processors and memory, the LBM is a memory-bandwidth-bound numerical method. The high memory bandwidth provided by GPUs or Intel Xeon Phi processors greatly benefits the LBM.
+Modern manycore processors/coprocessors, such as GPUs, are developing rapidly and greatly boost computing power. These processors not only provide much higher FLOPS (floating-point operations per second) but also much higher memory bandwidth compared with traditional CPU. One of the most attractive features of the lattice Boltzmann method (LBM) is that it is explicit in time, has nearest neighbor communication, and the computational effort is in the collision step, which is localized at a grid node. For these reasons, the LBM is well suited for manycore processors which require a higher degree of explicit parallelism. The data movement in the LBM is much more intensive than for traditional CFD considering that the D3Q19 lattice model has 19 lattice velocities. Given the current state of computational hardware, in particular the relative speed and capacity of processors and memory, the LBM is a memory-bandwidth-bound numerical method. The high memory bandwidth provided by GPUs greatly benefits the LBM.
 
 The code is written on Fortran 90 and employs MPI-OpenACC/OpenMP hybrid programing model. The main reason that we chose OpenACC/OpenMP (directive-based parallel programming models) over CUDA is that we want to keep the code portable across different computing platforms so that we are not limited by the NVIDIA GPU solution. As GPU and Intel Xeon Phi processor (and even latest CPU from Intel with AVX512 instructions) rely heavily on SIMT/SIMD, the optimization strategy for these manycore processors/coprocessors are similar, which enables us to achieve reasonable performance across different platforms:
 * The AA pattern streaming method is employed to significantly reduce memory access and memory consumption.
@@ -123,8 +123,8 @@ Scaling up performance benchmarking is to show the scalability of the code.
 ### Prerequisites
 * A Fortran compiler 
 * A MPI implementation (most of the run scripts in this repo are based on OpenMPI)
-* NVIDIA HPC SDK (for NVIDIA GPU platform)
-* Intel Fortran compiler (for Intel Xeon Phi)
+* NVIDIA Fortran compiler (free from NVIDIA HPC SDK, for NVIDIA GPU platform)
+* Intel Fortran compiler (free from Intel oneAPI HPC Toolkit, for Intel Xeon Phi platform)
 * Make
 
 ### Installation
@@ -135,7 +135,7 @@ Scaling up performance benchmarking is to show the scalability of the code.
    ```
 2. Initiate submodules for external non-code files (geometry files used in the test suites)
    ```sh
-   cd path-to-MF-LBM/MF-LBM-extFiles
+   cd path-to-MF-LBM
    git submodule init
    git submodule update
    ``` 
@@ -158,12 +158,10 @@ Scaling up performance benchmarking is to show the scalability of the code.
         ```sh
         # Make necessary changes to the makefile:
         # Choose GPU as the architecture option.
-        # Choose the PGI compiler (recommended for NVIDIA GPU).
+        # Choose the NVIDIA compiler (recommended for NVIDIA GPU).
         # OpenMP must be disabled.
         # See instruction in the makefile for more information.  
         your-preferred-editor makefile
-        # Make sure to enable OpenACC in preprocessor.  
-        your-preferred-editor 0.src/preprocessor.h  
         make
         # MF_LBM.gpu will be generated
         ```
@@ -178,29 +176,34 @@ Scaling up performance benchmarking is to show the scalability of the code.
         make
         # MF_LBM.mic will be generated
         ```
-4. Configure run scripts (for CPU platform)
+4. Configure the run script (for CPU platform)
       ```sh
       cd working_directory
       cp path-to-MF-LBM/multiphase_3D/run_template/template-config.sh ./config.sh
-      # Make necessary changes to config.sh (i.e., input parameters, paths and run command). 
-      # See instruction in template-config.sh for more information.
+      # Make necessary changes to config.sh (i.e., paths and run command). 
+      # See instructions in template-config.sh for more information.
       your-preferred-editor config.sh
       ./config.sh
-      # A script, irun.sh, will be generated. 
-      
+
+      # A script, irun.sh, will be generated.  
+
       # If OpenMP is enabled (recommended for CPU, MIC, and ARM platform), then run the following command:
-      # export OMP_NUM_THREADS=n
-      # , where n is recommended to be the core or thread count of the UMA domain of the CPU.
+      # export OMP_NUM_THREADS=n, where n is recommended to be the core or thread count of the UMA domain of the CPU. Hyperthreading may help in some cases.
 
       # At least one MPI rank per UMA domain is recommended.
 
-      # For GPU platform, number of MPI processes should equal to the total number of GPUs: one MPI rank per GPU.
+      # For GPU platform, the number of MPI processes should equal to the total number of GPUs: one MPI rank per GPU.
       ```
-5. Run the program
-   ```sh
-   # See instruction in template-config.sh and irun.sh for more information.
-   ./irun.sh new
-   ```
+5. Modify the simulation control file
+      ```sh
+      # Make necessary changes to simulation_control.txt. See instructions in simulation_control.txt for more information.
+      your-preferred-editor simulation_control.txt
+      ```
+6. Run the program
+      ```sh
+      # See instructions in template-config.sh and irun.sh for more information.
+      ./irun.sh new
+      ```
 <br/>
 
 
