@@ -117,7 +117,7 @@ program main_multiphase
     t_all_sum=0.0d0
     ntime=ntime0
 
-    call color_graident
+    call color_gradient
 
     call cal_saturation
 
@@ -183,7 +183,7 @@ program main_multiphase
             ! ----------- monitors -----------
             if(MOD(ntime,ntime_monitor)==0)then
                 if(steady_state_option==0.or.steady_state_option==3)then   
-                    !displacement simulation: finish based on saturation reaches steady state or injected volume
+                    !displacement simulation: finished based on saturation reaches steady state or injected volume
                     call monitor
                     if(breakthrough_check==1)then
                         call monitor_breakthrough
@@ -249,11 +249,11 @@ program main_multiphase
                 call MPI_Bcast(save_2rd_checkpoint_data_indicator,1,MPI_INTEGER,0,MPI_COMM_VGRID,ierr)    
 
                 if(save_checkpoint_data_indicator==1)then
-                    call save_checkpoint(0)    ! save pdf to default location when option is 0
+                    call save_checkpoint(0)    ! save pdf to the default location when option is 0
                     save_checkpoint_data_indicator = 0   !reset status
                 endif 
                 if(save_2rd_checkpoint_data_indicator==1)then
-                    call save_checkpoint(1)    ! save pdf to backup location when option is 1
+                    call save_checkpoint(1)    ! save pdf to the secondary backup location when option is 1
                     save_2rd_checkpoint_data_indicator = 0   !reset status
                 endif
             ENDIF
@@ -480,7 +480,7 @@ subroutine main_iteration_kernel
     endif
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ kernel ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    call color_graident       !calculate color gradient
+    call color_gradient       !calculate color gradient
 
     return
 end subroutine main_iteration_kernel
@@ -540,8 +540,8 @@ subroutine benchmark
         open(unit=78,file='out1.output/benchmark_time.dat',status='unknown',position='append')
         write(78,*)'time step  ','wallclock time  ','saturation', 'capillary number'
         write(78,"(I8,3(1x,E14.6))")ntime,t_all,saturation,ca     ! sa and ca used to check if simulation doesnot work properly
-        write(78,"('Code performance: ', F12.4, ' MLUPS')")dble(nxglobal)*dble(nyglobal)*dble(nzglobal)*dble(ntime)/(t_all*1000000d0)
-        write(*,"(1X,'Code performance: ', F12.4, ' MLUPS')")dble(nxglobal)*dble(nyglobal)*dble(nzglobal)*dble(ntime)/(t_all*1000000d0)
+        write(78,"('Code performance: ', F12.4, ' MLUPS')")dble(nxglobal)*dble(nyglobal)/1000000d0*dble(nzglobal)*dble(ntime)/t_all
+        write(*,"(1X,'Code performance: ', F12.4, ' MLUPS')")dble(nxglobal)*dble(nyglobal)/1000000d0*dble(nzglobal)*dble(ntime)/t_all
         write(*,"(1X,'Benchmarking ended successfully after ', I6, ' iterations')")ntime
     endif
 

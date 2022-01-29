@@ -2,7 +2,7 @@
 !=====================================================================================================================================
 !---------------------- calculate color gradient ----------------------
 !=====================================================================================================================================
-subroutine color_graident
+subroutine color_gradient
     use Fluid_multiphase,  only : cn_x,cn_y,cn_z, phi,ISO4,c_norm,curv
     use Misc_module
     IMPLICIT NONE
@@ -83,7 +83,7 @@ subroutine color_graident
     !$acc end kernels
 
     ! ~~~~~~~~~~~~~~~ numerically alter the normal directions of interfaces to desired contact angle ~~~~~~~~~~~~~~~~
-    call alter_color_graident_solid_surface     
+    call alter_color_gradient_solid_surface     
     
     ! ~~~~~~~~~~~~~~ extrapolate normal direction info to solid boundary nodes, to minimize unbalanced forces ~~~~~~~~~~~~~~
     !$omp parallel do private(i,j,k,n,iex,iey,iez,ie)
@@ -215,14 +215,14 @@ subroutine color_graident
     !$acc end kernels
 
     return
-end subroutine color_graident
+end subroutine color_gradient
 
 
 
 !=====================================================================================================================================
 !------------------ alter solid surface normal directions to control wettability ----------------------
 !=====================================================================================================================================
-subroutine alter_color_graident_solid_surface
+subroutine alter_color_gradient_solid_surface
     use Fluid_multiphase
     use Misc_module
     IMPLICIT NONE
@@ -297,13 +297,13 @@ subroutine alter_color_graident_solid_surface
     !$acc end kernels
 
     return
-end subroutine alter_color_graident_solid_surface
+end subroutine alter_color_gradient_solid_surface
 
 !*************alter solid surface color gradient to control wettability**********************************************************
 
 
 !#ifdef multirange_gradient
-!subroutine color_graident_multirange
+!subroutine color_gradient_multirange
 !     
 !    use Fluid_multiphase,  only : c_x,c_y,c_z, phi,ISO8
 !    use Misc_module, only : nx,ny,nz
@@ -462,5 +462,5 @@ end subroutine alter_color_graident_solid_surface
 !    enddo
 !
 !    return
-!endsubroutine color_graident_multirange
+!endsubroutine color_gradient_multirange
 !#endif
