@@ -61,7 +61,7 @@
 
 ## About The Code
 
-MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct numerical simulation (DNS) of flow in porous media, primarily developed by Dr. Yu Chen (LANL), under the supervision of Prof. Albert Valocchi (UIUC), Dr. Qinjun Kang (LANL) and Dr. Hari Viswananthan (LANL). 'MF' refers to microfluidics or 'Magic Find'. The code was first developed at University of Illinois at Urbana-Champaign based on a mainstream LB color-gradient multiphase model and further improved at Los Alamos National Laboratory by implementing the Continuum-Surface-Force and geometrical wetting models to reduce spurious currents so that the inertial effects in scCO<sub>2</sub> and brine displacement in porous media can be accounted for [2]. In addition, a single-phase flow version is also provided for absolute permeability measurement or DNS of turbulent flow.
+MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct numerical simulation (DNS) of flow in porous media, primarily developed by Dr. Yu Chen (LANL), under the supervision of Prof. Albert Valocchi (UIUC), Dr. Qinjun Kang (LANL) and Dr. Hari Viswananthan (LANL). 'MF' refers to microfluidics or 'Magic Find'. The code was first developed at University of Illinois at Urbana-Champaign based on a mainstream LB color-gradient multiphase model and further improved at Los Alamos National Laboratory by implementing the Continuum-Surface-Force and geometrical wetting models to reduce spurious currents so that the inertial effects in scCO<sub>2</sub> and brine displacement in porous media can be accounted for [2]. In addition, a single-phase flow version is also provided for absolute permeability measurement or DNS of turbulent flow. Only double precision is supported.
 
 ### Features
 * exploring multiple levels of parallelism
@@ -103,16 +103,31 @@ Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects 
 
 
 
-## Performance Benchmarking
-The computational performance benchmarking of MF-LBM was done on the LANL Darwin testbed machine. 
+## Computational Performance Benchmarking (multiphase code)
+
+| Platform                              | Comp. Perf. (MLUPS) |
+| ------------------------------------- | :-----------------: |
+| CPU: Intel Gold 6152 (22*2 cores)     |         178         |
+| CPU: Intel Platinum 8176 (28*2 cores) |         194         |
+| MIC: Intel Phi 7250 (68 cores)        |         235         |
+| CPU: AMD EPYC 7551 (32*2 cores)       |         241         |
+| CPU: AMD EPYC 7702 (64*2 cores)       |         290         |
+| GPU: NVIDIA P100 (1792 cores)         |         332         |
+| GPU: NVIDIA V100 (2560 cores)         |         507         |
+| GPU: NVIDIA A100 (80GB) (3456 cores)  |        1477         |
 
 [Single node/card performance benchmarking](test_suites/3D_simulation/6.performance_benchmarking/) is to show the portability of the code.  
 
-<img src="images/single_node_perf.png" alt="drawing" width="900"/>
+| Number of V100 GPUs | Comp. Perf. (MLUPS) |
+| :-----------------: | :-----------------: |
+| 4                   |        1895         |
+| 8                   |        3682         |
+| 16                  |        7291         |
+| 24                  |        11238        |
+| 32                  |        14701        |
 
-Scaling up performance benchmarking is to show the scalability of the code. 
+Weak-scaling benchmark is to show the scalability of the code. 
 
-<img src="images/v100_scaling.png" alt="drawing" width="900"/>
 
 <br/>
 
