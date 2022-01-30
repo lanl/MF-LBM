@@ -266,7 +266,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates nonwetting fluid1 displacing wetting fluid2 in a square duct until one pore-volume of fluid1 is injected. The default run script is for a single GPU system.
+   This example simulates nonwetting fluid1 displacing wetting fluid2 in a square duct until one pore-volume of fluid1 is injected. The default run script is for a single GPU card.
 
 * [`Drainage in a tube with a spherical obstacle`](test_suites/3D_simulation/3.drainage_hardcode_geometry)
    ```sh
@@ -278,7 +278,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates nonwetting fluid1 displacing wetting fluid2 in a tube with a spherical obstacle in the center. The tube and spherical obstacle are created inside the simulation code. Simulation stops when the nonwetting fluid reaches outlet. The default run script is for a single GPU system.
+   This example simulates nonwetting fluid1 displacing wetting fluid2 in a tube with a spherical obstacle in the center. The tube and spherical obstacle are created inside the simulation code. Simulation stops when the nonwetting fluid reaches outlet. The default run script is for a single GPU card.
 
 * [`Imbibition in a real rock sample using external rock geometry file`](test_suites/3D_simulation/4.imbibition_external_geometry)
    ```sh
@@ -290,11 +290,11 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates wetting fluid2 displacing nonwetting fluid1 in a real rock sample using external rock geometry file. Simulation stops when one pore-volume fluid2 is injected.
+   This example simulates wetting fluid2 displacing nonwetting fluid1 in a real rock sample using external rock geometry file. Simulation stops when one pore-volume of fluid2 is injected. The default run script is for a GPU system with two GPU cards.
 
 * [`Steady state relative permeability measurement`](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed)
    ```sh
-  # The geometry file is created from the pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat). The boundary info file need to be created use the wall_boundary_preprocess code (preprocessing/3.wall_boundary_preprocess)
+  # The geometry file is created from the pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat). The boundary info file need to be created using the wall_boundary_preprocess code (preprocessing/3.wall_boundary_preprocess)
    cd path-to-MF-LBM/preprocessing/3.wall_boundary_preprocess
    ./compile.sh
    ./a.out
@@ -307,7 +307,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates body force driven fractional flow for steady state relative permeability measurement, using external rock geometry file and corresponding pre-computed boundary info file. 
+   This example simulates body force driven fractional flow for steady state relative permeability measurement, using external rock geometry file and corresponding pre-computed boundary info file. The default run script is for a GPU system with two GPU cards.
 
 * [`Performance benchmarking`](test_suites/3D_simulation/6.performance_benchmarking)
    ```sh
@@ -324,7 +324,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example is identical to the previous [example](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed) except that the benchmarking command is enabled in [configuration file](test_suites/3D_simulation/6.performance_benchmarking/config.sh). The simulation will run 100 time steps and give the computational performance in MLUPS (million lattices update per second). Due to the size of the sample, this example is suitable for benchmarking performance on a single computing node or GPU card. 
+   This example is identical to the previous [example](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed) except that the benchmarking command is enabled in [configuration file](test_suites/3D_simulation/6.performance_benchmarking/config.sh). The simulation will run 100 time steps and give the computational performance in MLUPS (million lattices update per second). Due to the size of the sample, this example is suitable for benchmarking performance on a single CPU computing node or GPU card. The default run script is for a single GPU card.
 
 * [`Absolute permeability measurement`](test_suites/3D_simulation/7.singlephase_abs_perm)
    ```sh
@@ -337,7 +337,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates body force driven single-phase flow for absolute permeability measurement, using an external rock geometry file. The value of the body force should be adjusted so that the flow is in the Stokes flow regime. The provided sample configuration file assumes the executable is the GPU version.
+   This example simulates body force driven single-phase flow for absolute permeability measurement, using an external rock geometry file. The value of the body force should be adjusted so that the flow is in the Stokes flow regime. The default run script is for a single GPU card. 
 
 ### Output files
 Three output directories will be created:

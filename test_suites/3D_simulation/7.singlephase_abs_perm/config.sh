@@ -64,6 +64,10 @@ mpi_npy=1
 mpi_npz=1
 sed $sed_option "s|MPI_process_num .*|MPI_process_num $mpi_npx,$mpi_npy,$mpi_npz|g" ./simulation_control.txt
 
+fluid_viscosity=0.1
+sed $sed_option "s|fluid_viscosity .*|fluid_viscosity $fluid_viscosity|g" ./simulation_control.txt
+
+
 body_force_0=10d-6
 sed $sed_option "s|body_force_0 .*|body_force_0 $body_force_0|g" ./simulation_control.txt
 

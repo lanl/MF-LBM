@@ -51,9 +51,7 @@ sed $sed_option "s|MPI_process_num .*|MPI_process_num $mpi_npx,$mpi_npy,$mpi_npz
 # -------------------------- modify interactive run script ----------------------------------
 MPI_process_num=1   # MPI_process_num must be equal to mpi_npx * mpi_npy * mpi_npz
 
-# Below is the run command for typical CPU computing node with two NUMAs
 run_command="mpirun -n $MPI_process_num $exec_location"
-# check out other run commands below for different platforms
 
 ################# sample run command #################
 
