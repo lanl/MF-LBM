@@ -198,7 +198,7 @@ subroutine kernel_odd_color(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
          
                 !relaxtion in moment space                
                 m_e = m_e - s_e*(m_e - (-11.0d0*den+19.0d0*u2)) + (38d0-19d0*s_e)*(fx*ux1+fy*uy1+fz*uz1)                           !m1
-                m_e2 = m_e2 - s_e2*(m_e2 - (3.0d0*den - 5.5d0*u2)) + (-11d0+5.5d0*s_e2)*(fx*ux1+fy*uy1+fz*uz1)                     !m2               
+                m_e2 = m_e2 - s_e2*(m_e2 - (mrt_e2_coef1*den + mrt_e2_coef2*u2)) + (-11d0+5.5d0*s_e2)*(fx*ux1+fy*uy1+fz*uz1)                     !m2               
                 m_jx = m_jx + fx                                                                                                   !m3
                 m_qx = m_qx - s_q*(m_qx - (-0.666666666666666667d0*ux1)) + (-0.666666666666666667d0+0.333333333333333333d0*s_q)*fx !m4
                 m_jy = m_jy + fy                                                                                                   !m5
@@ -207,9 +207,9 @@ subroutine kernel_odd_color(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
                 m_qz = m_qz - s_q*(m_qz - (-0.666666666666666667d0*uz1)) + (-0.666666666666666667d0+0.333333333333333333d0*s_q)*fz !m8
 
                 m_3pxx = m_3pxx - s_nu*(m_3pxx - (3d0*ux1*ux1-u2)) + (2d0-s_nu)*(2d0*fx*ux1-fy*uy1-fz*uz1)                            !m9                  
-                m_3pixx = m_3pixx - s_pi*(m_3pixx - (-1.5d0*ux1*ux1+0.5d0*u2)) + (1d0-0.5d0*s_pi)*(-2d0*fx*ux1+fy*uy1+fz*uz1)         !m10
+                m_3pixx = m_3pixx - s_pi*(m_3pixx - mrt_omega_xx*(3d0*ux1*ux1-u2)) + (1d0-0.5d0*s_pi)*(-2d0*fx*ux1+fy*uy1+fz*uz1)         !m10
                 m_pww = m_pww - s_nu*(m_pww - (uy1*uy1-uz1*uz1)) + (2d0-s_nu)*(fy*uy1-fz*uz1)                                      !m11
-                m_piww = m_piww - s_pi*(m_piww - (-0.5d0)*(uy1*uy1-uz1*uz1)) + (1d0-0.5d0*s_pi)*(-fy*uy1+fz*uz1)                   !m12         
+                m_piww = m_piww - s_pi*(m_piww - mrt_omega_xx*(uy1*uy1-uz1*uz1)) + (1d0-0.5d0*s_pi)*(-fy*uy1+fz*uz1)                   !m12         
                 m_pxy = m_pxy - s_nu*(m_pxy - (ux1*uy1)) + (1d0-0.5d0*s_nu)*(fx*uy1+fy*ux1)                                        !m13
                 m_pyz = m_pyz - s_nu*(m_pyz - (uy1*uz1)) + (1d0-0.5d0*s_nu)*(fy*uz1+fz*uy1)                                        !m14
                 m_pzx = m_pzx - s_nu*(m_pzx - (ux1*uz1)) + (1d0-0.5d0*s_nu)*(fx*uz1+fz*ux1)                                        !m15        
@@ -562,7 +562,7 @@ subroutine kernel_even_color(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
 
                 !relaxtion in moment space                
                 m_e = m_e - s_e*(m_e - (-11.0d0*den+19.0d0*u2)) + (38d0-19d0*s_e)*(fx*ux1+fy*uy1+fz*uz1)                           !m1
-                m_e2 = m_e2 - s_e2*(m_e2 - (3.0d0*den - 5.5d0*u2)) + (-11d0+5.5d0*s_e2)*(fx*ux1+fy*uy1+fz*uz1)                     !m2               
+                m_e2 = m_e2 - s_e2*(m_e2 - (mrt_e2_coef1*den + mrt_e2_coef2*u2)) + (-11d0+5.5d0*s_e2)*(fx*ux1+fy*uy1+fz*uz1)                     !m2               
                 m_jx = m_jx + fx                                                                                                   !m3
                 m_qx = m_qx - s_q*(m_qx - (-0.666666666666666667d0*ux1)) + (-0.666666666666666667d0+0.333333333333333333d0*s_q)*fx !m4
                 m_jy = m_jy + fy                                                                                                   !m5
@@ -570,10 +570,10 @@ subroutine kernel_even_color(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
                 m_jz = m_jz + fz                                                                                                   !m7
                 m_qz = m_qz - s_q*(m_qz - (-0.666666666666666667d0*uz1)) + (-0.666666666666666667d0+0.333333333333333333d0*s_q)*fz !m8
 
-                m_3pxx = m_3pxx - s_nu*(m_3pxx - (3d0*ux1*ux1-u2)) + (2d0-s_nu)*(2d0*fx*ux1-fy*uy1-fz*uz1)                         !m9                  
-                m_3pixx = m_3pixx - s_pi*(m_3pixx - (-1.5d0*ux1*ux1+0.5d0*u2)) + (1d0-0.5d0*s_pi)*(-2d0*fx*ux1+fy*uy1+fz*uz1)      !m10
+                m_3pxx = m_3pxx - s_nu*(m_3pxx - (3d0*ux1*ux1-u2)) + (2d0-s_nu)*(2d0*fx*ux1-fy*uy1-fz*uz1)                            !m9                  
+                m_3pixx = m_3pixx - s_pi*(m_3pixx - mrt_omega_xx*(3d0*ux1*ux1-u2)) + (1d0-0.5d0*s_pi)*(-2d0*fx*ux1+fy*uy1+fz*uz1)         !m10
                 m_pww = m_pww - s_nu*(m_pww - (uy1*uy1-uz1*uz1)) + (2d0-s_nu)*(fy*uy1-fz*uz1)                                      !m11
-                m_piww = m_piww - s_pi*(m_piww - (-0.5d0)*(uy1*uy1-uz1*uz1)) + (1d0-0.5d0*s_pi)*(-fy*uy1+fz*uz1)                   !m12         
+                m_piww = m_piww - s_pi*(m_piww - mrt_omega_xx*(uy1*uy1-uz1*uz1)) + (1d0-0.5d0*s_pi)*(-fy*uy1+fz*uz1)                   !m12         
                 m_pxy = m_pxy - s_nu*(m_pxy - (ux1*uy1)) + (1d0-0.5d0*s_nu)*(fx*uy1+fy*ux1)                                        !m13
                 m_pyz = m_pyz - s_nu*(m_pyz - (uy1*uz1)) + (1d0-0.5d0*s_nu)*(fy*uz1+fz*uy1)                                        !m14
                 m_pzx = m_pzx - s_nu*(m_pzx - (ux1*uz1)) + (1d0-0.5d0*s_nu)*(fx*uz1+fz*ux1)                                        !m15        

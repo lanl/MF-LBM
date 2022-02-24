@@ -61,7 +61,7 @@
 
 ## About The Code
 
-MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct numerical simulation (DNS) of flow in porous media, primarily developed by Dr. Yu Chen (LANL), under the supervision of Prof. Albert Valocchi (UIUC), Dr. Qinjun Kang (LANL) and Dr. Hari Viswananthan (LANL). 'MF' refers to microfluidics or 'Magic Find'. The code was first developed at University of Illinois at Urbana-Champaign based on a mainstream LB color-gradient multiphase model and further improved at Los Alamos National Laboratory by implementing the Continuum-Surface-Force and geometrical wetting models to reduce spurious currents so that the inertial effects in scCO<sub>2</sub> and brine displacement in porous media can be accounted for [2]. 
+MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct numerical simulation (DNS) of flow in porous media, primarily developed by Dr. Yu Chen (LANL), under the supervision of Prof. Albert Valocchi (UIUC), Dr. Qinjun Kang (LANL) and Dr. Hari Viswananthan (LANL). 'MF' refers to microfluidics or 'Magic Find'. The code was first developed at University of Illinois at Urbana-Champaign based on a mainstream LB color-gradient multiphase model and further improved at Los Alamos National Laboratory by implementing the Continuum-Surface-Force and geometrical wetting models to reduce spurious currents so that the inertial effects in scCO<sub>2</sub> and brine displacement in porous media can be accounted for [2]. In addition, a single-phase flow version is also provided for absolute permeability measurement or DNS of turbulent flow. Only double precision is supported.
 
 ### Features
 * exploring multiple levels of parallelism
@@ -84,12 +84,12 @@ MF-LBM [1] [2] is a high-performance lattice Boltzmann (LB) code for direct nume
   * [`wall_boundary_preprocess`](preprocessing/3.wall_boundary_preprocess): computing normal directions of the solid surfaces
 * [`Main simulation code`](multiphase_3D):
   * [`multiphase_3D`](multiphase_3D): 3D multiphase flow simulation code
-  * (coming soon) 3D single phase flow simulation code 
+  * [`singlephase_3D`](singlephase_3D): 3D single-phase flow simulation code
 * [`Post-processing code`](postprocessing):
   * [`distributed_phi_to_vtk_conversion`](postprocessing/exteme_large_sim_parallel_IO/distributed_phi_to_vtk_conversion): for extremely large simulation only, converting distributed phase field data to vtk file for visualization
   * [`distributed_full_flow_field_process`](postprocessing/exteme_large_sim_parallel_IO/distributed_full_flow_field_process): for extremely large simulation only, converting distributed full flow field data for further analysis
 ### Technical details of the main simulation code
-Modern manycore processors/coprocessors, such as GPUs and Intel Xeon Phi processors, are developing rapidly and greatly boost computing power. These processors not only provide much higher FLOPS (floating-point operations per second) but also much higher memory bandwidth compared with traditional CPU. One of the most attractive features of the lattice Boltzmann method (LBM) is that it is explicit in time, has nearest neighbor communication, and the computational effort is in the collision step, which is localized at a grid node. For these reasons, the LBM is well suited for manycore processors which require a higher degree of explicit parallelism. The data movement in the LBM is much more intensive than for traditional CFD considering that the D3Q19 lattice model has 19 lattice velocities. Given the current state of computational hardware, in particular the relative speed and capacity of processors and memory, the LBM is a memory-bandwidth-bound numerical method. The high memory bandwidth provided by GPUs or Intel Xeon Phi processors greatly benefits the LBM.
+Modern manycore processors/coprocessors, such as GPUs, are developing rapidly and greatly boost computing power. These processors not only provide much higher FLOPS (floating-point operations per second) but also much higher memory bandwidth compared with traditional CPU. One of the most attractive features of the lattice Boltzmann method (LBM) is that it is explicit in time, has nearest neighbor communication, and the computational effort is in the collision step, which is localized at a grid node. For these reasons, the LBM is well suited for manycore processors which require a higher degree of explicit parallelism. The data movement in the LBM is much more intensive than for traditional CFD considering that the D3Q19 lattice model has 19 lattice velocities. Given the current state of computational hardware, in particular the relative speed and capacity of processors and memory, the LBM is a memory-bandwidth-bound numerical method. The high memory bandwidth provided by GPUs greatly benefits the LBM.
 
 The code is written on Fortran 90 and employs MPI-OpenACC/OpenMP hybrid programing model. The main reason that we chose OpenACC/OpenMP (directive-based parallel programming models) over CUDA is that we want to keep the code portable across different computing platforms so that we are not limited by the NVIDIA GPU solution. As GPU and Intel Xeon Phi processor (and even latest CPU from Intel with AVX512 instructions) rely heavily on SIMT/SIMD, the optimization strategy for these manycore processors/coprocessors are similar, which enables us to achieve reasonable performance across different platforms:
 * The AA pattern streaming method is employed to significantly reduce memory access and memory consumption.
@@ -103,16 +103,31 @@ Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects 
 
 
 
-## Performance Benchmarking
-The computational performance benchmarking of MF-LBM was done on the LANL Darwin testbed machine. 
+## Computational Performance Benchmarking (multiphase code)
+
+| Platform                              | Comp. Perf. (MLUPS) |
+| ------------------------------------- | :-----------------: |
+| CPU: Intel Gold 6152 (22*2 cores)     |         178         |
+| CPU: Intel Platinum 8176 (28*2 cores) |         194         |
+| MIC: Intel Phi 7250 (68 cores)        |         235         |
+| CPU: AMD EPYC 7551 (32*2 cores)       |         241         |
+| CPU: AMD EPYC 7702 (64*2 cores)       |         290         |
+| GPU: NVIDIA P100 (1792 cores)         |         332         |
+| GPU: NVIDIA V100 (2560 cores)         |         507         |
+| GPU: NVIDIA A100 (80GB) (3456 cores)  |        1477         |
 
 [Single node/card performance benchmarking](test_suites/3D_simulation/6.performance_benchmarking/) is to show the portability of the code.  
 
-<img src="images/single_node_perf.png" alt="drawing" width="900"/>
+| Number of V100 GPUs | Comp. Perf. (MLUPS) |
+| :-----------------: | :-----------------: |
+| 4                   |        1895         |
+| 8                   |        3682         |
+| 16                  |        7291         |
+| 24                  |        11238        |
+| 32                  |        14701        |
 
-Scaling up performance benchmarking is to show the scalability of the code. 
+Weak-scaling benchmark is to show the scalability of the code. 
 
-<img src="images/v100_scaling.png" alt="drawing" width="900"/>
 
 <br/>
 
@@ -123,9 +138,8 @@ Scaling up performance benchmarking is to show the scalability of the code.
 ### Prerequisites
 * A Fortran compiler 
 * A MPI implementation (most of the run scripts in this repo are based on OpenMPI)
-* CUDA toolkit (for NVIDIA GPU platform)
-* PGI Fortran compiler (for NVIDIA GPU platform)
-* Intel Fortran compiler (for Intel Xeon Phi)
+* NVIDIA Fortran compiler (free from NVIDIA HPC SDK, for NVIDIA GPU platform)
+* Intel Fortran compiler (free from Intel oneAPI HPC Toolkit, for Intel Xeon Phi platform)
 * Make
 
 ### Installation
@@ -136,7 +150,7 @@ Scaling up performance benchmarking is to show the scalability of the code.
    ```
 2. Initiate submodules for external non-code files (geometry files used in the test suites)
    ```sh
-   cd path-to-MF-LBM/MF-LBM-extFiles
+   cd path-to-MF-LBM
    git submodule init
    git submodule update
    ``` 
@@ -159,12 +173,10 @@ Scaling up performance benchmarking is to show the scalability of the code.
         ```sh
         # Make necessary changes to the makefile:
         # Choose GPU as the architecture option.
-        # Choose the PGI compiler (recommended for NVIDIA GPU).
+        # Choose the NVIDIA compiler (recommended for NVIDIA GPU).
         # OpenMP must be disabled.
         # See instruction in the makefile for more information.  
         your-preferred-editor makefile
-        # Make sure to enable OpenACC in preprocessor.  
-        your-preferred-editor 0.src/preprocessor.h  
         make
         # MF_LBM.gpu will be generated
         ```
@@ -179,29 +191,34 @@ Scaling up performance benchmarking is to show the scalability of the code.
         make
         # MF_LBM.mic will be generated
         ```
-4. Configure run scripts (for CPU platform)
+4. Configure the run script (for CPU platform)
       ```sh
       cd working_directory
       cp path-to-MF-LBM/multiphase_3D/run_template/template-config.sh ./config.sh
-      # Make necessary changes to config.sh (i.e., input parameters, paths and run command). 
-      # See instruction in template-config.sh for more information.
+      # Make necessary changes to config.sh (i.e., paths and run command). 
+      # See instructions in template-config.sh for more information.
       your-preferred-editor config.sh
       ./config.sh
-      # A script, irun.sh, will be generated. 
-      
+
+      # A script, irun.sh, will be generated.  
+
       # If OpenMP is enabled (recommended for CPU, MIC, and ARM platform), then run the following command:
-      # export OMP_NUM_THREADS=n
-      # , where n is recommended to be the core or thread count of the UMA domain of the CPU.
+      # export OMP_NUM_THREADS=n, where n is recommended to be the core or thread count of the UMA domain of the CPU. Hyperthreading may help in some cases.
 
       # At least one MPI rank per UMA domain is recommended.
 
-      # For GPU platform, number of MPI processes should equal to the total number of GPUs: one MPI rank per GPU.
+      # For GPU platform, the number of MPI processes should equal to the total number of GPUs: one MPI rank per GPU.
       ```
-5. Run the program
-   ```sh
-   # See instruction in template-config.sh and irun.sh for more information.
-   ./irun.sh new
-   ```
+5. Modify the simulation control file
+      ```sh
+      # Make necessary changes to simulation_control.txt. See instructions in simulation_control.txt for more information.
+      your-preferred-editor simulation_control.txt
+      ```
+6. Run the program
+      ```sh
+      # See instructions in template-config.sh and irun.sh for more information.
+      ./irun.sh new
+      ```
 <br/>
 
 
@@ -253,7 +270,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example is used to measure contact angle, where a nonwetting drop (fluid1 drop) is attached to a flat wall (y=1 plane)
+   This example is used to measure contact angle, where a nonwetting drop (fluid1 drop) is attached to a flat wall (y=1 plane). The default run script is for a two-NUMA CPU system.
 
 * [`Drainage in a square duct`](test_suites/3D_simulation/2.drainage)
    ```sh
@@ -264,19 +281,19 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates nonwetting fluid1 displacing wetting fluid2 in a square duct until one pore-volume fluid1 is injected.
+   This example simulates nonwetting fluid1 displacing wetting fluid2 in a square duct until one pore-volume of fluid1 is injected. The default run script is for a single GPU card.
 
 * [`Drainage in a tube with a spherical obstacle`](test_suites/3D_simulation/3.drainage_hardcode_geometry)
    ```sh
    # The geometry is created inside the main flow simulation code for convenience (Misc.F90/modify_geometry subroutine). Not the recommended way to run the program. 
    cd working_directory
-   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
+   cp path-to-MF-LBM/test_suites/3D_simulation/3.drainage_external_geometry/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
    your-preferred-editor config.sh
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates nonwetting fluid1 displacing wetting fluid2 in a tube with a spherical obstacle in the center. The tube and spherical obstacle are created inside the simulation code. Simulation stops when the nonwetting fluid reaches outlet.
+   This example simulates nonwetting fluid1 displacing wetting fluid2 in a tube with a spherical obstacle in the center. The tube and spherical obstacle are created inside the simulation code. Simulation stops when the nonwetting fluid reaches outlet. The default run script is for a single GPU card.
 
 * [`Imbibition in a real rock sample using external rock geometry file`](test_suites/3D_simulation/4.imbibition_external_geometry)
    ```sh
@@ -288,24 +305,24 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./config.sh    
    ./irun.sh new
    ```
-   This example simulates wetting fluid2 displacing nonwetting fluid1 in a real rock sample using external rock geometry file. Simulation stops when one pore-volume fluid2 is injected.
+   This example simulates wetting fluid2 displacing nonwetting fluid1 in a real rock sample using external rock geometry file. Simulation stops when one pore-volume of fluid2 is injected. The default run script is for a GPU system with two GPU cards.
 
 * [`Steady state relative permeability measurement`](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed)
    ```sh
-  # The geometry file is created from the pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat). The boundary info file need to be created use the wall_boundary_preprocess code (preprocessing/3.wall_boundary_preprocess)
+  # The geometry file is created from the pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat). The boundary info file need to be created using the wall_boundary_preprocess code (preprocessing/3.wall_boundary_preprocess)
    cd path-to-MF-LBM/preprocessing/3.wall_boundary_preprocess
    ./compile.sh
    ./a.out
 
    cd working_directory
-   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed/config.sh ./
+   cp path-to-MF-LBM/test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
    # specify the paths of the geometry file and solid-boundary-info file on config.sh
    your-preferred-editor config.sh
-   ./config_sim.sh    
+   ./config.sh    
    ./irun.sh new
    ```
-   This example simulates body force driven fractional flow for steady state relative permeability measurement, using external rock geometry file and corresponding pre-computed boundary info file. 
+   This example simulates body force driven fractional flow for steady state relative permeability measurement, using external rock geometry file and corresponding pre-computed boundary info file. The default run script is for a GPU system with two GPU cards.
 
 * [`Performance benchmarking`](test_suites/3D_simulation/6.performance_benchmarking)
    ```sh
@@ -315,14 +332,27 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
    ./a.out
 
    cd working_directory
-   cp path-to-MF-LBM/3d-multiphase/test_suites/3D_simulation/6.performance_benchmarking/config.sh ./
+   cp path-to-MF-LBM/test_suites/3D_simulation/6.performance_benchmarking/config.sh ./
    # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
    # specify the paths of the geometry file and solid-boundary-info file on config.sh
    your-preferred-editor config.sh
-   ./config_sim.sh    
+   ./config.sh    
    ./irun.sh new
    ```
-   This example is identical to the previous [example](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed) except that the benchmarking command is enabled in [configuration file](test_suites/3D_simulation/6.performance_benchmarking/config.sh). The simulation will run 100 time steps and give the computational performance in MLUPS (million lattices update per second). Due to the size of the sample, this example is suitable for benchmarking performance on a single computing node or GPU card. 
+   This example is identical to the previous [example](test_suites/3D_simulation/5.fractional_flow_external_geometry_preprocessed) except that the benchmarking command is enabled in [configuration file](test_suites/3D_simulation/6.performance_benchmarking/config.sh). The simulation will run 100 time steps and give the computational performance in MLUPS (million lattices update per second). Due to the size of the sample, this example is suitable for benchmarking performance on a single CPU computing node or GPU card. The default run script is for a single GPU card.
+
+* [`Absolute permeability measurement`](test_suites/3D_simulation/7.singlephase_abs_perm)
+   ```sh
+  # The geometry file is created from the pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat).)
+   cd working_directory
+   cp path-to-MF-LBM/test_suites/3D_simulation/7.singlephase_abs_perm/config.sh ./
+   # edit config.sh (path and run command based on your system; path does not need to be changed if using the default folder)
+   # specify the paths of the geometry file on config.sh
+   your-preferred-editor config.sh
+   ./config.sh    
+   ./irun.sh new
+   ```
+   This example simulates body force driven single-phase flow for absolute permeability measurement, using an external rock geometry file. The value of the body force should be adjusted so that the flow is in the Stokes flow regime. The default run script is for a single GPU card. 
 
 ### Output files
 Three output directories will be created:

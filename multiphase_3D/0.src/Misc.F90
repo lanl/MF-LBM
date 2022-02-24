@@ -16,9 +16,9 @@ subroutine set_walls
 
     !~~~~~~~~~~~~~ temporary fix for IBM Power9 nodes. Otherwise, MPI_Bcast will be extremely slow for a large array. ~~~~~~~~~~~~~~~~~~~~
     ! cause unknown. likely have something to do with memory allocation of the MPI buffers.
-    integer(kind=1), allocatable,dimension(:,:,:) :: tt
-    allocate(tt(1:nx,1:ny,1:nz))
-    deallocate(tt)
+    ! integer(kind=1), allocatable,dimension(:,:,:) :: tt
+    ! allocate(tt(1:nx,1:ny,1:nz))
+    ! deallocate(tt)
     !~~~~~~~~~~~~~ temporary fix for IBM Power9 nodes. Otherwise, MPI_Bcase will be extremely slow for a large array. ~~~~~~~~~~~~~~~~~~~~
 
     isize = nx*ny*nz
@@ -109,23 +109,23 @@ subroutine set_walls
     endif
 
     !~~~~~~~~~~~~~~~~ broadcast and distribute geometry data ~~~~~~~~~~~~~~~~~~~~
-    if(extreme_large_sim_cmd==0)then
-        call MPI_Bcast(walls_global,nxGlobal*nyGlobal*nzGlobal,MPI_INTEGER1,0,MPI_COMM_VGRID,ierr)
+    if (extreme_large_sim_cmd == 0) then
+      call MPI_Bcast(walls_global, nxGlobal*nyGlobal*nzGlobal, MPI_INTEGER1, 0, MPI_COMM_VGRID, ierr)
     else
-        ! walls_global array may be too large that (nxGlobal)*(nyGlobal)*(nzGlobal) exceeds 2^31 limit of MPI_Bcast
-        nmax = 4 ! divide the array into nmax pieces (nzglobal must be completely divided by nmax)
-        if(mod(nzglobal,nmax)==0)then
-            do n=1,nmax
-                k = 1+nzglobal/nmax*(n-1)
-                out3 = nzGlobal/nmax
-                call MPI_Bcast(walls_global(1,1,k),(nxGlobal)*(nyGlobal)*out3,MPI_INTEGER1,0,MPI_COMM_VGRID,ierr)
-            enddo
-        else
-            if(id==0)print*,'Error in broadcasting walls_global array! mod(nzglobal,nmax)/=0'
-            call MPI_Barrier(MPI_COMM_WORLD,ierr)
-            call mpi_abort(MPI_COMM_WORLD,ierr)
-        endif
-    endif
+      ! walls_global array may be too large and the value of (nxGlobal)*(nyGlobal)*(nzGlobal) exceeds 2^31 limit of MPI_Bcast
+      ! divide the array into npz pieces (nzglobal must be completely divided by npz)
+      if (mod(nzglobal, npz) == 0) then
+          do n = 1, npz
+              k = 1 + nzglobal/npz*(n - 1)
+              out3 = nzGlobal/npz
+              call MPI_Bcast(walls_global(1, 1, k), (nxGlobal)*(nyGlobal)*out3, MPI_INTEGER1, 0, MPI_COMM_VGRID, ierr)
+          end do
+      else
+          if (id == 0) print *, 'Error in broadcasting walls_global array! mod(nzglobal,nmax)/=0'
+          call MPI_Barrier(MPI_COMM_WORLD, ierr)
+          call mpi_abort(MPI_COMM_WORLD, ierr)
+        end if
+    end if
 
     !$OMP PARALLEL DO private(i,j,l,m,n)
     do k=1,nz
@@ -201,41 +201,6 @@ subroutine set_walls
     A_xy_effective= icount  !inlet area
     if(id==0)print*,'Inlet effective open area = ', A_xy_effective
     call pore_profile   !pore profile info along the flow direction z
-
-    !~~~~~~~~~~~~~~~~ save fluid point information ~~~~~~~~~~~~~~~~~~~~
-    ! only used when extreme_large_sim_cmd==1, to be combined with save_phi (distributed phi data)
-    if(extreme_large_sim_cmd==1)then
-        icount = 0
-        !$OMP PARALLEL DO private(i,j) reduction(+:icount)
-        do k=1,nz
-            do j=1,ny
-                do i=1,nx
-                    if(walls(i,j,k)<=0)then
-                        icount = icount + 1
-                    endif
-                enddo
-            enddo
-        enddo
-        n_fluid_node_local = icount  ! total fluid nodes of local domain
-
-        write(flnm,"('geometry_id',i5.5)")id
-        if(id==0)print*,'Start to save fluid point information'
-        open(unit=9+id, file='out3.field_data/'//trim(flnm), FORM='unformatted', status='replace',access='stream')
-        write(9+id)n_fluid_node_local
-        write(9+id)idx,idy,idz,nx,ny,nz
-        do k=1,nz
-            do j=1,ny
-                do i=1,nx
-                    if(walls(i,j,k)==0)then
-                        write(9+id)i,j,k
-                    endif
-                enddo
-            enddo
-        enddo
-        close(9+id)
-        if(id==0)print*,'Fluid point information saved!'
-    endif
-
 
     call ztransport_walls(0,0,overlap_walls)
     call ytransport_walls(0,overlap_walls,overlap_walls)
@@ -657,25 +622,48 @@ end subroutine change_inlet_fluid_phase
 
 
 !*************inlet velocity - analytical solution**********************************************************
-real(kind=8) function w_in_channel(x1,y1,kn,ua,coe_Q)
-    use Misc_module
-    use mpi_variable
-    IMPLICIT NONE
-    integer :: kn,n
-    real(kind=8) :: xx,yy,x1,y1, temp1,ua,coe_Q
+subroutine inlet_vel_profile_rectangular(vel_avg, num_terms)    
+  use Misc_module
+  use Fluid_singlephase
+  use mpi_variable
+  IMPLICIT NONE
+  real(kind=8) :: vel_avg, a, b, xx, yy, tmp1, tmp2, tmp3
+  integer :: n, num_terms, i,j, x, y
+  
+  a = 0.5d0 * la_x
+  b = 0.5d0 * la_y
 
-    xx = x1 - dble(nxGlobal-2)*0.5d0
-    yy = y1 - dble(nyGlobal-2)*0.5d0
+  tmp1 = 0.0d0
+  do n=1,num_terms,2
+      tmp1 = tmp1 + (dtanh(0.5d0*dble(n)*pi*b/a)) / n**5
+  enddo
 
-    temp1 = 0.0d0
-    do n=1,kn,2
-        temp1 = temp1 + (-1.0d0)**(0.5d0*dble(n-1)) * dcos(dble(n)*pi*xx/la_x)/dble(n)**3 *&
-            &(1.0d0 - (dexp(dble(n)*pi*(yy-la_y*0.5d0)/la_x)+dexp(dble(n)*pi*(-yy-la_y*0.5d0)/la_x))/(1.0d0+dexp(-dble(n)*pi*la_y/la_x)))
+  tmp2 = 1.0d0 - 192d0 / pi**5 * (a/b) * tmp1
+
+  tmp2 = -3d0 * vel_avg  / (tmp2 * a**2)
+
+  !$OMP PARALLEL DO private(i,n,x,y,xx,yy,tmp3)
+  do j=1,ny
+    do i=1,nx   
+        x = idx*nx + i
+        y = idy*ny + j
+        if(x>1.and.x<nxGlobal.and.y>1.and.y<nyGlobal)then
+          xx = x - 1.5d0 - a 
+          yy = y - 1.5d0 - b
+          tmp3 = 0d0
+          do n=1,num_terms,2
+            tmp3 = tmp3 + (-1.0d0)**(0.5d0*dble(n-1)) * dcos(0.5d0*n*pi*xx/a)/n**3 &
+            ! * (1.0d0 - dcosh(0.5d0*n*pi*yy/a) / dcosh(0.5d0*n*pi*b/a)) =   
+            * (1.0d0 - ( dexp(0.5d0*n*pi*(yy-b)/a) + dexp(0.5d0*n*pi*(-yy-b)/a)) / (1d0 + dexp(0.5d0*n*pi*(-b-b)/a)) )  
+          enddo
+          w_in(i,j) = tmp3 * ( -16d0 * tmp2 * a**2 * pi**(-3) ) 
+        endif
     enddo
+  enddo
 
-    w_in_channel = 48d0/(pi**3)*ua*temp1/coe_Q
+  return
+end subroutine inlet_vel_profile_rectangular
 
-    return
-end function w_in_channel
+
 
 

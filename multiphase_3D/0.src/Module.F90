@@ -54,6 +54,9 @@ module Misc_module
 
     ! necesssary modifications for extreme large simulations including number limit and I/O related issues: 0 - no; 1 - yes
     integer :: extreme_large_sim_cmd
+
+    ! output field data precision (simulation is always double precision): 0 - single precision; 1 - double precision
+    integer :: output_fieldData_precision_cmd
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ input commands ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
 
@@ -114,6 +117,12 @@ module Misc_module
     real(kind=8), parameter :: mrt_coef2=1d0/2394d0
     real(kind=8), parameter :: mrt_coef3=1d0/252d0
     real(kind=8), parameter :: mrt_coef4=1d0/72d0
+    real(kind=8), parameter :: mrt_e2_coef1=0d0
+    real(kind=8), parameter :: mrt_e2_coef2=-475d0/63d0
+    real(kind=8), parameter :: mrt_omega_xx=0d0
+    ! real(kind=8), parameter :: mrt_e2_coef1=3d0
+    ! real(kind=8), parameter :: mrt_e2_coef2=-11d0/2d0
+    ! real(kind=8), parameter :: mrt_omega_xx=-0.5d0
     !D3Q19 MODEL
     real(kind=8), dimension(:), parameter :: w_equ(0:18)=(/1d0/3d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,1.0d0/18.0d0,&
         & 1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0,1.0d0/36.0d0/)
