@@ -435,8 +435,10 @@ subroutine benchmark
     use cudafor
 #endif
     IMPLICIT NONE
-    integer :: clock2, clock1, clockmax, clockrate, ticks, clock01, clock02
+    integer :: clock2, clock1, clockmax, clockrate, ticks, clock01, clock02, round, maxRound
     real(kind=8) :: t_all
+
+    maxRound = 3
 
     call system_clock(count_max=clockmax, count_rate=clockrate)
 
@@ -447,33 +449,36 @@ subroutine benchmark
     if (id == 0) print *, '------------ Warm-up section ends ----------------------'
 
     if (id == 0) print *, '----------- Main benchmarking starts -------------------'
-    call system_clock(clock01)
+    if (id == 0) open (unit=78, file='out1.output/benchmark_time.dat', status='unknown', position='append')
+    
+    do round = 1, maxRound
+      call system_clock(clock01)
 #ifdef gpu_profiling
-    call cudaProfilerStart()
+      call cudaProfilerStart()
 #endif
-
-    do ntime = 1, ntime_max_benchmark
-        call main_iteration_kernel
-    END DO
-
+      do ntime = 1, ntime_max_benchmark
+          call main_iteration_kernel
+      END DO
 #ifdef gpu_profiling
-    call cudaProfilerStop()
+      call cudaProfilerStop()
 #endif
+      call MPI_Barrier(MPI_COMM_vgrid, ierr)
+      call system_clock(clock02)
+      ntime = ntime - 1
+      ticks = clock02 - clock01
+      t_all = float(ticks)/float(clockrate)
+      if (id == 0) then     
+        write (78, "('Code performance: ', F12.4, ' MLUPS')") dble(nxglobal)*dble(nyglobal)*dble(nzglobal)*dble(ntime)/(t_all*1000000d0)
+        write (*, "(1X,'Code performance: ', F12.4, ' MLUPS')") dble(nxglobal)*dble(nyglobal)*dble(nzglobal)*dble(ntime)/(t_all*1000000d0)
+      end if
+    enddo
     if (id == 0) print *, '----------- Main benchmarking ends ---------------------'
 
-    call MPI_Barrier(MPI_COMM_vgrid, ierr)
-    call system_clock(clock02)
     call monitor
-    ntime = ntime - 1
-    ticks = clock02 - clock01
-    t_all = float(ticks)/float(clockrate)
     if (id == 0) then
-        open (unit=78, file='out1.output/benchmark_time.dat', status='unknown', position='append')
-        write (78, *) 'time step  ', 'wallclock time  ', 'saturation', 'capillary number'
-        write (78, "(I8,3(1x,E14.6))") ntime, t_all, flowrate
-    write (78, "('Code performance: ', F12.4, ' MLUPS')") dble(nxglobal)*dble(nyglobal)*dble(nzglobal)*dble(ntime)/(t_all*1000000d0)
-  write (*, "(1X,'Code performance: ', F12.4, ' MLUPS')") dble(nxglobal)*dble(nyglobal)*dble(nzglobal)*dble(ntime)/(t_all*1000000d0)
-        write (*, "(1X,'Benchmarking ended successfully after ', I6, ' iterations')") ntime
+        write (78, *) 'time step  ', 'flowrate'
+        write (78, "(I8,3(1x,E14.6))") ntime, flowrate
+        write (*, "(1X,'Benchmarking ended successfully after ', I6, ' iterations')") maxRound*ntime
     end if
 
     return
