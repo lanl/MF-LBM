@@ -537,8 +537,8 @@ IMPLICIT NONE
     ticks = clock02 - clock01
     t_all = float(ticks)/float(clockrate)
     if (id == 0) then
-      write (78, "('Code performance: ', F12.4, ' MLUPS')") dble(nxglobal)*dble(nyglobal)*dble(nzglobal)*dble(ntime)/(t_all*1000000d0)
-      write (*, "(1X,'Code performance: ', F12.4, ' MLUPS')") dble(nxglobal)*dble(nyglobal)*dble(nzglobal)*dble(ntime)/(t_all*1000000d0)
+      write (78, "('Code performance: ', F12.4, ' MLUPS')") pore_sum*dble(ntime)/(t_all*1000000d0)
+      write (*, "(1X,'Code performance: ', F12.4, ' MLUPS')") pore_sum*dble(ntime)/(t_all*1000000d0)
     end if
   enddo
   if(id==0)print*,'----------- Main benchmarking ends ---------------------'
