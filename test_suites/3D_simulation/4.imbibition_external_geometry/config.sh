@@ -49,13 +49,18 @@ ny=240
 nz=260
 sed $sed_option "s|lattice_dimensions .*|lattice_dimensions $nx,$ny,$nz|g" ./simulation_control.txt
 
-fluid2_viscosity=0.1
+mpi_npx=1  # x-axis domain decomposition currently disabled, keep using mpi_npx=1 
+mpi_npy=1
+mpi_npz=1
+sed $sed_option "s|MPI_process_num .*|MPI_process_num $mpi_npx,$mpi_npy,$mpi_npz|g" ./simulation_control.txt
+
+fluid2_viscosity=0.04
 sed $sed_option "s|fluid2_viscosity .*|fluid2_viscosity $fluid2_viscosity|g" ./simulation_control.txt
 
 theta=45
 sed $sed_option "s|theta .*|theta $theta|g" ./simulation_control.txt
 
-capillary_number=50d-6
+capillary_number=100d-6
 sed $sed_option "s|capillary_number .*|capillary_number $capillary_number|g" ./simulation_control.txt
 
 saturation_injection=0.0
@@ -64,10 +69,10 @@ sed $sed_option "s|saturation_injection .*|saturation_injection $saturation_inje
 
 
 # -------------------------- modify interactive run script ----------------------------------
-MPI_process_num=2   # MPI_process_num must be equal to mpi_npx * mpi_npy * mpi_npz
+MPI_process_num=1   # MPI_process_num must be equal to mpi_npx * mpi_npy * mpi_npz
 
 # Below is the run command for a typical GPU computing node with two GPU cards
-run_command="mpirun -n $MPI_process_num --map-by ppr:2:node --bind-to socket $exec_location"
+run_command="mpirun -n $MPI_process_num $exec_location"
 # check out other run commands below for different platforms
 
 ################# sample run command #################

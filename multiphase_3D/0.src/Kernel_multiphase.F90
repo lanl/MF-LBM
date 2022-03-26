@@ -124,14 +124,14 @@ subroutine kernel_odd_color(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
                   omega = 1d0/(6d0/( (1.0d0 + phi(i,j,k))*la_nui1 + (1.0d0 - phi(i,j,k))*la_nui2 ) + 0.5d0)
                   !MRT PARAMETERS
                   s_nu =  omega
-  #if mrt==1
+#if mrt==1
                   !************bounceback opt************
                   s_e =  omega
                   s_e2 = omega
                   s_pi = omega
                   s_q =  8.0d0*(2.0d0-omega)/(8.0d0-omega)
                   s_t = s_q
-  #elif mrt==2
+#elif mrt==2
                   !************original************
                   s_e =  1.19d0
                   s_e2 = 1.4d0
@@ -139,21 +139,21 @@ subroutine kernel_odd_color(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
                   s_q= 1.2d0
                   s_t = 1.98d0
 
-  #elif mrt==3            
+#elif mrt==3            
                   !************SRT************
                   s_e =  omega
                   s_e2 = omega
                   s_pi = omega
                   s_q =  omega
                   s_t = omega
-  #elif mrt==4            
+#elif mrt==4            
                   !************advection opt************
                   s_e =  omega
                   s_e2 = omega
                   s_pi = omega
                   s_q = (6d0-3d0*omega)/(3d0-omega)
                   s_t = omega
-  #endif 
+#endif 
                   !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MRT kernel, repeated part~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                   !+++++++++- !calculate macroscopic variables++++++++++++
                   den=   rho1 + rho2
@@ -487,35 +487,35 @@ subroutine kernel_even_color(ixmin,ixmax,iymin,iymax,izmin,izmax,async_label)
                   omega = 1d0/(6d0/( (1.0d0 + phi(i,j,k))*la_nui1 + (1.0d0 - phi(i,j,k))*la_nui2 ) + 0.5d0)
                   !MRT PARAMETERS
                   s_nu =  omega
-  #if mrt==1
+#if mrt==1
                   !************bounceback opt************
                   s_e =  omega
                   s_e2 = omega
                   s_pi = omega
                   s_q =  8.0d0*(2.0d0-omega)/(8.0d0-omega)
                   s_t = s_q
-  #elif mrt==2
+#elif mrt==2
                   !************original opt************
                   s_e =  1.19d0
                   s_e2 = 1.4d0
                   s_pi = 1.4d0
                   s_q= 1.2d0
                   s_t = 1.98d0               
-  #elif mrt==3
+#elif mrt==3
                   !************SRT************
                   s_e =  omega
                   s_e2 = omega
                   s_pi = omega
                   s_q =  omega
                   s_t = omega
-  #elif mrt==4            
+#elif mrt==4            
                   !************advection opt************
                   s_e =  omega
                   s_e2 = omega
                   s_pi = omega
                   s_q = (6d0-3d0*omega)/(3d0-omega)
                   s_t = omega
-  #endif
+#endif
 
                   !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~MRT kernel, repeated part~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                   !+++++++++- !calculate macroscopic variables++++++++++++
