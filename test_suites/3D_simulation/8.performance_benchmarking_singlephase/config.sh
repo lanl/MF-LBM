@@ -56,10 +56,10 @@ sed $sed_option "s|periodic_indicator .*|periodic_indicator $periodic_x,$periodi
 
 # -------------------------- modify interactive run script ----------------------------------
 
-MPI_process_num=2   # MPI_process_num must be equal to mpi_npx * mpi_npy * mpi_npz
+MPI_process_num=1   # MPI_process_num must be equal to mpi_npx * mpi_npy * mpi_npz
 
 # Below is the run command for a typical CPU computing node with two sockets
-run_command="mpirun -n $MPI_process_num --map-by ppr:2:node --bind-to numa $exec_location"
+run_command="mpirun -n $MPI_process_num $exec_location"
 # check out other run commands below for different platforms
 
 ################# sample run command #################
