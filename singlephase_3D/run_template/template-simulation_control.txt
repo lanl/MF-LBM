@@ -1,32 +1,32 @@
 #*********************************************************************************#
-#*          CONTROL FILE FOR SINGLEPHASE FLOW SIMULATION IN MF-LBM               *#
+#*           MF-LBM CONTROL FILE FOR SINGLEPHASE FLOW SIMULATION                 *#
 #*********************************************************************************#
 
 #=========================== simulation_status ====================================
 # value stored on job_status.txt                                      
 # new_simulation                - new simulation                                  
-# continue_simulation           - continue previous simulation               
-# simulation_done               - previous simulation is finished. stop              
-# simulation_failed             - previous simulation failed. stop    
-# simulation_reached_max_step   - previous simulation reached maximum step. stop    
-# else                          - wrong status. stop                                       
+# continue_simulation           - resume previous simulation               
+# simulation_done               - previous simulation is finished. stop program             
+# simulation_failed             - previous simulation failed. stop program   
+# simulation_reached_max_step   - previous simulation reached maximum step. stop program   
+# else                          - wrong status. stop program                                      
 
 #=========================== simulation setup =====================================
 # Benchmark_cmd: 
 # 0 - regular simulation
-# 1 - benchmarking simulation (obtain computational performance in MLUPS)
+# 1 - performance benchmarking (in MLUPS)
 benchmark_cmd 0
 
 # Necesssary modifications for extreme large simulations:
-# nxglobal*nyglobal*nzglobal may be too large.
-# parallel I/O for visualization files are needed.
-# recommended for grid points > 1 billion. 
+# nxglobal*nyglobal*nzglobal may be too large
+# parallel I/O for vtk files
+# recommended for grid points > 1 billion
 # 0 - no; 1 - yes 
 extreme_large_sim_cmd 0 
 
 # Steady state option: 
-# 0 - non-steady state simulation (complete based on target injected PV or ntime_max)
-# 1 - steady state simulation (complete based on flowrate)
+# 0 - non-steady state simulation (finished based on target injected PV or ntime_max)
+# 1 - steady state simulation (finished based on flowrate)
 steady_state_option 1
 
 # MRT collision parameters presets: 
@@ -47,10 +47,14 @@ modify_geometry_cmd 0
 # 0 - no; 1 - yes 
 external_geometry_read_cmd  0
 
-# Option to save secondary backup checkpoint data (increase storage space): 
+# Option to save secondary backup checkpoint data (will increase storage space): 
 # 0 - no; 1 - yes 
 # stored in a seperate location in case the default checkpoint data corrupted
 double_bak_checkpoint_pdf_cmd 1  
+
+
+# output field data precision (simulation is always double precision): 0 - single precision; 1 - double precision
+output_fieldData_precision_cmd 0
 
 #=================================  geometry ======================================
 # Lattice dimensions nxGlobal, nyGlobal, nzGlobal, must be integral multiple of 
@@ -59,7 +63,7 @@ lattice_dimensions 40,40,60
 
 # inlet/outlet zone excluded in the bulk properties calculation 
 # 1<=k<=n_exclude_inlet and nzglobal-n_exclude_outlet+1<=k<=nzglobal
-# does not affect simulation
+# does not affect the actual simulation
 excluded_layers 10,10
 
 # domain_wall_status at xmin and xmax, status: 1 - wall; 0 - no wall
@@ -71,12 +75,12 @@ domain_wall_status_y 1,1
 # default flow direction, domain_wall_status at ymin and ymax, status: 1 - wall; 0 - no wall
 domain_wall_status_z 0,0
 
-# periodic BC indicator, 1 periodic, 0 non-periodic
-# currently, x direction can not apply periodic BC
+# periodic BC indicators (x, y, z), 1 periodic, 0 non-periodic
+# periodic BC cannot be applied along x direction
 periodic_indicator 0,0,1
 
 # characteristic length of the flow domain (used in the definition of Re number): 
-# default is nyGlobal; can be average pore size or obstacle diameter
+# default is nyGlobal; can also be the average pore size or an obstacle diameter
 char_length  20.0
 
 # Reynolds number 
@@ -88,71 +92,71 @@ Reynolds_number  10.0
 rho_drop 0.01
 
 #===================================== MPI information ========================================
-# mpi process numbers along each axis: npx, npy, npz
-# x direction domain decomposition disabled: npx = 1
+# mpi process along each axis: npx, npy, npz
+# x direction domain decomposition is disabled: npx should always be 1
 MPI_process_num 1,1,2
 
-# Number of halo nodes used in overlaping computation and communication. 
-# x direction domain decomposition disabled and must be 0
+# Number of halo node layers used in overlaping computation and communication. 
+# x direction domain decomposition is disabled and the value must be 0
 # This option should only be modified when you fully understand how it works.
 MPI_async_layers_num  0,4,4
 
 #=============================== fluid property ===================================
 # fluid viscosity
-fluid_viscosity 0.01
+fluid_viscosity 0.05
 
 #============================= injection conditions ===============================
-# inlet_BC selection (overridden by z (flow) direction periodic BC): 1-velocity; 2-pressure 
-inlet_BC 1
-# outlet_BC selection (overridden by z (flow) direction periodic BC): 1-convective; 2-pressure 
-outlet_BC 1
+# inlet_BC selection (overridden by z (flow) direction periodic BC): 1-velocity; 2-pressure ; 0-none
+inlet_BC 0
+# outlet_BC selection (overridden by z (flow) direction periodic BC): 1-convective; 2-pressure ; 0-none
+outlet_BC 0
 
-# Option to stop simulation based on reaching target fluid injection:
-# It is enabled by modifying ntime_max based on injection rate.
+# Stop the simulation if target fluid injection reached:
+# It is enabled by modifying ntime_max based on the injection rate.
 # The value is in PV (pore-volume). 
 # It is not very precise considering the LBM compressibility error.
-# A negative value will disable target_inject_pore_volume – simulation continues until existing ntime_max
+# A negative value will disable target_inject_pore_volume – simulation continues until ntime_max
 target_inject_pore_volume -1.0
 
-# initial value of body force or pressure gradient along z direction
+# initial value of the body force or pressure gradient along z direction
 body_force_0 1d-6
 
 #================================== timers ========================================
 # timer: max iterations, will be modified if target_inject_pore_volume > 0
 max_time_step 100000000
 
-# timer: max iterations for benchmarking 
+# timer: max iterations for performance benchmarking 
 max_time_step_benchmark 100
 
-# timer: when to output detailed visualization data - overridden by d_vol_detail if d_vol_detail>0  
+# timer: iteration interval to save detailed visualization data - overridden by d_vol_detail if d_vol_detail>0  
 ntime_visual 10000
 
-# timer: when to output bulk property data - overridden by d_vol_monitor if d_vol_monitor>0 
+# timer: iteration interval to save bulk property data - overridden by d_vol_monitor if d_vol_monitor>0 
 monitor_timer 1000
 
-# timer: when to output profile data along flow direction (Z)
+# timer: iteration interval to output profile data along flow direction (Z)
 # monitor_profile_timer = monitor_profile_timer_ratio * monitor_timer 
 monitor_profile_timer_ratio 5
 
-# timer: gaps used to record computation time
+# timer: iteration interval used to record computing time
 # it is also used to check the checkpoint data saving status
 computation_time_timer 1000
 
-# timer: when to display time steps
+# timer: iteration interval used to display time steps
 display_steps_timer 1000
 
-# timer: interval to save checkpoint data based on wall clock time, in hours
+# timer: time interval used to save checkpoint data based on wall clock time, in hours
 checkpoint_save_timer 2.0
 
-# timer: interval to save secondary checkpoint data based on wall clock time, in hours
-# only effective when double_bak_checkpoint_pdf_cmd = 1
+# timer: time interval used to save secondary checkpoint data based on wall clock time, in hours
+# use a large value to reduce the storage size
 checkpoint_2rd_save_timer 5.5
 
 # timer: simulation duration in hours
-# save checkpoint data and exit program after simulation_duration_timer
-simulation_duration_timer 15.7
+# save checkpoint data and stop program after simulation_duration_timer
+simulation_duration_timer 23.7
 
-# timer: when to output full field data - based on injected pore volume 
+# timer: when to output full flow field data - based on injected pore volume 
 # only effective for constant velocity BC, disabled if it is a negative value
 d_vol_detail -1.0
 

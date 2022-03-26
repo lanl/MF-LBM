@@ -1,4 +1,3 @@
-#include "./preprocessor.h"
 !=======================================================================================================================================================
 !---------------------- monitor_singlephase  unsteady flow  ----------------------
 !=======================================================================================================================================================
@@ -119,7 +118,7 @@ subroutine monitor
 
         !********************************************* save data ************************************************************
         open(unit=13, file='out1.output/flowrate_time.dat' ,status='unknown',position='append')
-        write(13,"(I10,2(1x,E14.6))")ntime,fl_avg_whole,umax
+        write(13,"(I10,2(1x,E14.6))")ntime,fl_avg_whole,umax_global
         close(13)      
 
         if(kper==0.and.domain_wall_status_z_min==0.and.domain_wall_status_z_max==0)then    !non-periodic BC along flow direction (z)    

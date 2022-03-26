@@ -22,7 +22,7 @@ subroutine initialization_basic_multi
     if(id==0)print*,'~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
     if(id==0)print*,'Creating directories if not exist'
     if(id==0)call system('mkdir out2.checkpoint')
-    if(id==0.and.double_bak_checkpoint_pdf_cmd==1)call system('mkdir out2.checkpoint/2rd_backup')
+    if(id==0)call system('mkdir out2.checkpoint/2rd_backup')
     if(id==0)call system('mkdir out1.output')
     if(id==0)call system('mkdir out1.output/profile')
     if(id==0)call system('mkdir out3.field_data')
@@ -140,6 +140,7 @@ subroutine initialization_basic_multi
     !open pressure or velocity inlet BC
     if(kper==0.and.domain_wall_status_z_min==0.and.domain_wall_status_z_max==0)then    !non-periodic BC along flow direction (z)
         if(inlet_BC==1)then  !velocity inlet bc
+            force_Z = 0d0
             call initialization_open_velocity_inlet_bc
         elseif(inlet_BC==2)then   !pressure inlet bc
             p_gradient = -force_z0/3d0         !pressure gradient
