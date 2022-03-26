@@ -60,7 +60,7 @@
 
 ## About The Code
 
-MF-LBM [1][1] [2][2] is a high-performance lattice Boltzmann (LB) code for direct numerical simulation (DNS) of flow in porous media, primarily developed by Dr. Yu Chen (LANL), under the supervision of Prof. Albert Valocchi (UIUC), Dr. Qinjun Kang (LANL) and Dr. Hari Viswananthan (LANL). 'MF' refers to microfluidics or 'Magic Find'. The code was first developed at University of Illinois at Urbana-Champaign based on a mainstream LB color-gradient multiphase model and further improved at Los Alamos National Laboratory by implementing the Continuum-Surface-Force and geometrical wetting models to reduce spurious currents so that the inertial effects in scCO`<sub>`2`</sub>` and brine displacement in porous media can be accounted for [2][2]. In addition, a single-phase flow version is also provided for absolute permeability measurement or DNS of turbulent flow. Only double precision is supported.
+MF-LBM [1][1] [2][2] is a high-performance lattice Boltzmann (LB) code for direct numerical simulation (DNS) of flow in porous media, primarily developed by Dr. Yu Chen (LANL), under the supervision of Prof. Albert Valocchi (UIUC), Dr. Qinjun Kang (LANL) and Dr. Hari Viswananthan (LANL). 'MF' refers to microfluidics or 'Magic Find'. The code was first developed at University of Illinois at Urbana-Champaign based on a mainstream LB color-gradient multiphase model and further improved at Los Alamos National Laboratory by implementing the Continuum-Surface-Force and geometrical wetting models to reduce spurious currents so that the inertial effects in scCO`<sub>`2`</sub>` and brine displacement in porous media can be accounted for [2][2]. In addition, a single-phase flow solver is also provided for absolute permeability measurement or DNS of turbulent flow. Only double precision is supported.
 
 ### Features
 
@@ -374,7 +374,7 @@ Check out [template-simulation_control.txt](multiphase_3D/run_template/template-
 
   This example simulates body force driven single-phase flow for absolute permeability measurement, using an external rock geometry file. The value of the body force should be adjusted so that the flow is in the Stokes flow regime. The default run script is for a single GPU card.
 
-* [`Performance benchmarking`](test_suites/3D_simulation/8.performance_benchmarking)
+* [`Performance benchmarking - singlephase`](test_suites/3D_simulation/8.performance_benchmarking_singlephase)
 
   ```sh
   # The geometry file is created from pre-processing code example (MF-LBM-extFiles/geometry_files/sample_rock_geometry_wallarray/bentheimer_in10_240_240_240_out10.dat)
@@ -403,7 +403,7 @@ Three output directories will be created:
 * Best practice of running MF-LBM on different platforms:
 
   1. AVX512 is recommended to be enabled for Intel CPUs that support AVX512. AVX512 must be enabled for Intel Xeon Phi processors.
-  2. Multithreading generally improves performance for this code. However, for small probelms, if there are already many CPU cores (i.e., an AMD 64-core CPU), multithreading many not bring any benefits.
+  2. Multithreading generally improves performance of the code. However, for small problems, if there are already many CPU cores (i.e., an AMD 64-core CPU), multithreading many not bring any benefits.
   3. GPUs require a high degree of parallelism, where a small domain problem may not utilize the full potential of a GPU. Recommended domain size per GPU: from 200`<sup>`3`</sup>` until GPU memory full.
 * Contact angle:
 
@@ -421,7 +421,7 @@ Three output directories will be created:
   > Type mismatch between actual argument at (1) and actual argument at (2)
   >
 
-  This is a known issue with GCC10. Use GCC10 new option *-fallow-argument-mismatch* to turn these errors to warnings for the moment.
+  This is a known issue with GCC10. Use the new GCC10 option *-fallow-argument-mismatch* to turn these errors to warnings for the moment.
 
 <br/>
 
