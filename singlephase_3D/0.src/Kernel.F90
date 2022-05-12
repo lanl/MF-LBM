@@ -18,7 +18,7 @@ subroutine kernel_odd(ixmin, ixmax, iymin, iymax, izmin, izmax, async_label)
     !$omp & walls,f0,f1,f2,f3,f4,f5,f6,f7,f8,f9,f10,f11,f12,f13,f14,f15,f16,f17,f18, &
     !$omp & ixmin,ixmax,iymin,iymax,izmin,izmax,force_Z,s_e,s_e2,s_q,s_nu,s_pi,s_t) &
     !$omp & PRIVATE(&
-    !$omp & i,j,wall_indicator,&
+    !$omp & i,j,&
     !$omp & ux,uy,uz,u2,den,fx,fy,fz,&
     !$omp & ft0,ft1,ft2,ft3,ft4,ft5,ft6,ft7,ft8,ft9,ft10,ft11,ft12,ft13,ft14,ft15,ft16,ft17,ft18,&
     !$omp & sum1, sum2, sum3, sum4, sum5, sum6, sum7, sum8, sum9, &
