@@ -502,7 +502,7 @@ subroutine geometry_preprocessing_new
             fluid_boundary_nodes(icount)%nwx =  fluid_boundary_nodes_global(num)%nwx
             fluid_boundary_nodes(icount)%nwy =  fluid_boundary_nodes_global(num)%nwy
             fluid_boundary_nodes(icount)%nwz =  fluid_boundary_nodes_global(num)%nwz
-            fluid_boundary_nodes(icount)%cos_theta =dcos(theta)         !assign contact angle
+            fluid_boundary_nodes(icount)%theta = theta         !assign contact angle
         endif
     enddo    
 
@@ -676,7 +676,7 @@ subroutine geometry_preprocessing_load
             fluid_boundary_nodes(icount)%nwx =  fluid_boundary_nodes_global(num)%nwx
             fluid_boundary_nodes(icount)%nwy =  fluid_boundary_nodes_global(num)%nwy
             fluid_boundary_nodes(icount)%nwz =  fluid_boundary_nodes_global(num)%nwz
-            fluid_boundary_nodes(icount)%cos_theta =dcos(theta)         !assign contact angle
+            fluid_boundary_nodes(icount)%theta = theta         !assign contact angle
         endif
     enddo  
 
