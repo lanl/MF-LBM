@@ -104,35 +104,6 @@ The code is written on Fortran 90 and employs MPI-OpenACC/OpenMP hybrid programi
 
 Chen, Y., Valocchi, A., Kang, Q., & Viswanathan, H. S. (2019). Inertial effects during the process of supercritical CO2 displacing brine in a sandstone: Lattice Boltzmann simulations based on the continuum‐surface‐force and geometrical wetting models. Water Resources Research, 55, 11144– 11165. https://doi.org/10.1029/2019WR025746
 
-<br/>
-
-## Computational Performance Benchmarking (multiphase code)
-
-| Platform                              | Comp. Perf. (MLUPS) |
-| ------------------------------------- | :-----------------: |
-| CPU: Intel Gold 6152 (22*2 cores)     |         178         |
-| CPU: Intel Platinum 8176 (28*2 cores) |         194         |
-| MIC: Intel Phi 7250 (68 cores)        |         235         |
-| CPU: AMD EPYC 7551 (32*2 cores)       |         241         |
-| CPU: AMD EPYC 7702 (64*2 cores)       |         290         |
-| GPU: NVIDIA P100 (1792 cores)         |         332         |
-| GPU: NVIDIA V100 (2560 cores)         |         507         |
-| GPU: NVIDIA A100 (80GB) (3456 cores)  |        1477        |
-
-[Single node/card performance benchmarking](test_suites/3D_simulation/6.performance_benchmarking/) is to show the portability of the code.
-
-| Number of V100 GPUs | Comp. Perf. (MLUPS) |
-| :-----------------: | :-----------------: |
-|          4          |        1895        |
-|          8          |        3682        |
-|         16         |        7291        |
-|         24         |        11238        |
-|         32         |        14701        |
-
-Weak-scaling benchmark is to show the scalability of the code.
-
-<br/>
-
 <!-- Build Instructions -->
 
 ## Build Instructions
@@ -400,6 +371,18 @@ Three output directories will be created:
 
 ## Important Notes
 
+* Future development
+  
+  There is no plan to further develop this code in the future. Main limitations of this code are:
+  * Fortran as a dying language
+  * AA pattern streaming method
+  * No OOP design
+  
+  Potential future routes for interested developers/researchers:
+  * C++ MPI/OpenMP/CUDA hybrid programming
+  * [SSS streaming technique](https://doi.org/10.1016/j.compfluid.2019.01.001) for direct addressing data structure
+  * [Esoteric type streaming technique](https://doi.org/10.3390/computation10060092) for semi-direct or indirect addressing data structure
+
 * Best practice of running MF-LBM on different platforms:
 
   1. AVX512 is recommended to be enabled for Intel CPUs that support AVX512. AVX512 must be enabled for Intel Xeon Phi processors.
@@ -407,7 +390,7 @@ Three output directories will be created:
   3. GPUs require a high degree of parallelism, where a small domain problem may not utilize the full potential of a GPU. Recommended domain size per GPU: from 200`<sup>`3`</sup>` until GPU memory full.
 * Contact angle:
 
-  The contact angle in the control file must be less or equal to 90 degrees due to the particular numerical scheme used, meaning that fluid1 and fluid2 will always be the nonwetting phase and wetting phase, respectively. [Drainage](test_suites/3D_simulation/2.drainage) and [imbibition](test_suites/3D_simulation/4.imbibition_external_geometry) can be completed by injecting fluid1 and fluid2 respectively.
+  ~~The contact angle in the control file must be less or equal to 90 degrees due to the particular numerical scheme used, meaning that fluid1 and fluid2 will always be the nonwetting phase and wetting phase, respectively. [Drainage](test_suites/3D_simulation/2.drainage) and [imbibition](test_suites/3D_simulation/4.imbibition_external_geometry) can be completed by injecting fluid1 and fluid2 respectively.~~ The contact angle alteration scheme from [Akai et al., 2018](https://doi.org/10.1016/j.advwatres.2018.03.014) has been implemented and the above limitation no longer exists.
 * Run command:
 
   Several sample run commands are listed in [template-config.sh](multiphase_3D/run_template/template-config.sh). This code employs MPI-OpenMP hybrid programing model for the non-GPU versions, where memory affinity on NUMA architectures is very important to achieve expected performance. One should use one or more MPI ranks per UMA domain to avoid OpenMP parallelization across NUMA domains, and set appropriate socket/NUMA affinity in OpenMPI (or other MPI implementations). Number of threads in OpenMP should not exceed the core count or thread count (if multithreading is enabled) of corresponding UMA.
@@ -452,7 +435,7 @@ This program was produced under U.S. Government contract 89233218CNA000001 for L
 
 Dr. Yu Chen - yu_chen_007@outlook.com
 
-[MF-LBM-live](https://github.com/ychen-hpc/MF-LBM-live) which is forked from this repo will be used to develop new features by Dr. Yu Chen.
+~~[MF-LBM-live](https://github.com/ychen-hpc/MF-LBM-live) which is forked from this repo will be used to develop new features by Dr. Yu Chen.~~
 
 Dr. Qinjun Kang - qkang@lanl.gov
 
