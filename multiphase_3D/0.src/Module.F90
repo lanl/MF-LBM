@@ -97,7 +97,7 @@ module Misc_module
     
     type indirect_fluid_boundary_nodes
         integer :: ix,iy,iz
-        real(kind=8) :: nwx,nwy,nwz,cos_theta  !normal direction of the solid surface, local contact angle
+        real(kind=8) :: nwx,nwy,nwz,theta  !normal direction of the solid surface, local contact angle
     end type indirect_fluid_boundary_nodes
     type(indirect_fluid_boundary_nodes), allocatable, dimension(:) :: fluid_boundary_nodes
     integer :: num_fluid_boundary_global,num_fluid_boundary     ! number of fluid boundary nodes

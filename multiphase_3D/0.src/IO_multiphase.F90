@@ -460,10 +460,10 @@ subroutine read_parameter_multi
     endif
     error_signal = 0 
 
-    if(theta>90d0)then
-        if(id0==0)print*,'Error: contact angle is larger than 90 degrees! Exiting program!'
-        error_signal = 1 
-    endif
+    ! if(theta>90d0)then
+    !     if(id0==0)print*,'Error: contact angle is larger than 90 degrees! Exiting program!'
+    !     error_signal = 1 
+    ! endif
     theta = 180d0 - theta  !measured through defending phase
     theta = theta*pi/180.0d0   !contact angle
 

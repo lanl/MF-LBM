@@ -57,7 +57,7 @@ sed $sed_option "s|MPI_process_num .*|MPI_process_num $mpi_npx,$mpi_npy,$mpi_npz
 fluid2_viscosity=0.04
 sed $sed_option "s|fluid2_viscosity .*|fluid2_viscosity $fluid2_viscosity|g" ./simulation_control.txt
 
-theta=45
+theta=150
 sed $sed_option "s|theta .*|theta $theta|g" ./simulation_control.txt
 
 capillary_number=100d-6
