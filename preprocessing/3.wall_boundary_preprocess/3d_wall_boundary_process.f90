@@ -132,19 +132,13 @@ subroutine initialization
     close(9)
 
     !domain boundary treatment  (order from x to z to account for the channel flow inlet/outlet)      
-    if(domain_wall_status_x_min==0)walls(1,:,:)=0     
-    if(domain_wall_status_x_min==1)walls(1,:,:)=1 
-    if(domain_wall_status_x_max==0)walls(nx,:,:)=0     
+    if(domain_wall_status_x_min==1)walls(1,:,:)=1     
     if(domain_wall_status_x_max==1)walls(nx,:,:)=1         
-    
-    if(domain_wall_status_y_min==0)walls(2:nx-1,1,:)=0     
-    if(domain_wall_status_y_min==1)walls(2:nx-1,1,:)=1   
-    if(domain_wall_status_y_max==0)walls(2:nx-1,ny,:)=0     
+       
+    if(domain_wall_status_y_min==1)walls(2:nx-1,1,:)=1     
     if(domain_wall_status_y_max==1)walls(2:nx-1,ny,:)=1  
-    
-    if(domain_wall_status_z_min==0)walls(2:nx-1,2:ny-1,1)=0     
-    if(domain_wall_status_z_min==1)walls(2:nx-1,2:ny-1,1)=1   
-    if(domain_wall_status_z_max==0)walls(2:nx-1,2:ny-1,nz)=0     
+      
+    if(domain_wall_status_z_min==1)walls(2:nx-1,2:ny-1,1)=1        
     if(domain_wall_status_z_max==1)walls(2:nx-1,2:ny-1,nz)=1      
 
     if(kper==0)then  !z direction, not periodic       
